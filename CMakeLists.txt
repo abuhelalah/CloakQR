@@ -31,24 +31,22 @@ FetchContent_Declare(
 
 include_directories(thirdparty/tiny-AES-c)
 
+add_subdirectory(src/core)
+add_subdirectory(src/services)
+add_subdirectory(src/ui)
+add_subdirectory(src/platform)
+add_subdirectory(src/plugins)
+add_subdirectory(src/plugins/stub)
+add_subdirectory(src/cli)
+
+enable_testing()
+
+add_subdirectory(tests/unit)
+
 if(BUILD_CLOAKQR_APP)
     qt_add_executable(CloakQR
         src/main.cpp
-        src/core/qrdecoder.cpp
-        src/core/qrgenerator.cpp
-        src/services/appengine.cpp
-        src/services/fileexporter.cpp
-        src/services/cryptohelper.cpp
-        src/services/billingbridge.cpp
-        src/ui/qmlbindings.cpp
         resources/qml.qrc
-    )
-
-    target_include_directories(CloakQR PRIVATE
-        ${CMAKE_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/src/core
-        ${CMAKE_SOURCE_DIR}/src/services
-        ${CMAKE_SOURCE_DIR}/src/ui
     )
 
     qt_add_qml_module(CloakQR
@@ -72,6 +70,9 @@ if(BUILD_CLOAKQR_APP)
         Qt6::Multimedia
         Qt6::Widgets
         Qt6::Sql
+        cloakqr_core
+        cloakqr_services
+        cloakqr_ui
     )
 
     qt_add_translations(CloakQR
@@ -92,40 +93,3 @@ if(BUILD_CLOAKQR_APP)
         endif()
     endif()
 endif()
-
-enable_testing()
-
-qt_add_executable(tst_cryptohelper
-    tests/unit/tst_cryptohelper.cpp
-    src/services/cryptohelper.cpp
-)
-
-target_include_directories(tst_cryptohelper PRIVATE
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/services
-)
-
-target_link_libraries(tst_cryptohelper PRIVATE
-    Qt6::Core
-    Qt6::Test
-)
-
-add_test(NAME tst_cryptohelper COMMAND tst_cryptohelper)
-
-qt_add_executable(tst_qrgenerator
-    tests/unit/tst_qrgenerator.cpp
-    src/core/qrgenerator.cpp
-)
-
-target_include_directories(tst_qrgenerator PRIVATE
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/core
-)
-
-target_link_libraries(tst_qrgenerator PRIVATE
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Test
-)
-
-add_test(NAME tst_qrgenerator COMMAND tst_qrgenerator)

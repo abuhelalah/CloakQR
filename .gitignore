@@ -14,3 +14,4 @@ cmake-build-*/
 *.log
 PLAN.md
 what_we_done.md
+.vscode

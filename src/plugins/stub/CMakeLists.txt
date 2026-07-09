@@ -1,0 +1,1 @@
+add_library(cloakqr_plugins_stub INTERFACE)

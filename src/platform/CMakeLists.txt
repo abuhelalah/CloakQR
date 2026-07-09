@@ -1,0 +1,1 @@
+add_library(cloakqr_platform INTERFACE)
