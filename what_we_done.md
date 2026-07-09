@@ -19,6 +19,7 @@ The repository has been reorganized to match the new advanced plan layout.
 - Populated the top-level `README.md` with the current layout and build status.
 - Wired the new `resources/qml.qrc` bundle and translation files into CMake so they are part of the configured project graph.
 - Added `qmldir` metadata for `qml/common` and `qml/views`, and updated `qml/main.qml` to import `CloakQR.Common` and `CloakQR.Views` directly.
+- Moved the Android package files from `android/` into `deploy/android/` and updated CMake to use the new package source directory.
 
 ## Current State
 
@@ -29,6 +30,7 @@ The repository has been reorganized to match the new advanced plan layout.
 - The repository now also has the initial public plugin interfaces and translation placeholders expected by the plan.
 - The resource bundle now includes the SVG logos and the translation files through `resources/qml.qrc`.
 - The root QML shell now uses the shared header/footer components and the view module imports directly, which exercises the new QML layout instead of loading those files by path.
+- The Android packaging files now live under `deploy/android/` rather than a top-level `android/` directory.
 
 ## Verified Recently
 

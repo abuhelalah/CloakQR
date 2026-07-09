@@ -82,7 +82,7 @@ if(BUILD_CLOAKQR_APP)
 
     if(ANDROID)
         set_target_properties(CloakQR PROPERTIES
-            QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android"
+            QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/deploy/android"
         )
 
         if(ENABLE_PLAY_BILLING)

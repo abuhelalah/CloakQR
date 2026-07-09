@@ -9,6 +9,7 @@ Privacy-first QR scanner and generator built with Qt 6 C++/QML.
 - Public plugin interfaces live under `src/plugins`, with compile-time stubs in `src/plugins/stub`.
 - Translations are staged under `resources/i18n` for English, Spanish, French, and Arabic.
 - Unit tests live under `tests/unit`.
+- Android package files live under `deploy/android`.
 
 ## Build Notes
 
