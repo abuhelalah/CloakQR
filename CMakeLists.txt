@@ -8,7 +8,11 @@ set(CMAKE_AUTOMOC ON)
 option(ENABLE_PLAY_BILLING "Enable Google Play Billing integration" OFF)
 option(BUILD_CLOAKQR_APP "Build the main CloakQR application target" ON)
 
-set(CLOAKQR_QT_COMPONENTS Core Gui Sql Test)
+set(CLOAKQR_QT_COMPONENTS Core Gui Sql)
+
+if(NOT ANDROID)
+    list(APPEND CLOAKQR_QT_COMPONENTS Test)
+endif()
 
 if(BUILD_CLOAKQR_APP)
     list(APPEND CLOAKQR_QT_COMPONENTS Quick Qml Widgets LinguistTools)
@@ -49,11 +53,14 @@ endif()
 add_subdirectory(src/platform)
 add_subdirectory(src/plugins)
 add_subdirectory(src/plugins/stub)
-add_subdirectory(src/cli)
+if(NOT ANDROID)
+    add_subdirectory(src/cli)
+endif()
 
-enable_testing()
-
-add_subdirectory(tests/unit)
+if(NOT ANDROID)
+    enable_testing()
+    add_subdirectory(tests/unit)
+endif()
 
 if(BUILD_CLOAKQR_APP)
     qt_add_executable(CloakQR
