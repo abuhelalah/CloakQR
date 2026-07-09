@@ -93,13 +93,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify system Python
-        shell: powershell
+      - name: Ensure Python is available
+        shell: cmd
         run: |
-          $py = Get-Command python -ErrorAction SilentlyContinue
-          if (-not $py) {
-            throw "Python 3.9+ is required on the self-hosted runner when setup-python is disabled."
-          }
+          where python || choco install -y python
           python --version
 
       - name: Install Qt
@@ -116,15 +113,19 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install Ninja
+        shell: cmd
         run: choco install ninja -y
 
       - name: Configure
+        shell: cmd
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
 
       - name: Build
+        shell: cmd
         run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
 
       - name: Test
+        shell: cmd
         run: ctest --test-dir build --output-on-failure
 
 #   lint:
