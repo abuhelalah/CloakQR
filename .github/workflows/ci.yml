@@ -60,7 +60,6 @@ jobs:
           host: linux
           target: desktop
           arch: linux_gcc_64
-          modules: qtdeclarative,qttools,qttranslations
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
