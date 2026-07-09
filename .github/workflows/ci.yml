@@ -5,75 +5,178 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   linux-debug:
     runs-on: ubuntu-latest
-    env:
-      QT_VERSION: 6.8.3
-      BUILD_TYPE: Debug
+    strategy:
+      fail-fast: false
+      matrix:
+        qt_version: [6.8.3, 6.11.1]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: ${{ env.QT_VERSION }}
+          version: ${{ matrix.qt_version }}
           host: linux
           target: desktop
           arch: gcc_64
           modules: qtcharts qt5compat qtmultimedia qtsql qttools qttranslations
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DBUILD_CLOAKQR_APP=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
 
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
 
   linux-release:
     runs-on: ubuntu-latest
-    env:
-      QT_VERSION: 6.8.3
-      BUILD_TYPE: Release
+    strategy:
+      fail-fast: false
+      matrix:
+        qt_version: [6.8.3, 6.11.1]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: ${{ env.QT_VERSION }}
+          version: ${{ matrix.qt_version }}
           host: linux
           target: desktop
           arch: gcc_64
           modules: qtcharts qt5compat qtmultimedia qtsql qttools qttranslations
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DBUILD_CLOAKQR_APP=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
 
       - name: Build
         run: cmake --build build --parallel
+
+  windows-desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.3
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: qtmultimedia qtsql qttools qttranslations
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
+
+      - name: Build
+        run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install lint tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang-format clang-tidy
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.3
+          host: linux
+          target: desktop
+          arch: gcc_64
+          modules: qtmultimedia qtsql qttools qttranslations
+
       - name: Check formatting
         run: clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.h')
 
       - name: Configure for clang-tidy
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Run clang-tidy
-        run: clang-tidy -p build src/main.cpp
+        run: |
+          clang-tidy -p build src/main.cpp
+          find src/core src/services src/ui tests/unit -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.3
+          host: linux
+          target: desktop
+          arch: gcc_64
+          modules: qtmultimedia qtsql qttools qttranslations
+
+      - name: Configure sanitizer build
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_CLOAKQR_APP=OFF
+          -DCMAKE_CXX_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer'
+          -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
+
+      - name: Build tests
+        run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
+
+      - name: Run tests with sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build --output-on-failure
 
   coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install coverage tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build lcov
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -85,18 +188,40 @@ jobs:
           modules: qtcharts qt5compat qtmultimedia qtsql qttools qttranslations
 
       - name: Configure coverage build
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_CLOAKQR_APP=OFF
+          -DCMAKE_CXX_FLAGS='--coverage'
+          -DCMAKE_EXE_LINKER_FLAGS='--coverage'
 
       - name: Build tests
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
 
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
+
+      - name: Collect coverage
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '/opt/Qt/*' --output-file coverage.info
+          lcov --summary coverage.info
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-info
+          path: coverage.info
 
   android-apk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -108,7 +233,11 @@ jobs:
           modules: qtmultimedia qtsql qttools qttranslations
 
       - name: Configure Android package
-        run: cmake -S . -B build-android -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON -DANDROID_ABI=arm64-v8a
+        run: >-
+          cmake -S . -B build-android -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_CLOAKQR_APP=ON
+          -DANDROID_ABI=arm64-v8a
 
       - name: Build APK
         run: cmake --build build-android --parallel
