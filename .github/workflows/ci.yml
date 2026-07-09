@@ -88,34 +88,34 @@ jobs:
 #         run: cmake --build build --parallel
 
 
-#   windows-desktop:
-#     runs-on: windows-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  windows-desktop:
+    runs-on: [self-hosted, windows, x64]
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           aqtversion: '==3.3.*'
-#           version: 6.8.3
-#           host: windows
-#           target: desktop
-#           arch: win64_msvc2022_64
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.8.3
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
 
-#       - name: Setup MSVC environment
-#         uses: ilammy/msvc-dev-cmd@v1
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
 
-#       - name: Install Ninja
-#         run: choco install ninja -y
+      - name: Install Ninja
+        run: choco install ninja -y
 
-#       - name: Configure
-#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
 
-#       - name: Build
-#         run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
+      - name: Build
+        run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
 
-#       - name: Test
-#         run: ctest --test-dir build --output-on-failure
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
 
 #   lint:
 #     runs-on: ubuntu-22.04
