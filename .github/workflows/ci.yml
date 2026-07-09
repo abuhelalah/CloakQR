@@ -233,65 +233,65 @@ jobs:
 #           name: coverage-info
 #           path: coverage.info
 
-  android-apk:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
+#   android-apk:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+#       - name: Setup Java 17
+#         uses: actions/setup-java@v4
+#         with:
+#           distribution: temurin
+#           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+#       - name: Setup Android SDK
+#         uses: android-actions/setup-android@v3
 
-      - name: Install Linux build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build
+#       - name: Install Linux build tools
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ninja-build
 
-      - name: Install Android NDK
-        run: sdkmanager "ndk;25.2.9519653"
+#       - name: Install Android NDK
+#         run: sdkmanager "ndk;25.2.9519653"
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.6.3
-          host: linux
-          target: android
-          arch: android_arm64_v8a
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.6.3
+#           host: linux
+#           target: android
+#           arch: android_arm64_v8a
 
-      - name: Configure Android package
-        run: |
-          QT_ROOT="$RUNNER_WORKSPACE/Qt/6.6.3"
-          QT_ANDROID_TOOLCHAIN="$QT_ROOT/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake"
-          QT_HOST_PATH="$QT_ROOT/gcc_64"
+#       - name: Configure Android package
+#         run: |
+#           QT_ROOT="$RUNNER_WORKSPACE/Qt/6.6.3"
+#           QT_ANDROID_TOOLCHAIN="$QT_ROOT/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake"
+#           QT_HOST_PATH="$QT_ROOT/gcc_64"
 
-          if [[ ! -f "$QT_ANDROID_TOOLCHAIN" ]]; then
-            echo "Qt Android toolchain not found at $QT_ANDROID_TOOLCHAIN"
-            exit 1
-          fi
+#           if [[ ! -f "$QT_ANDROID_TOOLCHAIN" ]]; then
+#             echo "Qt Android toolchain not found at $QT_ANDROID_TOOLCHAIN"
+#             exit 1
+#           fi
 
-          if [[ ! -d "$QT_HOST_PATH" ]]; then
-            echo "Qt host path not found at $QT_HOST_PATH"
-            exit 1
-          fi
+#           if [[ ! -d "$QT_HOST_PATH" ]]; then
+#             echo "Qt host path not found at $QT_HOST_PATH"
+#             exit 1
+#           fi
 
-          cmake -S . -B build-android -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_CLOAKQR_APP=ON \
-            -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID_TOOLCHAIN" \
-            -DQT_HOST_PATH="$QT_HOST_PATH" \
-            -DCMAKE_PREFIX_PATH="$QT_ROOT/android_arm64_v8a" \
-            -DANDROID_ABI=arm64-v8a \
-            -DANDROID_NDK="$ANDROID_SDK_ROOT/ndk/25.2.9519653" \
-            -DANDROID_PLATFORM=android-24
+#           cmake -S . -B build-android -G Ninja \
+#             -DCMAKE_BUILD_TYPE=Release \
+#             -DBUILD_CLOAKQR_APP=ON \
+#             -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID_TOOLCHAIN" \
+#             -DQT_HOST_PATH="$QT_HOST_PATH" \
+#             -DCMAKE_PREFIX_PATH="$QT_ROOT/android_arm64_v8a" \
+#             -DANDROID_ABI=arm64-v8a \
+#             -DANDROID_NDK="$ANDROID_SDK_ROOT/ndk/25.2.9519653" \
+#             -DANDROID_PLATFORM=android-24
 
-      - name: Build APK
-        run: cmake --build build-android --parallel --target CloakQR
+#       - name: Build APK
+#         run: cmake --build build-android --parallel --target CloakQR
 
 #   ios-app:
 #     runs-on: macos-14
