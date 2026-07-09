@@ -18,7 +18,9 @@ find_package(Qt6 REQUIRED COMPONENTS ${CLOAKQR_QT_COMPONENTS})
 
 if(BUILD_CLOAKQR_APP)
     qt_policy(SET QTP0001 NEW)
-    qt_policy(SET QTP0004 NEW)
+    if(QT_VERSION VERSION_GREATER_EQUAL "6.7.0")
+        qt_policy(SET QTP0004 NEW)
+    endif()
 endif()
 
 include(cmake/dependencies.cmake)
@@ -57,6 +59,11 @@ if(BUILD_CLOAKQR_APP)
     qt_add_executable(CloakQR
         src/main.cpp
         resources/qml.qrc
+    )
+
+    # Avoid collision with the generated QML module output directory named "CloakQR".
+    set_target_properties(CloakQR PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     )
 
     qt_add_qml_module(CloakQR

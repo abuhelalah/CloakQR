@@ -157,7 +157,7 @@ jobs:
       - name: Install Linux build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build
+          sudo apt-get install -y ninja-build libxcb-cursor0
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -181,6 +181,7 @@ jobs:
 
       - name: Run tests with sanitizers
         env:
+          QT_QPA_PLATFORM: offscreen
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: ctest --test-dir build --output-on-failure
@@ -193,7 +194,7 @@ jobs:
       - name: Install coverage tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build lcov
+          sudo apt-get install -y ninja-build lcov libxcb-cursor0
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -216,6 +217,8 @@ jobs:
         run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
 
       - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure
 
       - name: Collect coverage
@@ -264,6 +267,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Ninja
+        run: brew install ninja
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -274,11 +280,16 @@ jobs:
           arch: ios
 
       - name: Configure iOS package
-        run: >-
-          cmake -S . -B build-ios -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
-          -DBUILD_CLOAKQR_APP=ON
-          -DCMAKE_TOOLCHAIN_FILE=${{ runner.tool_cache }}/Qt/6.11.1/ios_arm64/lib/cmake/Qt6/Qt6Toolchain.cmake
+        run: |
+          TOOLCHAIN_FILE=$(find "$RUNNER_WORKSPACE/Qt" -type f \( -name qt.toolchain.cmake -o -name Qt6Toolchain.cmake \) | head -n 1)
+          if [[ -z "$TOOLCHAIN_FILE" ]]; then
+            echo "Qt iOS toolchain file not found under $RUNNER_WORKSPACE/Qt"
+            exit 1
+          fi
+          cmake -S . -B build-ios -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_CLOAKQR_APP=ON \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE"
 
       - name: Build iOS app
         run: cmake --build build-ios --parallel
