@@ -67,6 +67,27 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
+  mac-desktop:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.11.1
+          host: mac
+          target: desktop
+          arch: clang_64
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+
 #   windows-desktop:
 #     runs-on: windows-latest
 #     steps:
@@ -227,7 +248,6 @@ jobs:
           host: linux
           target: android
           arch: android_arm64_v8a
-          modules: qtdeclarative,qttools,qttranslations
 
       - name: Configure Android package
         run: >-
@@ -238,3 +258,27 @@ jobs:
 
       - name: Build APK
         run: cmake --build build-android --parallel
+
+  ios-app:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.11.1
+          host: mac
+          target: ios
+          arch: ios
+
+      - name: Configure iOS package
+        run: >-
+          cmake -S . -B build-ios -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_CLOAKQR_APP=ON
+          -DCMAKE_TOOLCHAIN_FILE=${{ runner.tool_cache }}/Qt/6.11.1/ios_arm64/lib/cmake/Qt6/Qt6Toolchain.cmake
+
+      - name: Build iOS app
+        run: cmake --build build-ios --parallel
