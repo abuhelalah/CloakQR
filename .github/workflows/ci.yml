@@ -93,6 +93,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify system Python
+        shell: powershell
+        run: |
+          $py = Get-Command python -ErrorAction SilentlyContinue
+          if (-not $py) {
+            throw "Python 3.9+ is required on the self-hosted runner when setup-python is disabled."
+          }
+          python --version
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -101,6 +110,7 @@ jobs:
           host: windows
           target: desktop
           arch: win64_msvc2022_64
+          setup-python: false
 
       - name: Setup MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
