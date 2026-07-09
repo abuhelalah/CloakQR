@@ -253,7 +253,7 @@ jobs:
           sudo apt-get install -y ninja-build
 
       - name: Install Android NDK
-        run: sdkmanager "ndk;26.3.11579264"
+        run: sdkmanager "ndk;25.2.9519653"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -287,7 +287,7 @@ jobs:
             -DQT_HOST_PATH="$QT_HOST_PATH" \
             -DCMAKE_PREFIX_PATH="$QT_ROOT/android_arm64_v8a" \
             -DANDROID_ABI=arm64-v8a \
-            -DANDROID_NDK="$ANDROID_SDK_ROOT/ndk/26.3.11579264" \
+            -DANDROID_NDK="$ANDROID_SDK_ROOT/ndk/25.2.9519653" \
             -DANDROID_PLATFORM=android-24
 
       - name: Build APK
