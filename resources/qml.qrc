@@ -1,0 +1,12 @@
+<RCC>
+	<qresource prefix="/images">
+		<file>images/logo.svg</file>
+		<file>images/logo_adv.svg</file>
+	</qresource>
+	<qresource prefix="/i18n">
+		<file>i18n/en.ts</file>
+		<file>i18n/es.ts</file>
+		<file>i18n/fr.ts</file>
+		<file>i18n/ar.ts</file>
+	</qresource>
+</RCC>

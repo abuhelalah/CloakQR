@@ -1,0 +1,14 @@
+build/
+build-app/
+build-crypto/
+cmake-build-*/
+*.user
+*.pro.user
+*.qtc_clangd/
+*.apk
+*.aab
+.android/
+.gradle/
+.DS_Store
+*.swp
+*.log

@@ -1,0 +1,8 @@
+module CloakQR.Views
+SafePreviewDialog 1.0 SafePreviewDialog.qml
+ScannerPage 1.0 ScannerPage.qml
+HistoryPage 1.0 HistoryPage.qml
+GeneratorPage 1.0 GeneratorPage.qml
+DesignStudioPanel 1.0 DesignStudioPanel.qml
+BatchScanPage 1.0 BatchScanPage.qml
+PaywallSheet 1.0 PaywallSheet.qml
