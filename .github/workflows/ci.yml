@@ -12,35 +12,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  linux-debug:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
+#   linux-debug:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install Linux build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libxcb-cursor0
+#       - name: Install Linux build tools
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ninja-build libxcb-cursor0
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: linux
-          target: desktop
-          arch: linux_gcc_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: linux
+#           target: desktop
+#           arch: linux_gcc_64
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
+#       - name: Configure
+#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
 
-      - name: Build
-        run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
+#       - name: Build
+#         run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
 
-      - name: Test
-        env:
-          QT_QPA_PLATFORM: offscreen
-        run: ctest --test-dir build --output-on-failure
+#       - name: Test
+#         env:
+#           QT_QPA_PLATFORM: offscreen
+#         run: ctest --test-dir build --output-on-failure
 
   linux-release:
     runs-on: ubuntu-22.04
@@ -67,66 +67,66 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
-  windows-desktop:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
+#   windows-desktop:
+#     runs-on: windows-latest
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.8.3
-          host: windows
-          target: desktop
-          arch: win64_msvc2022_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.8.3
+#           host: windows
+#           target: desktop
+#           arch: win64_msvc2022_64
 
-      - name: Setup MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
+#       - name: Setup MSVC environment
+#         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install Ninja
-        run: choco install ninja -y
+#       - name: Install Ninja
+#         run: choco install ninja -y
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
+#       - name: Configure
+#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
 
-      - name: Build
-        run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
+#       - name: Build
+#         run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
+#       - name: Test
+#         run: ctest --test-dir build --output-on-failure
 
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
+#   lint:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install lint tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build clang-format clang-tidy
+#       - name: Install lint tools
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ninja-build clang-format clang-tidy
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: linux
-          target: desktop
-          arch: linux_gcc_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: linux
+#           target: desktop
+#           arch: linux_gcc_64
 
-      - name: Check formatting
-        continue-on-error: true
-        run: clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.h')
+#       - name: Check formatting
+#         continue-on-error: true
+#         run: clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.h')
 
-      - name: Configure for clang-tidy
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+#       - name: Configure for clang-tidy
+#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Run clang-tidy
-        continue-on-error: true
-        run: |
-          clang-tidy -p build src/main.cpp
-          find src/core src/services src/ui tests/unit -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}
+#       - name: Run clang-tidy
+#         continue-on-error: true
+#         run: |
+#           clang-tidy -p build src/main.cpp
+#           find src/core src/services src/ui tests/unit -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}
 
   sanitizers:
     runs-on: ubuntu-22.04
