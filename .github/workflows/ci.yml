@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt_version: [6.8.3, 6.11.1]
+        qt_version: [6.9.1, 6.11.1]
     steps:
       - uses: actions/checkout@v4
 
@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt_version: [6.8.3, 6.11.1]
+        qt_version: [6.9.1, 6.11.1]
     steps:
       - uses: actions/checkout@v4
 
@@ -80,7 +80,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.9.1
           host: windows
           target: desktop
           arch: win64_msvc2022_64
@@ -113,7 +113,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.9.1
           host: linux
           target: desktop
           arch: linux_gcc_64
@@ -144,7 +144,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.9.1
           host: linux
           target: desktop
           arch: linux_gcc_64
@@ -179,7 +179,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.9.1
           host: linux
           target: desktop
           arch: gcc_64
@@ -223,7 +223,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.9.1
           host: linux
           target: android
           arch: android_arm64_v8a
