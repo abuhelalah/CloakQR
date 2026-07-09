@@ -13,6 +13,8 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia Widgets Sql Test LinguistT
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
 
+include(cmake/dependencies.cmake)
+
 if(ENABLE_PLAY_BILLING AND ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS AndroidExtras)
 endif()
