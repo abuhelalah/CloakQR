@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt_version: [6.8.3, 6.11.1]
+        qt_version: [6.8.2, 6.11.1]
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +32,7 @@ jobs:
           version: ${{ matrix.qt_version }}
           host: linux
           target: desktop
-          arch: linux_gcc_64
+          arch: gcc_64
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt_version: [6.8.3, 6.11.1]
+        qt_version: [6.8.2, 6.11.1]
     steps:
       - uses: actions/checkout@v4
 
@@ -63,7 +63,7 @@ jobs:
           version: ${{ matrix.qt_version }}
           host: linux
           target: desktop
-          arch: linux_gcc_64
+          arch: gcc_64
           modules: qtdeclarative qttools qttranslations
 
       - name: Configure
@@ -80,7 +80,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.8.2
           host: windows
           target: desktop
           arch: win64_msvc2022_64
@@ -113,10 +113,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.8.2
           host: linux
           target: desktop
-          arch: linux_gcc_64
+          arch: gcc_64
 
       - name: Check formatting
         continue-on-error: true
@@ -144,10 +144,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.8.2
           host: linux
           target: desktop
-          arch: linux_gcc_64
+          arch: gcc_64
 
       - name: Configure sanitizer build
         run: >-
@@ -179,7 +179,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.8.2
           host: linux
           target: desktop
           arch: gcc_64
@@ -223,7 +223,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.3
+          version: 6.8.2
           host: linux
           target: android
           arch: android_arm64_v8a
