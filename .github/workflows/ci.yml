@@ -29,10 +29,12 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: ${{ matrix.qt_version }}
+          aqtversion: '==3.3.*'
+          version: '6.8.3'
           host: linux
           target: desktop
-          arch: gcc_64
+          arch: linux_gcc_64
+          modules: 'debug_info qt3d qt5compat qtcharts qtconnectivity qtdatavis3d qtgraphs qtgrpc qthttpserver qtimageformats qtlanguageserver qtlocation qtlottie qtmultimedia qtnetworkauth extensions.qtpdf.683.linux_gcc_64 qtpositioning qtquick3d qtquick3dphysics qtquickeffectmaker qtquicktimeline qtremoteobjects qtscxml qtsensors qtserialbus qtserialport qtshadertools qtspeech qtvirtualkeyboard qtwaylandcompositor qtwebchannel extensions.qtwebengine.683.linux_gcc_64 qtwebsockets qtwebview'
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
