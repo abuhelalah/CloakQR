@@ -96,8 +96,41 @@ jobs:
       - name: Ensure Python is available
         shell: cmd
         run: |
-          where python || choco install -y python
-          python --version
+          set "PY_EXE="
+
+          for %%P in (
+            "%LocalAppData%\Programs\Python\Python312\python.exe"
+            "%LocalAppData%\Programs\Python\Python311\python.exe"
+            "C:\Python312\python.exe"
+            "C:\Python311\python.exe"
+          ) do (
+            if exist %%~P set "PY_EXE=%%~P"
+          )
+
+          if not defined PY_EXE (
+            where py >nul 2>nul && for /f "delims=" %%I in ('py -3 -c "import sys; print(sys.executable)"') do set "PY_EXE=%%I"
+          )
+
+          if not defined PY_EXE (
+            echo Installing Python with Chocolatey...
+            choco install -y python
+            for %%P in (
+              "C:\Python312\python.exe"
+              "C:\Python311\python.exe"
+            ) do (
+              if exist %%~P set "PY_EXE=%%~P"
+            )
+          )
+
+          if not defined PY_EXE (
+            echo Could not locate a usable Python interpreter.
+            exit /b 1
+          )
+
+          for %%D in ("%PY_EXE%") do set "PY_DIR=%%~dpD"
+          echo %PY_DIR%>>"%GITHUB_PATH%"
+          "%PY_EXE%" --version
+          "%PY_EXE%" -m pip --version
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
