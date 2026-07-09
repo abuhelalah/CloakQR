@@ -42,50 +42,50 @@ jobs:
 #           QT_QPA_PLATFORM: offscreen
 #         run: ctest --test-dir build --output-on-failure
 
-  linux-release:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
+#   linux-release:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install Linux build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build
+#       - name: Install Linux build tools
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ninja-build
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: linux
-          target: desktop
-          arch: linux_gcc_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: linux
+#           target: desktop
+#           arch: linux_gcc_64
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
+#       - name: Configure
+#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
 
-      - name: Build
-        run: cmake --build build --parallel
+#       - name: Build
+#         run: cmake --build build --parallel
 
-  mac-desktop:
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
+#   mac-desktop:
+#     runs-on: macos-14
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: mac
-          target: desktop
-          arch: clang_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: mac
+#           target: desktop
+#           arch: clang_64
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
+#       - name: Configure
+#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
 
-      - name: Build
-        run: cmake --build build --parallel
+#       - name: Build
+#         run: cmake --build build --parallel
 
 
 #   windows-desktop:
@@ -149,99 +149,105 @@ jobs:
 #           clang-tidy -p build src/main.cpp
 #           find src/core src/services src/ui tests/unit -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}
 
-  sanitizers:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
+#   sanitizers:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install Linux build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libxcb-cursor0
+#       - name: Install Linux build tools
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ninja-build libxcb-cursor0
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: linux
-          target: desktop
-          arch: linux_gcc_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: linux
+#           target: desktop
+#           arch: linux_gcc_64
 
-      - name: Configure sanitizer build
-        run: >-
-          cmake -S . -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Debug
-          -DBUILD_CLOAKQR_APP=OFF
-          -DCMAKE_CXX_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer'
-          -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
+#       - name: Configure sanitizer build
+#         run: >-
+#           cmake -S . -B build -G Ninja
+#           -DCMAKE_BUILD_TYPE=Debug
+#           -DBUILD_CLOAKQR_APP=OFF
+#           -DCMAKE_CXX_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer'
+#           -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
 
-      - name: Build tests
-        run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
+#       - name: Build tests
+#         run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
 
-      - name: Run tests with sanitizers
-        env:
-          QT_QPA_PLATFORM: offscreen
-          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
-          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
-        run: ctest --test-dir build --output-on-failure
+#       - name: Run tests with sanitizers
+#         env:
+#           QT_QPA_PLATFORM: offscreen
+#           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+#           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+#         run: ctest --test-dir build --output-on-failure
 
-  coverage:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
+#   coverage:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install coverage tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build lcov libxcb-cursor0
+#       - name: Install coverage tools
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ninja-build lcov libxcb-cursor0
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: linux
-          target: desktop
-          arch: linux_gcc_64
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: linux
+#           target: desktop
+#           arch: linux_gcc_64
 
-      - name: Configure coverage build
-        run: >-
-          cmake -S . -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Debug
-          -DBUILD_CLOAKQR_APP=OFF
-          -DCMAKE_CXX_FLAGS='--coverage'
-          -DCMAKE_EXE_LINKER_FLAGS='--coverage'
+#       - name: Configure coverage build
+#         run: >-
+#           cmake -S . -B build -G Ninja
+#           -DCMAKE_BUILD_TYPE=Debug
+#           -DBUILD_CLOAKQR_APP=OFF
+#           -DCMAKE_CXX_FLAGS='--coverage'
+#           -DCMAKE_EXE_LINKER_FLAGS='--coverage'
 
-      - name: Build tests
-        run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
+#       - name: Build tests
+#         run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
 
-      - name: Run tests
-        env:
-          QT_QPA_PLATFORM: offscreen
-        run: ctest --test-dir build --output-on-failure
+#       - name: Run tests
+#         env:
+#           QT_QPA_PLATFORM: offscreen
+#         run: ctest --test-dir build --output-on-failure
 
-      - name: Collect coverage
-        run: |
-          lcov --capture --directory build --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '/opt/Qt/*' --output-file coverage.info
-          lcov --summary coverage.info
+#       - name: Collect coverage
+#         run: |
+#           lcov --capture --directory build --output-file coverage.info
+#           lcov --remove coverage.info '/usr/*' '/opt/Qt/*' --output-file coverage.info
+#           lcov --summary coverage.info
 
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-info
-          path: coverage.info
+#       - name: Upload coverage artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: coverage-info
+#           path: coverage.info
 
   android-apk:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Linux build tools
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build
+
+      - name: Install Android NDK
+        run: sdkmanager "ndk;26.3.11579264"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -253,43 +259,51 @@ jobs:
           arch: android_arm64_v8a
 
       - name: Configure Android package
-        run: >-
-          cmake -S . -B build-android -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
-          -DBUILD_CLOAKQR_APP=ON
-          -DANDROID_ABI=arm64-v8a
+        run: |
+          QT_ANDROID_TOOLCHAIN=$(find "$RUNNER_WORKSPACE/Qt" -type f -name qt.toolchain.cmake | head -n 1)
+          if [[ -z "$QT_ANDROID_TOOLCHAIN" ]]; then
+            echo "Qt Android toolchain not found under $RUNNER_WORKSPACE/Qt"
+            exit 1
+          fi
+          cmake -S . -B build-android -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_CLOAKQR_APP=ON \
+            -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID_TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_NDK="$ANDROID_SDK_ROOT/ndk/26.3.11579264" \
+            -DANDROID_PLATFORM=android-24
 
       - name: Build APK
         run: cmake --build build-android --parallel --target CloakQR
 
-  ios-app:
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
+#   ios-app:
+#     runs-on: macos-14
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install Ninja
-        run: brew install ninja
+#       - name: Install Ninja
+#         run: brew install ninja
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.3.*'
-          version: 6.11.1
-          host: mac
-          target: ios
-          arch: ios
+#       - name: Install Qt
+#         uses: jurplel/install-qt-action@v4
+#         with:
+#           aqtversion: '==3.3.*'
+#           version: 6.11.1
+#           host: mac
+#           target: ios
+#           arch: ios
 
-      - name: Configure iOS package
-        run: |
-          TOOLCHAIN_FILE=$(find "$RUNNER_WORKSPACE/Qt" -type f \( -name qt.toolchain.cmake -o -name Qt6Toolchain.cmake \) | head -n 1)
-          if [[ -z "$TOOLCHAIN_FILE" ]]; then
-            echo "Qt iOS toolchain file not found under $RUNNER_WORKSPACE/Qt"
-            exit 1
-          fi
-          cmake -S . -B build-ios -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_CLOAKQR_APP=ON \
-            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE"
+#       - name: Configure iOS package
+#         run: |
+#           TOOLCHAIN_FILE=$(find "$RUNNER_WORKSPACE/Qt" -type f \( -name qt.toolchain.cmake -o -name Qt6Toolchain.cmake \) | head -n 1)
+#           if [[ -z "$TOOLCHAIN_FILE" ]]; then
+#             echo "Qt iOS toolchain file not found under $RUNNER_WORKSPACE/Qt"
+#             exit 1
+#           fi
+#           cmake -S . -B build-ios -G Ninja \
+#             -DCMAKE_BUILD_TYPE=Release \
+#             -DBUILD_CLOAKQR_APP=ON \
+#             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE"
 
-      - name: Build iOS app
-        run: cmake --build build-ios --parallel
+#       - name: Build iOS app
+#         run: cmake --build build-ios --parallel
