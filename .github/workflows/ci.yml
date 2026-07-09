@@ -266,15 +266,26 @@ jobs:
 
       - name: Configure Android package
         run: |
-          QT_ANDROID_TOOLCHAIN=$(find "$RUNNER_WORKSPACE/Qt" -type f -name qt.toolchain.cmake | head -n 1)
-          if [[ -z "$QT_ANDROID_TOOLCHAIN" ]]; then
-            echo "Qt Android toolchain not found under $RUNNER_WORKSPACE/Qt"
+          QT_ROOT="$RUNNER_WORKSPACE/Qt/6.6.3"
+          QT_ANDROID_TOOLCHAIN="$QT_ROOT/android_arm64_v8a/lib/cmake/Qt6/qt.toolchain.cmake"
+          QT_HOST_PATH="$QT_ROOT/gcc_64"
+
+          if [[ ! -f "$QT_ANDROID_TOOLCHAIN" ]]; then
+            echo "Qt Android toolchain not found at $QT_ANDROID_TOOLCHAIN"
             exit 1
           fi
+
+          if [[ ! -d "$QT_HOST_PATH" ]]; then
+            echo "Qt host path not found at $QT_HOST_PATH"
+            exit 1
+          fi
+
           cmake -S . -B build-android -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_CLOAKQR_APP=ON \
             -DCMAKE_TOOLCHAIN_FILE="$QT_ANDROID_TOOLCHAIN" \
+            -DQT_HOST_PATH="$QT_HOST_PATH" \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT/android_arm64_v8a" \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_NDK="$ANDROID_SDK_ROOT/ndk/26.3.11579264" \
             -DANDROID_PLATFORM=android-24
