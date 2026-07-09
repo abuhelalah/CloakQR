@@ -42,198 +42,200 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure
 
-#   linux-release:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         qt_version: [6.8, 6.11]
-#     steps:
-#       - uses: actions/checkout@v4
+  linux-release:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install Linux build tools
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y ninja-build
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           version: ${{ matrix.qt_version }}
-#           host: linux
-#           target: desktop
-#           arch: linux_gcc_64
-#           modules: qtdeclarative,qttools,qttranslations
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.11.1
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: qtdeclarative,qttools,qttranslations
 
-#       - name: Configure
-#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
 
-#       - name: Build
-#         run: cmake --build build --parallel
+      - name: Build
+        run: cmake --build build --parallel
 
-#   windows-desktop:
-#     runs-on: windows-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  windows-desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           version: 6.8.2
-#           host: windows
-#           target: desktop
-#           arch: win64_msvc2022_64
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.8.3
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
 
-#       - name: Setup MSVC environment
-#         uses: ilammy/msvc-dev-cmd@v1
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
 
-#       - name: Install Ninja
-#         run: choco install ninja -y
+      - name: Install Ninja
+        run: choco install ninja -y
 
-#       - name: Configure
-#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
 
-#       - name: Build
-#         run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
+      - name: Build
+        run: cmake --build build --parallel --target cloakqr_cli tst_cryptohelper tst_qrgenerator
 
-#       - name: Test
-#         run: ctest --test-dir build --output-on-failure
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
 
-#   lint:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install lint tools
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y ninja-build clang-format clang-tidy
+      - name: Install lint tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang-format clang-tidy
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           version: 6.8
-#           host: linux
-#           target: desktop
-#           arch: gcc_64
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.11.1
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
 
-#       - name: Check formatting
-#         continue-on-error: true
-#         run: clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.h')
+      - name: Check formatting
+        continue-on-error: true
+        run: clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.h')
 
-#       - name: Configure for clang-tidy
-#         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Configure for clang-tidy
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-#       - name: Run clang-tidy
-#         continue-on-error: true
-#         run: |
-#           clang-tidy -p build src/main.cpp
-#           find src/core src/services src/ui tests/unit -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}
+      - name: Run clang-tidy
+        continue-on-error: true
+        run: |
+          clang-tidy -p build src/main.cpp
+          find src/core src/services src/ui tests/unit -name '*.cpp' -print0 | xargs -0 -I{} clang-tidy -p build {}
 
-#   sanitizers:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  sanitizers:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install Linux build tools
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y ninja-build
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           version: 6.8
-#           host: linux
-#           target: desktop
-#           arch: gcc_64
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.11.1
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
 
-#       - name: Configure sanitizer build
-#         run: >-
-#           cmake -S . -B build -G Ninja
-#           -DCMAKE_BUILD_TYPE=Debug
-#           -DBUILD_CLOAKQR_APP=OFF
-#           -DCMAKE_CXX_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer'
-#           -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
+      - name: Configure sanitizer build
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_CLOAKQR_APP=OFF
+          -DCMAKE_CXX_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer'
+          -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
 
-#       - name: Build tests
-#         run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
+      - name: Build tests
+        run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
 
-#       - name: Run tests with sanitizers
-#         env:
-#           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
-#           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
-#         run: ctest --test-dir build --output-on-failure
+      - name: Run tests with sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build --output-on-failure
 
-#   coverage:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  coverage:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install coverage tools
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y ninja-build lcov
+      - name: Install coverage tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build lcov
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           version: 6.8
-#           host: linux
-#           target: desktop
-#           arch: gcc_64
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.11.1
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
 
-#       - name: Configure coverage build
-#         run: >-
-#           cmake -S . -B build -G Ninja
-#           -DCMAKE_BUILD_TYPE=Debug
-#           -DBUILD_CLOAKQR_APP=OFF
-#           -DCMAKE_CXX_FLAGS='--coverage'
-#           -DCMAKE_EXE_LINKER_FLAGS='--coverage'
+      - name: Configure coverage build
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_CLOAKQR_APP=OFF
+          -DCMAKE_CXX_FLAGS='--coverage'
+          -DCMAKE_EXE_LINKER_FLAGS='--coverage'
 
-#       - name: Build tests
-#         run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
+      - name: Build tests
+        run: cmake --build build --parallel --target tst_cryptohelper tst_qrgenerator
 
-#       - name: Run tests
-#         run: ctest --test-dir build --output-on-failure
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
 
-#       - name: Collect coverage
-#         run: |
-#           lcov --capture --directory build --output-file coverage.info
-#           lcov --remove coverage.info '/usr/*' '/opt/Qt/*' --output-file coverage.info
-#           lcov --summary coverage.info
+      - name: Collect coverage
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '/opt/Qt/*' --output-file coverage.info
+          lcov --summary coverage.info
 
-#       - name: Upload coverage artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: coverage-info
-#           path: coverage.info
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-info
+          path: coverage.info
 
-#   android-apk:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  android-apk:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Install Linux build tools
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y ninja-build
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
-#       - name: Install Qt
-#         uses: jurplel/install-qt-action@v4
-#         with:
-#           version: 6.8
-#           host: linux
-#           target: android
-#           arch: android_arm64_v8a
-#           modules: qtdeclarative,qttools,qttranslations
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==3.3.*'
+          version: 6.6.3
+          host: linux
+          target: android
+          arch: android_arm64_v8a
+          modules: qtdeclarative,qttools,qttranslations
 
-#       - name: Configure Android package
-#         run: >-
-#           cmake -S . -B build-android -G Ninja
-#           -DCMAKE_BUILD_TYPE=Release
-#           -DBUILD_CLOAKQR_APP=ON
-#           -DANDROID_ABI=arm64-v8a
+      - name: Configure Android package
+        run: >-
+          cmake -S . -B build-android -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_CLOAKQR_APP=ON
+          -DANDROID_ABI=arm64-v8a
 
-#       - name: Build APK
-#         run: cmake --build build-android --parallel
+      - name: Build APK
+        run: cmake --build build-android --parallel
