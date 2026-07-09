@@ -8,10 +8,18 @@ set(CMAKE_AUTOMOC ON)
 option(ENABLE_PLAY_BILLING "Enable Google Play Billing integration" OFF)
 option(BUILD_CLOAKQR_APP "Build the main CloakQR application target" ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia Widgets Sql Test LinguistTools)
+set(CLOAKQR_QT_COMPONENTS Core Gui Sql Test)
 
-qt_policy(SET QTP0001 NEW)
-qt_policy(SET QTP0004 NEW)
+if(BUILD_CLOAKQR_APP)
+    list(APPEND CLOAKQR_QT_COMPONENTS Quick Qml Widgets LinguistTools)
+endif()
+
+find_package(Qt6 REQUIRED COMPONENTS ${CLOAKQR_QT_COMPONENTS})
+
+if(BUILD_CLOAKQR_APP)
+    qt_policy(SET QTP0001 NEW)
+    qt_policy(SET QTP0004 NEW)
+endif()
 
 include(cmake/dependencies.cmake)
 
@@ -33,7 +41,9 @@ include_directories(thirdparty/tiny-AES-c)
 
 add_subdirectory(src/core)
 add_subdirectory(src/services)
-add_subdirectory(src/ui)
+if(BUILD_CLOAKQR_APP)
+    add_subdirectory(src/ui)
+endif()
 add_subdirectory(src/platform)
 add_subdirectory(src/plugins)
 add_subdirectory(src/plugins/stub)
@@ -67,7 +77,6 @@ if(BUILD_CLOAKQR_APP)
 
     target_link_libraries(CloakQR PRIVATE
         Qt6::Quick
-        Qt6::Multimedia
         Qt6::Widgets
         Qt6::Sql
         cloakqr_core

@@ -32,7 +32,7 @@ jobs:
           version: ${{ matrix.qt_version }}
           host: linux
           target: desktop
-          arch: gcc_64
+          arch: linux_gcc_64
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_CLOAKQR_APP=OFF
@@ -63,7 +63,8 @@ jobs:
           version: ${{ matrix.qt_version }}
           host: linux
           target: desktop
-          arch: gcc_64
+          arch: linux_gcc_64
+          modules: qtdeclarative qttools qttranslations
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=ON
@@ -115,7 +116,7 @@ jobs:
           version: 6.8.3
           host: linux
           target: desktop
-          arch: gcc_64
+          arch: linux_gcc_64
 
       - name: Check formatting
         continue-on-error: true
@@ -146,7 +147,7 @@ jobs:
           version: 6.8.3
           host: linux
           target: desktop
-          arch: gcc_64
+          arch: linux_gcc_64
 
       - name: Configure sanitizer build
         run: >-
@@ -226,6 +227,7 @@ jobs:
           host: linux
           target: android
           arch: android_arm64_v8a
+          modules: qtdeclarative qttools qttranslations
 
       - name: Configure Android package
         run: >-
