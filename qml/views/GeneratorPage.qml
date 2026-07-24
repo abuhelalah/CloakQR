@@ -3,22 +3,33 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Page {
-    title: "Generator"
+    title: qsTr("Generator")
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 16
-        spacing: 8
+        spacing: 12
 
         TextField {
             id: inputText
             Layout.fillWidth: true
-            placeholderText: "Enter content"
+            placeholderText: qsTr("Enter content")
         }
 
         Button {
-            text: "Generate"
-            onClicked: qrGenerator.generateQr(inputText.text)
+            text: qsTr("Generate")
+            Layout.fillWidth: true
+            enabled: inputText.text.length > 0
+            onClicked: qrImage.source = "image://qrcode/" + encodeURIComponent(inputText.text)
+        }
+
+        Image {
+            id: qrImage
+            Layout.alignment: Qt.AlignHCenter
+            width: 256
+            height: 256
+            fillMode: Image.PreserveAspectFit
+            visible: source.toString().length > 0
         }
     }
 }

@@ -40,18 +40,31 @@ ApplicationWindow {
             subtitle: "Offline and private"
         }
 
-        StackView {
-            id: stackView
+        StackLayout {
+            id: pageStack
             Layout.fillWidth: true
             Layout.fillHeight: true
-            initialItem: ScannerPage {}
+            currentIndex: tabBar.currentIndex
+
+            ScannerPage {}
+            GeneratorPage {}
+            HistoryPage {}
+        }
+
+        TabBar {
+            id: tabBar
+            Layout.fillWidth: true
+
+            TabButton { text: qsTr("Scanner") }
+            TabButton { text: qsTr("Generator") }
+            TabButton { text: qsTr("History") }
         }
 
         Footer {
             Layout.fillWidth: true
             leftText: "Local only"
             centerText: "No tracking"
-            rightText: "v0.1"
+            rightText: "v0.2"
         }
     }
 }

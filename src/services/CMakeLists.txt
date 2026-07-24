@@ -5,6 +5,7 @@ target_sources(cloakqr_services PRIVATE
     billingbridge.cpp
     cryptohelper.cpp
     fileexporter.cpp
+    scanhistorymodel.cpp
 )
 
 target_include_directories(cloakqr_services PUBLIC

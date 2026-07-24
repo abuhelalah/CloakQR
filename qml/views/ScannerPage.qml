@@ -1,17 +1,35 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 Page {
-    title: "Scanner"
+    title: qsTr("Scanner")
 
-    Column {
+    ColumnLayout {
         anchors.centerIn: parent
         spacing: 12
 
-        Label { text: "Scanner view placeholder" }
+        Label {
+            text: qsTr("Scanner view placeholder")
+            Layout.alignment: Qt.AlignHCenter
+        }
+
         Button {
-            text: "Simulate URL"
-            onClicked: qrDecoder.handleDecodedText("https://example.com")
+            text: qsTr("Simulate URL scan")
+            Layout.alignment: Qt.AlignHCenter
+            onClicked: {
+                qrDecoder.handleDecodedText("https://example.com")
+                scanHistory.addEntry("https://example.com", "url")
+            }
+        }
+
+        Button {
+            text: qsTr("Simulate text scan")
+            Layout.alignment: Qt.AlignHCenter
+            onClicked: {
+                qrDecoder.handleDecodedText("Hello, CloakQR!")
+                scanHistory.addEntry("Hello, CloakQR!", "text")
+            }
         }
     }
 }

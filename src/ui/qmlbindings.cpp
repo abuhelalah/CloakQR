@@ -9,6 +9,7 @@
 #include "fileexporter.h"
 #include "qrgenerator.h"
 #include "qrdecoder.h"
+#include "scanhistorymodel.h"
 
 namespace QmlBindings {
 
@@ -19,7 +20,8 @@ void bindObjects(
     QrGenerator& generator,
     FileExporter& exporter,
     CryptoHelper& crypto,
-    BillingBridge& billing)
+    BillingBridge& billing,
+    ScanHistoryModel& history)
 {
     QQmlContext* ctx = engine.rootContext();
     ctx->setContextProperty("appEngine", &appEngine);
@@ -28,6 +30,7 @@ void bindObjects(
     ctx->setContextProperty("fileExporter", &exporter);
     ctx->setContextProperty("cryptoHelper", &crypto);
     ctx->setContextProperty("billingBridge", &billing);
+    ctx->setContextProperty("scanHistory", &history);
 }
 
 }
