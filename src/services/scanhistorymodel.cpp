@@ -131,7 +131,7 @@ void ScanHistoryModel::loadFromDb()
         return;
 
     QSqlQuery q(m_db);
-    q.exec(QStringLiteral("SELECT id, content, type, scanned_at FROM %1 ORDER BY id ASC").arg(
+    q.exec(QStringLiteral("SELECT id, content, scanned_at, type FROM %1 ORDER BY id ASC").arg(
         QString::fromLatin1(kTable)));
 
     QVector<Entry> loaded;
@@ -139,8 +139,8 @@ void ScanHistoryModel::loadFromDb()
         loaded.append({
             q.value(0).toInt(),
             q.value(1).toString(),
-            q.value(3).toString(),
-            q.value(2).toString()
+            q.value(2).toString(),
+            q.value(3).toString()
         });
     }
 
