@@ -15,6 +15,7 @@ qt_add_executable(tst_qrgenerator
 
 target_link_libraries(tst_qrgenerator PRIVATE
     Qt6::Test
+    Qt6::Concurrent
     cloakqr_core
 )
 

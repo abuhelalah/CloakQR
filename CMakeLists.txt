@@ -8,7 +8,7 @@ set(CMAKE_AUTOMOC ON)
 option(ENABLE_PLAY_BILLING "Enable Google Play Billing integration" OFF)
 option(BUILD_CLOAKQR_APP "Build the main CloakQR application target" ON)
 
-set(CLOAKQR_QT_COMPONENTS Core Gui Sql)
+set(CLOAKQR_QT_COMPONENTS Core Gui Sql Concurrent)
 
 if(NOT ANDROID)
     list(APPEND CLOAKQR_QT_COMPONENTS Test)
