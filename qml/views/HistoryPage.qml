@@ -15,6 +15,12 @@ Page {
         delegate: ItemDelegate {
             width: historyList.width
 
+            function typeIcon(type) {
+                if (type === "url") return "🔗"
+                if (type === "encrypted") return "🔒"
+                return "📄"
+            }
+
             contentItem: ColumnLayout {
                 spacing: 2
 
@@ -23,7 +29,7 @@ Page {
                     spacing: 6
 
                     Label {
-                        text: model.contentType === "url" ? "🔗" : model.contentType === "encrypted" ? "🔒" : "📄"
+                        text: typeIcon(model.contentType)
                         font.pixelSize: 16
                     }
 

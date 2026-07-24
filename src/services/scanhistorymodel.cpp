@@ -79,7 +79,8 @@ void ScanHistoryModel::clear()
         return;
 
     QSqlQuery q(m_db);
-    q.exec(QStringLiteral("DELETE FROM %1").arg(QString::fromLatin1(kTable)));
+    if (!q.exec(QStringLiteral("DELETE FROM %1").arg(QString::fromLatin1(kTable))))
+        return;
 
     if (!m_entries.isEmpty()) {
         beginResetModel();
@@ -131,8 +132,9 @@ void ScanHistoryModel::loadFromDb()
         return;
 
     QSqlQuery q(m_db);
-    q.exec(QStringLiteral("SELECT id, content, scanned_at, type FROM %1 ORDER BY id ASC").arg(
-        QString::fromLatin1(kTable)));
+    if (!q.exec(QStringLiteral("SELECT id, content, scanned_at, type FROM %1 ORDER BY id ASC").arg(
+            QString::fromLatin1(kTable))))
+        return;
 
     QVector<Entry> loaded;
     while (q.next()) {
