@@ -2,6 +2,7 @@ add_library(cloakqr_ui STATIC)
 
 target_sources(cloakqr_ui PRIVATE
     qmlbindings.cpp
+    qrimageprovider.cpp
 )
 
 target_include_directories(cloakqr_ui PUBLIC
@@ -15,4 +16,5 @@ target_link_libraries(cloakqr_ui PUBLIC
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
+    Qt6::Quick
 )

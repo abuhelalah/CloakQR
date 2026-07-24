@@ -7,6 +7,7 @@ class QrGenerator;
 class FileExporter;
 class CryptoHelper;
 class BillingBridge;
+class ScanHistoryModel;
 
 namespace QmlBindings {
 void bindObjects(
@@ -16,5 +17,6 @@ void bindObjects(
     QrGenerator& generator,
     FileExporter& exporter,
     CryptoHelper& crypto,
-    BillingBridge& billing);
+    BillingBridge& billing,
+    ScanHistoryModel& history);
 }
