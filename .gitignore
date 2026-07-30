@@ -109,3 +109,5 @@ Thumbs.db
 # Local planning/progress notes
 PLAN.md
 what_we_done.md
+/.github/*.md
+/.github/*/*.md 
