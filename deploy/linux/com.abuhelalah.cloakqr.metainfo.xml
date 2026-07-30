@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.abuhelalah.cloakqr</id>
+  <name>CloakQR</name>
+  <summary>Offline, privacy-first QR scanner and generator</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <description>
+    <p>CloakQR creates QR codes locally without tracking or network access.</p>
+  </description>
+  <launchable type="desktop-id">com.abuhelalah.cloakqr.desktop</launchable>
+  <url type="homepage">https://github.com/abuhelalah/CloakQR</url>
+  <provides>
+    <binary>cloakqr</binary>
+  </provides>
+  <releases>
+    <release version="1.0.0" date="2026-07-26"/>
+  </releases>
+</component>

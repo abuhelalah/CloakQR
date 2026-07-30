@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APPDIR="$(dirname "$(readlink -f "$0")")"
+export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
+export QT_PLUGIN_PATH="${APPDIR}/usr/plugins"
+export QML2_IMPORT_PATH="${APPDIR}/usr/qml"
+exec "${APPDIR}/usr/bin/cloakqr" "$@"

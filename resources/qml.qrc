@@ -1,0 +1,11 @@
+<RCC>
+	<qresource prefix="/images">
+		<file alias="Logo_QR_icon.png">images/Logo_QR_icon.png</file>
+	</qresource>
+	<qresource prefix="/i18n">
+		<file>i18n/en.ts</file>
+		<file>i18n/es.ts</file>
+		<file>i18n/fr.ts</file>
+		<file>i18n/ar.ts</file>
+	</qresource>
+</RCC>

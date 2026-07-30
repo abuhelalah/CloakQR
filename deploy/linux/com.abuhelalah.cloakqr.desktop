@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=CloakQR
+Comment=Offline, privacy-first QR scanner and generator
+Exec=cloakqr
+Icon=com.abuhelalah.cloakqr
+Terminal=false
+Categories=Utility;
+Keywords=QR;scanner;generator;privacy;
+StartupNotify=true
+StartupWMClass=cloakqr
