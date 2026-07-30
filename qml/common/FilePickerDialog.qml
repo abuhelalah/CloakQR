@@ -225,7 +225,10 @@ Popup {
                     required property var model
 
                     readonly property string fileName: model.fileName
-                    readonly property url fileURL: Qt.resolvedUrl("file://" + model.filePath)
+                    // model.filePath is "/home/…" on Unix and "C:/…" on Windows.
+                    // Strip any leading slashes and always use the three-slash
+                    // file:/// form so Windows drive letters are not parsed as a host.
+                    readonly property url fileURL: Qt.resolvedUrl("file:///" + model.filePath.replace(/^\/+/, ""))
                     readonly property bool fileIsDir: model.fileIsDir
 
                     width: ListView.view.width

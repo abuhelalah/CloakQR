@@ -107,6 +107,7 @@ lcov.info
 .DS_Store
 Thumbs.db
 *.log
+*.ps1
 
 # Local planning/progress notes
 PLAN.md
