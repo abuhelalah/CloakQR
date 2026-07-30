@@ -3,6 +3,13 @@ project(CloakQR VERSION 1.0.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
+if(WIN32)
+    # Ship MSVC/UCRT runtime DLLs with the installer so it runs on clean VMs.
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR})
+    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+    include(InstallRequiredSystemLibraries)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)

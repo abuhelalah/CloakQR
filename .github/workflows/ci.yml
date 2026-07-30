@@ -15,7 +15,7 @@ jobs:
   windows-desktop:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -26,17 +26,17 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtmultimedia
 
-      - name: Setup MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Install Ninja
         run: choco install ninja -y
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
-
-      - name: Build
-        run: cmake --build build --parallel
+      - name: Configure and build
+        shell: cmd
+        run: |
+          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSINSTALL=%%i
+          if not defined VSINSTALL exit /b 1
+          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=amd64
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLOAKQR_APP=OFF
+          cmake --build build --parallel
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
