@@ -17,6 +17,7 @@ Testing/
 .lupdate/
 .rcc/
 /scripts/
+/docs/
 
 # Downloaded dependencies and package-manager state
 _deps/

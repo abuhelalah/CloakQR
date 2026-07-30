@@ -62,6 +62,14 @@ Popup {
         root.close()
     }
 
+    // Turn a file:// URL into a readable native path (C:\… on Windows, /… elsewhere).
+    function toDisplayPath(fileUrl) {
+        var text = decodeURIComponent(fileUrl.toString())
+        if (Qt.platform.os === "windows")
+            return text.replace(/^file:\/\/\//, "").replace(/\//g, "\\")
+        return text.replace(/^file:\/\//, "")
+    }
+
     parent: Overlay.overlay
     anchors.centerIn: Overlay.overlay
     modal: true
@@ -194,7 +202,7 @@ Popup {
             }
             Label {
                 Layout.fillWidth: true
-                text: root.currentFolder.toString().replace(/^file:\/\//, "")
+                text: root.toDisplayPath(root.currentFolder)
                 color: root.mutedColor
                 font.pixelSize: 12
                 elide: Text.ElideLeft
@@ -225,10 +233,9 @@ Popup {
                     required property var model
 
                     readonly property string fileName: model.fileName
-                    // model.filePath is "/home/…" on Unix and "C:/…" on Windows.
-                    // Strip any leading slashes and always use the three-slash
-                    // file:/// form so Windows drive letters are not parsed as a host.
-                    readonly property url fileURL: Qt.resolvedUrl("file:///" + model.filePath.replace(/^\/+/, ""))
+                    // FolderListModel's fileUrl role is already a valid file:// URL
+                    // on every platform (incl. Windows drive letters).
+                    readonly property url fileURL: model.fileUrl
                     readonly property bool fileIsDir: model.fileIsDir
 
                     width: ListView.view.width
