@@ -16,6 +16,7 @@ Testing/
 .qtc_clangd/
 .lupdate/
 .rcc/
+/scripts/
 
 # Downloaded dependencies and package-manager state
 _deps/
@@ -107,7 +108,6 @@ lcov.info
 .DS_Store
 Thumbs.db
 *.log
-*.ps1
 
 # Local planning/progress notes
 PLAN.md
