@@ -24,6 +24,8 @@ packages/
 .cache/
 .venv/
 venv/
+.github/**/*.md
+.github/*.md
 
 # Compiled libraries and release packages
 *.a
@@ -109,5 +111,4 @@ Thumbs.db
 # Local planning/progress notes
 PLAN.md
 what_we_done.md
-/.github/*.md
-/.github/*/*.md 
+forme.md
