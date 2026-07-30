@@ -70,6 +70,19 @@ Page {
         qrGenerator.saveImage(img, url)
     }
 
+    // Builds a valid file: URL from a plain filesystem path. On Windows a drive
+    // path ("C:/Users/…") needs the triple-slash form ("file:///C:/Users/…"),
+    // otherwise the drive letter is mis-parsed as the URL host.
+    function folderUrl() {
+        var p = appSettings.defaultSaveDirectory
+        if (!p || p.length === 0)
+            return ""
+        if (p.indexOf("file:") === 0)
+            return p
+        var s = p.replace(/\\/g, "/")
+        return s.charAt(0) === "/" ? "file://" + s : "file:///" + s
+    }
+
     Connections {
         target: qrGenerator
         function onQrReady(image, text) {
@@ -350,10 +363,12 @@ Page {
 
                 Image {
                     id: qrImage
-                    anchors.centerIn: parent
-                    width: 256
-                    height: 256
-                    smooth: false
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    sourceSize.width: 1024
+                    sourceSize.height: 1024
+                    smooth: true
+                    mipmap: true
                     fillMode: Image.PreserveAspectFit
                     Accessible.role: Accessible.Graphic
                     Accessible.name: qsTr("Generated QR code preview")
@@ -377,7 +392,7 @@ Page {
                     if (Qt.platform.os === "android" || Qt.platform.os === "ios")
                         saveDialog.open()
                     else
-                        savePicker.openAt("file://" + appSettings.defaultSaveDirectory)
+                        savePicker.openAt(page.folderUrl())
                 }
             }
         }
@@ -399,7 +414,7 @@ Page {
         fileMode: FileDialog.SaveFile
         nameFilters: [qsTr("PNG image (*.png)")]
         defaultSuffix: "png"
-        currentFolder: "file://" + appSettings.defaultSaveDirectory
+        currentFolder: page.folderUrl()
         onAccepted: page.savePngTo(selectedFile)
     }
 

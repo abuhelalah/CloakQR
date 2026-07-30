@@ -233,9 +233,16 @@ Popup {
                     required property var model
 
                     readonly property string fileName: model.fileName
-                    // FolderListModel's fileUrl role is already a valid file:// URL
-                    // on every platform (incl. Windows drive letters).
-                    readonly property url fileURL: model.fileUrl
+                    // Derive the URL from the (already valid) current folder so
+                    // Windows drive letters and spaces are handled correctly.
+                    readonly property url fileURL: {
+                        var base = root.currentFolder.toString()
+                        if (base.length === 0)
+                            return ""
+                        if (!base.endsWith("/"))
+                            base += "/"
+                        return base + encodeURIComponent(model.fileName)
+                    }
                     readonly property bool fileIsDir: model.fileIsDir
 
                     width: ListView.view.width
