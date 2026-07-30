@@ -21,7 +21,7 @@ jobs:
           host: windows
           target: desktop
           arch: win64_msvc2022_64
-          modules: qtdeclarative qttools qttranslations qtmultimedia
+          modules: qtmultimedia
       - name: Install Ninja and NSIS
         run: choco install ninja nsis -y
       - uses: ilammy/msvc-dev-cmd@v1
