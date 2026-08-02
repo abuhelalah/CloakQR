@@ -66,7 +66,7 @@ Page {
 
     function savePngTo(url) {
         const img = qrGenerator.generateQr(page.currentPayload, eccSelector.currentIndex,
-                                           1024, fgColor.color, bgColor.color)
+                                           2048, fgColor.color, bgColor.color)
         qrGenerator.saveImage(img, url)
     }
 
