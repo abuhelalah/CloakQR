@@ -18,6 +18,7 @@ Testing/
 .rcc/
 /scripts/
 /docs/
+/releases/
 
 # Downloaded dependencies and package-manager state
 _deps/
@@ -26,6 +27,7 @@ packages/
 .cache/
 .venv/
 venv/
+.github/
 .github/**/*.md
 .github/*.md
 
