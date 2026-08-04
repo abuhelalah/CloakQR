@@ -22,6 +22,16 @@ Page {
     readonly property bool useNativePicker: Qt.platform.os === "android"
                                             || Qt.platform.os === "ios"
 
+    // Largest square camera preview that still leaves room for the header,
+    // buttons and privacy note, so the page fits without scrolling on tablets
+    // (portrait and landscape) and phones alike.
+    readonly property real previewSize: {
+        var widthCap = Math.min(page.width - (page.wideLayout ? 64 : 40),
+                                page.wideLayout ? 520 : 360)
+        var heightCap = page.height - (page.wideLayout ? 320 : 380)
+        return Math.max(200, Math.min(widthCap, heightCap))
+    }
+
     function startCamera() {
         if (mediaDevices.videoInputs.length === 0) {
             page.cameraRequested = false
@@ -157,8 +167,8 @@ Page {
 
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: Math.min(page.width - 40, page.wideLayout ? 520 : 360)
-                Layout.preferredHeight: Layout.preferredWidth
+                Layout.preferredWidth: page.previewSize
+                Layout.preferredHeight: page.previewSize
                 radius: 8
                 color: page.surfaceColor
                 border.color: page.primaryColor
@@ -191,13 +201,26 @@ Page {
                     }
                 }
 
-                Label {
+                Rectangle {
+                    id: statusPill
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 22
-                    text: page.cameraRequested ? qsTr("Scanning…") : page.statusMessage
-                    color: page.mutedColor
+                    anchors.bottomMargin: 16
+                    width: Math.min(parent.width - 24, statusLabel.implicitWidth + 24)
+                    height: statusLabel.implicitHeight + 12
+                    radius: height / 2
+                    color: Qt.rgba(0, 0, 0, 0.55)
                     z: 2
+
+                    Label {
+                        id: statusLabel
+                        anchors.centerIn: parent
+                        width: parent.width - 20
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
+                        text: page.cameraRequested ? qsTr("Scanning…") : page.statusMessage
+                        color: "#FFFFFF"
+                    }
                 }
 
                 BusyIndicator {

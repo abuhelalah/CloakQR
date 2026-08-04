@@ -166,7 +166,7 @@ ApplicationWindow {
                         font.pixelSize: 10
                     }
                     Label {
-                        text: qsTr("No tracking · v0.3")
+                        text: qsTr("No tracking · v%1").arg(Qt.application.version)
                         color: root.mutedColor
                         font.pixelSize: 11
                     }

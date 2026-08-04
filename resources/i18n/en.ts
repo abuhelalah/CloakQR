@@ -895,8 +895,8 @@
     </message>
     <message>
         <location filename="../../qml/main.qml" line="160"/>
-        <source>No tracking · v0.3</source>
-        <translation>No tracking · v0.3</translation>
+        <source>No tracking · v%1</source>
+        <translation>No tracking · v%1</translation>
     </message>
     <message>
         <source>Previous page</source>
