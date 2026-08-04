@@ -9,22 +9,8 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
-### Added
-
-- Separate Android paid edition (`com.abuhelalah.cloakqr.pro`) with no in-app
-	billing dependency; Google Play can sell it as an independent application.
-- Paid Logo Studio with bounded local image loading, adjustable logo coverage,
-	forced ECC High, asynchronous composition, and ZXing readability validation.
-- Paid Design Studio module/eye styling with safe gradients, optional logos, and
-	mandatory ZXing validation of every final image.
-- Paid Batch Studio with bounded UTF-8 CSV parsing, parallel ECC High PNG
-	generation, deterministic filenames, progress, pause/resume, and cancellation.
-
 ### Changed
 
-- Free edition entitlement is now locked at compile time and paid implementation
-	and QML resources are excluded from the free APK.
-- Removed the placeholder billing bridge and simulated purchase flow.
 - Compact navigation now uses a contextual app bar with previous/next arrows,
 	an overflow page menu, and a focused four-control bottom navigation strip.
 

@@ -108,6 +108,40 @@ Page {
                 }
             }
 
+            // --- Source ------------------------------------------------------
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.leftMargin: page.wideLayout ? 28 : 20
+                Layout.rightMargin: page.wideLayout ? 28 : 20
+                Layout.topMargin: 8
+                implicitHeight: sourceColumn.implicitHeight + 28
+                radius: 12
+                color: page.surfaceColor
+
+                ColumnLayout {
+                    id: sourceColumn
+                    anchors.fill: parent
+                    anchors.margins: 16
+                    spacing: 8
+
+                    Label {
+                        text: qsTr("Open source")
+                        font.bold: true
+                        color: page.primaryColor
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        textFormat: Text.StyledText
+                        linkColor: page.primaryColor
+                        text: qsTr("View the source code and report issues on <a href=\"https://github.com/abuhelalah/CloakQR\">github.com/abuhelalah/CloakQR</a>.")
+                        onLinkActivated: (link) => Qt.openUrl(link)
+                        Accessible.role: Accessible.Link
+                        Accessible.name: qsTr("CloakQR source code on GitHub")
+                    }
+                }
+            }
+
             // --- Licence -----------------------------------------------------
             Label {
                 Layout.fillWidth: true

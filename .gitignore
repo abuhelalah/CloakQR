@@ -10,6 +10,7 @@ CMakeFiles/
 cmake_install.cmake
 CTestTestfile.cmake
 compile_commands.json
+CMakeUserPresets.json
 Testing/
 *_autogen/
 .qt/
@@ -27,6 +28,7 @@ packages/
 .cache/
 .venv/
 venv/
+.qtcreator/
 .github/
 .github/**/*.md
 .github/*.md
@@ -54,6 +56,7 @@ venv/
 # Android and Gradle local state
 .android/
 .gradle/
+.cxx/
 local.properties
 keystore.properties
 key.properties
@@ -117,3 +120,4 @@ PLAN.md
 what_we_done.md
 forme.md
 CHANGELOG.md
+window_dump.xml
