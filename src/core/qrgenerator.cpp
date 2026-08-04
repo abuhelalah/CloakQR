@@ -197,6 +197,11 @@ QString QrGenerator::geoPayload(double latitude, double longitude) const
     return cloakqr::QrData::geo(latitude, longitude);
 }
 
+QString QrGenerator::geoPayload(double latitude, double longitude, const QString& label) const
+{
+    return cloakqr::QrData::geo(latitude, longitude, label);
+}
+
 QString QrGenerator::vcardPayload(const QString& fullName, const QString& organization,
                                   const QString& phone, const QString& email,
                                   const QString& url) const

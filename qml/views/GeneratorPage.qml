@@ -26,6 +26,10 @@ Page {
     readonly property int typeWifi: 5
     readonly property int typeGeo: 6
 
+    // Location input methods offered for the geo type.
+    readonly property int geoModeCoords: 0
+    readonly property int geoModeAddress: 1
+
     property string currentPayload: ""
     property var capacity: ({ fits: false, version: -1, maxBytes: 0, usedBytes: 0 })
 
@@ -36,17 +40,57 @@ Page {
         return s.charAt(0) === "#" ? s.substring(1) : s
     }
 
+    // Joins an optional country code with a subscriber number, ensuring the
+    // result carries a leading '+' when a country code is supplied.
+    function combinedNumber(cc, num) {
+        var c = (cc || "").toString().trim()
+        var n = (num || "").toString().trim()
+        if (c.length > 0 && c.charAt(0) !== "+")
+            c = "+" + c
+        return c + n
+    }
+
+    // Joins the structured address fields into a single, human-readable line
+    // that scanners resolve as a place query.
+    function composedAddress() {
+        var parts = []
+        var line1 = (fieldStreet.text.trim() + " " + fieldBuilding.text.trim()).trim()
+        if (line1.length > 0)
+            parts.push(line1)
+        var line2 = (fieldPostal.text.trim() + " " + fieldCity.text.trim()).trim()
+        if (line2.length > 0)
+            parts.push(line2)
+        if (fieldCountry.text.trim().length > 0)
+            parts.push(fieldCountry.text.trim())
+        return parts.join(", ")
+    }
+
     function buildPayload() {
         switch (typeSelector.currentIndex) {
         case typeText:  return qrGenerator.textPayload(fieldText.text)
         case typeUrl:   return qrGenerator.urlPayload(fieldText.text)
         case typeEmail: return qrGenerator.emailPayload(fieldText.text, fieldSubject.text, fieldBody.text)
-        case typePhone: return qrGenerator.phonePayload(fieldText.text)
-        case typeSms:   return qrGenerator.smsPayload(fieldText.text, fieldBody.text)
+        case typePhone: {
+            var pnum = page.combinedNumber(fieldCountryCode.text, fieldPhoneNumber.text)
+            // A name turns the code into a contact card so scanners can add it;
+            // without a name a plain "tel:" that dials directly is generated.
+            if (fieldContactName.text.trim().length > 0)
+                return qrGenerator.vcardPayload(fieldContactName.text, "", pnum, "", "")
+            return qrGenerator.phonePayload(pnum)
+        }
+        case typeSms:   return qrGenerator.smsPayload(
+                            page.combinedNumber(fieldSmsCountryCode.text, fieldSmsNumber.text),
+                            fieldBody.text)
         case typeWifi:  return qrGenerator.wifiPayload(fieldSsid.text, fieldPassword.text,
                                                        wifiAuth.currentValue, wifiHidden.checked)
-        case typeGeo:   return qrGenerator.geoPayload(parseFloat(fieldLat.text || "0"),
-                                                      parseFloat(fieldLon.text || "0"))
+        case typeGeo: {
+            if (geoModeSelector.currentIndex === page.geoModeAddress) {
+                var addr = page.composedAddress()
+                return addr.length > 0 ? qrGenerator.geoPayload(0, 0, addr) : ""
+            }
+            return qrGenerator.geoPayload(parseFloat(fieldLat.text || "0"),
+                                          parseFloat(fieldLon.text || "0"), "")
+        }
         }
         return ""
     }
@@ -159,26 +203,79 @@ Page {
                     onCurrentIndexChanged: page.refresh()
                 }
 
-                // --- Generic single-line field (text/url/email/phone/sms) ----
+                // --- Generic single-line field (text/url/email) --------------
                 TextField {
                     id: fieldText
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeText
                              || typeSelector.currentIndex === page.typeUrl
                              || typeSelector.currentIndex === page.typeEmail
-                             || typeSelector.currentIndex === page.typePhone
-                             || typeSelector.currentIndex === page.typeSms
                     placeholderText: {
                         switch (typeSelector.currentIndex) {
                         case page.typeUrl:   return qsTr("https://example.com")
                         case page.typeEmail: return qsTr("name@example.com")
-                        case page.typePhone: return qsTr("+1 555 0100")
-                        case page.typeSms:   return qsTr("Recipient number")
                         default:             return qsTr("Enter text")
                         }
                     }
                     Accessible.name: qsTr("Primary content field")
                     onTextChanged: page.refresh()
+                }
+
+                // --- Phone (contact) fields ----------------------------------
+                TextField {
+                    id: fieldContactName
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typePhone
+                    placeholderText: qsTr("Name (optional)")
+                    Accessible.name: qsTr("Contact name")
+                    onTextChanged: page.refresh()
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typePhone
+                    spacing: 12
+
+                    TextField {
+                        id: fieldCountryCode
+                        Layout.preferredWidth: 96
+                        placeholderText: qsTr("+1")
+                        inputMethodHints: Qt.ImhDialableCharactersOnly
+                        Accessible.name: qsTr("Country code")
+                        onTextChanged: page.refresh()
+                    }
+                    TextField {
+                        id: fieldPhoneNumber
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Phone number")
+                        inputMethodHints: Qt.ImhDialableCharactersOnly
+                        Accessible.name: qsTr("Phone number")
+                        onTextChanged: page.refresh()
+                    }
+                }
+
+                // --- SMS number fields ---------------------------------------
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typeSms
+                    spacing: 12
+
+                    TextField {
+                        id: fieldSmsCountryCode
+                        Layout.preferredWidth: 96
+                        placeholderText: qsTr("+1")
+                        inputMethodHints: Qt.ImhDialableCharactersOnly
+                        Accessible.name: qsTr("Country code")
+                        onTextChanged: page.refresh()
+                    }
+                    TextField {
+                        id: fieldSmsNumber
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Recipient number")
+                        inputMethodHints: Qt.ImhDialableCharactersOnly
+                        Accessible.name: qsTr("Recipient number")
+                        onTextChanged: page.refresh()
+                    }
                 }
 
                 // --- Email / SMS extras --------------------------------------
@@ -251,9 +348,24 @@ Page {
                 }
 
                 // --- Geo fields ----------------------------------------------
+                ComboBox {
+                    id: geoModeSelector
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typeGeo
+                    Accessible.name: qsTr("Location input method")
+                    textRole: "label"
+                    valueRole: "value"
+                    model: [
+                        { label: qsTr("Coordinates"), value: "coords" },
+                        { label: qsTr("Address"),     value: "address" }
+                    ]
+                    onActivated: page.refresh()
+                }
+
                 RowLayout {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
+                             && geoModeSelector.currentIndex === page.geoModeCoords
                     spacing: 12
 
                     TextField {
@@ -272,6 +384,58 @@ Page {
                         Accessible.name: qsTr("Longitude")
                         onTextChanged: page.refresh()
                     }
+                }
+
+                TextField {
+                    id: fieldStreet
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typeGeo
+                             && geoModeSelector.currentIndex === page.geoModeAddress
+                    placeholderText: qsTr("Street")
+                    Accessible.name: qsTr("Street")
+                    onTextChanged: page.refresh()
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typeGeo
+                             && geoModeSelector.currentIndex === page.geoModeAddress
+                    spacing: 12
+
+                    TextField {
+                        id: fieldBuilding
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Building number")
+                        Accessible.name: qsTr("Building number")
+                        onTextChanged: page.refresh()
+                    }
+                    TextField {
+                        id: fieldPostal
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Postal code")
+                        Accessible.name: qsTr("Postal code")
+                        onTextChanged: page.refresh()
+                    }
+                }
+
+                TextField {
+                    id: fieldCity
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typeGeo
+                             && geoModeSelector.currentIndex === page.geoModeAddress
+                    placeholderText: qsTr("City")
+                    Accessible.name: qsTr("City")
+                    onTextChanged: page.refresh()
+                }
+
+                TextField {
+                    id: fieldCountry
+                    Layout.fillWidth: true
+                    visible: typeSelector.currentIndex === page.typeGeo
+                             && geoModeSelector.currentIndex === page.geoModeAddress
+                    placeholderText: qsTr("Country")
+                    Accessible.name: qsTr("Country")
+                    onTextChanged: page.refresh()
                 }
 
                 // --- Error correction ----------------------------------------

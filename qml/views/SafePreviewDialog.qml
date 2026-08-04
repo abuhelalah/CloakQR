@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import QtQuick.Dialogs
 import QtQuick.Layouts
 
 // Modern, robust popup shown after a QR code is scanned. It never opens links
@@ -17,6 +18,12 @@ Popup {
     property color accentColor: "#C84F2D"
     property bool passwordRevealed: false
 
+    // Holds the contact being saved to a .vcf while the desktop file dialog is
+    // open (Android uses the OS contact screen instead).
+    property string pendingName: ""
+    property string pendingPhone: ""
+    property string pendingEmail: ""
+
     function show(text) {
         dialog.passwordRevealed = false
         dialog.content = text
@@ -26,6 +33,24 @@ Popup {
     readonly property bool isUrl: /^https?:\/\//i.test(content)
     readonly property bool isWifi: /^WIFI:/i.test(content)
     readonly property var wifi: parseWifi(content)
+
+    // Actionable content types recognised for scan-result quick actions.
+    readonly property var emailData: parseEmail(content)
+    readonly property bool isEmail: emailData.isEmail
+    readonly property bool isTel: /^tel:/i.test(content)
+    readonly property bool isSms: /^(sms|smsto):/i.test(content)
+    readonly property bool isGeo: /^geo:/i.test(content)
+    readonly property bool isVCard: /^(BEGIN:VCARD|MECARD:)/i.test(content)
+
+    // True when the current platform can hand a new contact to the OS or, on
+    // desktop, when we can offer to save the contact as a .vcf file.
+    readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
+
+    // Parsed data for the actionable types.
+    readonly property string telNumber: isTel ? content.substring(4) : ""
+    readonly property var sms: parseSms(content)
+    readonly property var geo: parseGeo(content)
+    readonly property var vcard: parseVCard(content)
 
     // Recognises app-store deep links so the action button can offer to open
     // the relevant store. Qt.openUrlExternally already routes these to the
@@ -76,25 +101,236 @@ Popup {
         return info
     }
 
+    // Recognises an email QR in any common form — a "mailto:" URI, the legacy
+    // "MATMSG:" format, or a bare address — and extracts address/subject/body.
+    function parseEmail(payload) {
+        var info = { isEmail: false, address: "", subject: "", body: "" }
+        var p = (payload || "").trim()
+        if (/^mailto:/i.test(p)) {
+            info.isEmail = true
+            var rest = p.substring(7)
+            var q = rest.indexOf("?")
+            if (q >= 0) {
+                info.address = decodeURIComponent(rest.substring(0, q))
+                var query = rest.substring(q + 1)
+                var sm = query.match(/subject=([^&]*)/i)
+                var bm = query.match(/body=([^&]*)/i)
+                if (sm) info.subject = decodeURIComponent(sm[1].replace(/\+/g, " "))
+                if (bm) info.body = decodeURIComponent(bm[1].replace(/\+/g, " "))
+            } else {
+                info.address = decodeURIComponent(rest)
+            }
+        } else if (/^MATMSG:/i.test(p)) {
+            info.isEmail = true
+            var to = p.match(/TO:((?:\\.|[^;])*)/i)
+            var sub = p.match(/SUB:((?:\\.|[^;])*)/i)
+            var bod = p.match(/BODY:((?:\\.|[^;])*)/i)
+            if (to) info.address = to[1].replace(/\\(.)/g, "$1")
+            if (sub) info.subject = sub[1].replace(/\\(.)/g, "$1")
+            if (bod) info.body = bod[1].replace(/\\(.)/g, "$1")
+        } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p)) {
+            info.isEmail = true
+            info.address = p
+        }
+        return info
+    }
+
+    // Assembles a "mailto:" URI with the subject and body percent-encoded so the
+    // email app opens a pre-filled draft.
+    function buildMailto(d) {
+        var uri = "mailto:" + d.address
+        var q = []
+        if (d.subject.length > 0)
+            q.push("subject=" + encodeURIComponent(d.subject))
+        if (d.body.length > 0)
+            q.push("body=" + encodeURIComponent(d.body))
+        if (q.length > 0)
+            uri += "?" + q.join("&")
+        return uri
+    }
+
+    // Splits an "SMSTO:number:message" or "sms:number?body=..." payload.
+    function parseSms(payload) {
+        var info = { number: "", message: "" }
+        if (/^smsto:/i.test(payload)) {
+            var rest = payload.substring(6)
+            var idx = rest.indexOf(":")
+            if (idx >= 0) {
+                info.number = rest.substring(0, idx)
+                info.message = rest.substring(idx + 1)
+            } else {
+                info.number = rest
+            }
+        } else if (/^sms:/i.test(payload)) {
+            var body = payload.substring(4)
+            var q = body.indexOf("?")
+            if (q >= 0) {
+                info.number = body.substring(0, q)
+                var m = body.substring(q + 1).match(/body=([^&]*)/i)
+                if (m)
+                    info.message = decodeURIComponent(m[1].replace(/\+/g, " "))
+            } else {
+                info.number = body
+            }
+        }
+        return info
+    }
+
+    // Parses "geo:lat,lon" with an optional "?q=label" query.
+    function parseGeo(payload) {
+        var info = { lat: "", lon: "", label: "" }
+        if (!/^geo:/i.test(payload))
+            return info
+        var body = payload.substring(4)
+        var q = body.indexOf("?")
+        var query = ""
+        if (q >= 0) {
+            query = body.substring(q + 1)
+            body = body.substring(0, q)
+        }
+        var coords = body.split(",")
+        if (coords.length >= 2) {
+            info.lat = coords[0]
+            info.lon = coords[1]
+        }
+        var lm = query.match(/q=([^&]*)/i)
+        if (lm)
+            info.label = decodeURIComponent(lm[1].replace(/\+/g, " "))
+        return info
+    }
+
+    // Extracts the display name, first phone and first email from a vCard or
+    // the more compact MECARD contact format.
+    function parseVCard(payload) {
+        var info = { name: "", phone: "", email: "" }
+        if (/^MECARD:/i.test(payload)) {
+            var mbody = payload.substring(7)
+            var mtokens = []
+            var mcur = ""
+            for (var mi = 0; mi < mbody.length; ++mi) {
+                var mch = mbody.charAt(mi)
+                if (mch === "\\" && mi + 1 < mbody.length) {
+                    mcur += mbody.charAt(mi + 1)
+                    ++mi
+                    continue
+                }
+                if (mch === ";") {
+                    mtokens.push(mcur)
+                    mcur = ""
+                    continue
+                }
+                mcur += mch
+            }
+            if (mcur.length > 0)
+                mtokens.push(mcur)
+            for (var mt = 0; mt < mtokens.length; ++mt) {
+                var mtok = mtokens[mt]
+                var mcolon = mtok.indexOf(":")
+                if (mcolon < 0)
+                    continue
+                var mkey = mtok.substring(0, mcolon).toUpperCase()
+                var mval = mtok.substring(mcolon + 1)
+                if (mkey === "N" && info.name.length === 0) {
+                    // MECARD names are "Last,First"; show them in reading order.
+                    var parts = mval.split(",")
+                    info.name = parts.length > 1
+                        ? (parts[1] + " " + parts[0]).trim()
+                        : mval.trim()
+                } else if (mkey === "TEL" && info.phone.length === 0) {
+                    info.phone = mval
+                } else if (mkey === "EMAIL" && info.email.length === 0) {
+                    info.email = mval
+                }
+            }
+            return info
+        }
+        if (!/^BEGIN:VCARD/i.test(payload))
+            return info
+        var lines = payload.split(/\r?\n/)
+        for (var i = 0; i < lines.length; ++i) {
+            var line = lines[i]
+            var colon = line.indexOf(":")
+            if (colon < 0)
+                continue
+            var key = line.substring(0, colon).toUpperCase()
+            var val = line.substring(colon + 1).replace(/\\([;,\\])/g, "$1")
+            if (key.indexOf("FN") === 0 && info.name.length === 0)
+                info.name = val
+            else if (key.indexOf("TEL") === 0 && info.phone.length === 0)
+                info.phone = val
+            else if (key.indexOf("EMAIL") === 0 && info.email.length === 0)
+                info.email = val
+        }
+        return info
+    }
+
+    // Opens the messaging app with the number and body pre-filled, converting
+    // the standard SMSTO payload into a body-carrying "sms:" URI first.
+    function openSms() {
+        var uri = "sms:" + encodeURIComponent(dialog.sms.number)
+        if (dialog.sms.message.length > 0)
+            uri += "?body=" + encodeURIComponent(dialog.sms.message)
+        Qt.openUrlExternally(uri)
+    }
+
+    // Opens the location: the native maps app on mobile (geo: scheme), or a
+    // Google Maps web link in the browser on desktop.
+    function openMap() {
+        if (dialog.isMobile) {
+            Qt.openUrlExternally(dialog.content)
+            return
+        }
+        var url
+        if (dialog.geo.lat.length > 0 && dialog.geo.lon.length > 0
+                && !(parseFloat(dialog.geo.lat) === 0 && parseFloat(dialog.geo.lon) === 0)) {
+            url = "https://www.google.com/maps?q=" + dialog.geo.lat + "," + dialog.geo.lon
+        } else if (dialog.geo.label.length > 0) {
+            url = "https://www.google.com/maps/search/?api=1&query="
+                + encodeURIComponent(dialog.geo.label)
+        } else {
+            url = "https://www.google.com/maps?q=" + dialog.geo.lat + "," + dialog.geo.lon
+        }
+        Qt.openUrlExternally(url)
+    }
+
+    // Adds a contact: via the OS "new contact" screen on Android, or by saving
+    // a .vcf file the user can import on desktop.
+    function addContact(name, phone, email) {
+        if (platformBridge.contactInsertSupported) {
+            if (!platformBridge.addContact(name, phone, email))
+                hint.flash(qsTr("Couldn't open contacts"))
+        } else {
+            dialog.pendingName = name
+            dialog.pendingPhone = phone
+            dialog.pendingEmail = email
+            contactSaveDialog.currentFile = contactSaveDialog.currentFolder
+                + "/" + (name.length > 0 ? name.replace(/[^\w.-]+/g, "_") : "contact") + ".vcf"
+            contactSaveDialog.open()
+        }
+    }
+
     readonly property string urlHost: {
         const match = content.match(/^https?:\/\/([^/?#]+)/i)
         return match ? match[1] : ""
     }
     readonly property string kindLabel: {
         if (isUrl) return qsTr("Website link")
-        if (/^WIFI:/i.test(content)) return qsTr("Wi-Fi network")
-        if (/^mailto:/i.test(content)) return qsTr("Email address")
-        if (/^(tel|sms|smsto):/i.test(content)) return qsTr("Phone number")
-        if (/^BEGIN:VCARD/i.test(content)) return qsTr("Contact card")
-        if (/^(geo:|MATMSG:)/i.test(content)) return qsTr("Location")
+        if (isWifi) return qsTr("Wi-Fi network")
+        if (isEmail) return qsTr("Email")
+        if (isSms) return qsTr("Text message")
+        if (isTel) return qsTr("Phone number")
+        if (isVCard) return qsTr("Contact card")
+        if (isGeo) return qsTr("Location")
         return qsTr("Plain text")
     }
     readonly property string kindGlyph: {
         if (isUrl) return "🔗"
-        if (/^WIFI:/i.test(content)) return "📶"
-        if (/^mailto:/i.test(content)) return "✉️"
-        if (/^(tel|sms|smsto):/i.test(content)) return "📞"
-        if (/^BEGIN:VCARD/i.test(content)) return "👤"
+        if (isWifi) return "📶"
+        if (isEmail) return "✉️"
+        if (isSms) return "💬"
+        if (isTel) return "📞"
+        if (isVCard) return "👤"
+        if (isGeo) return "📍"
         return "📄"
     }
 
@@ -140,6 +376,22 @@ Popup {
             selectAll()
             copy()
             deselect()
+        }
+    }
+
+    // Desktop-only: saves the pending contact as a .vcf file for import.
+    FileDialog {
+        id: contactSaveDialog
+        fileMode: FileDialog.SaveFile
+        nameFilters: [qsTr("vCard (*.vcf)")]
+        defaultSuffix: "vcf"
+        onAccepted: {
+            var card = qrGenerator.vcardPayload(dialog.pendingName, "",
+                                                dialog.pendingPhone, dialog.pendingEmail, "")
+            if (fileExporter.saveTextFile(selectedFile, card))
+                hint.flash(qsTr("Contact saved"))
+            else
+                hint.flash(qsTr("Couldn't save contact"))
         }
     }
 
@@ -295,8 +547,59 @@ Popup {
                 }
             }
 
+            // Structured view for an email: recipient, subject and message.
+            ColumnLayout {
+                visible: dialog.isEmail
+                Layout.fillWidth: true
+                spacing: 4
+
+                Label {
+                    text: qsTr("To")
+                    color: dialog.mutedColor
+                    font.pixelSize: 11
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: dialog.emailData.address
+                    color: Material.foreground
+                    font.pixelSize: 16
+                    font.bold: true
+                    wrapMode: Text.WrapAnywhere
+                }
+                Label {
+                    visible: dialog.emailData.subject.length > 0
+                    Layout.topMargin: 6
+                    text: qsTr("Subject")
+                    color: dialog.mutedColor
+                    font.pixelSize: 11
+                }
+                Label {
+                    visible: dialog.emailData.subject.length > 0
+                    Layout.fillWidth: true
+                    text: dialog.emailData.subject
+                    color: Material.foreground
+                    font.pixelSize: 14
+                    wrapMode: Text.WordWrap
+                }
+                Label {
+                    visible: dialog.emailData.body.length > 0
+                    Layout.topMargin: 6
+                    text: qsTr("Message")
+                    color: dialog.mutedColor
+                    font.pixelSize: 11
+                }
+                Label {
+                    visible: dialog.emailData.body.length > 0
+                    Layout.fillWidth: true
+                    text: dialog.emailData.body
+                    color: Material.foreground
+                    font.pixelSize: 14
+                    wrapMode: Text.WordWrap
+                }
+            }
+
             Rectangle {
-                visible: !dialog.isWifi
+                visible: !dialog.isWifi && !dialog.isEmail
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(contentText.implicitHeight + 20, 240)
                 radius: 10
@@ -346,44 +649,122 @@ Popup {
                 }
             }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 10
 
-                Button {
-                    flat: true
-                    text: qsTr("Close")
-                    Accessible.name: qsTr("Close")
-                    onClicked: dialog.close()
-                }
+                // Type-specific quick actions for the recognised content type.
+                // The row's visibility must depend on the data (not on the
+                // children's `visible`), because QML propagates `visible` from
+                // parent to child — deriving it from children would deadlock.
+                RowLayout {
+                    id: actionRow
+                    Layout.fillWidth: true
+                    spacing: 8
+                    visible: dialog.isEmail || dialog.isSms || dialog.isGeo
+                             || dialog.isTel || dialog.isVCard || dialog.isUrl
+                             || (dialog.isWifi && platformBridge.wifiConnectSupported)
 
-                Item { Layout.fillWidth: true }
-
-                Button {
-                    text: qsTr("Copy")
-                    Accessible.name: qsTr("Copy scanned content")
-                    onClicked: {
-                        clipboardHelper.copyText(dialog.content)
-                        hint.flash(qsTr("Copied to clipboard"))
+                    Button {
+                        id: emailBtn
+                        visible: dialog.isEmail
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Send email")
+                        Accessible.name: text
+                        onClicked: {
+                            var d = dialog.emailData
+                            if (!platformBridge.composeEmail(d.address, d.subject, d.body))
+                                Qt.openUrlExternally(dialog.buildMailto(d))
+                        }
                     }
-                }
-                Button {
-                    visible: dialog.isWifi
-                        ? platformBridge.wifiConnectSupported
-                        : dialog.isUrl
-                    Material.background: dialog.primaryColor
-                    Material.foreground: dialog.primaryTextColor
-                    text: dialog.isWifi ? qsTr("Connect") : dialog.openLabel
-                    Accessible.name: text
-                    onClicked: {
-                        if (dialog.isWifi) {
+                    Button {
+                        id: smsBtn
+                        visible: dialog.isSms
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Send message")
+                        Accessible.name: text
+                        onClicked: dialog.openSms()
+                    }
+                    Button {
+                        id: mapBtn
+                        visible: dialog.isGeo
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Open in Maps")
+                        Accessible.name: text
+                        onClicked: dialog.openMap()
+                    }
+                    Button {
+                        id: dialBtn
+                        visible: dialog.isTel || (dialog.isVCard && dialog.vcard.phone.length > 0)
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Dial")
+                        Accessible.name: text
+                        onClicked: Qt.openUrlExternally(
+                            "tel:" + (dialog.isTel ? dialog.telNumber : dialog.vcard.phone))
+                    }
+                    Button {
+                        id: contactBtn
+                        visible: dialog.isTel || dialog.isVCard
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Add contact")
+                        Accessible.name: text
+                        onClicked: dialog.addContact(
+                            dialog.isVCard ? dialog.vcard.name : "",
+                            dialog.isVCard ? dialog.vcard.phone : dialog.telNumber,
+                            dialog.isVCard ? dialog.vcard.email : "")
+                    }
+                    Button {
+                        id: openBtn
+                        visible: dialog.isUrl
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: dialog.openLabel
+                        Accessible.name: text
+                        onClicked: Qt.openUrlExternally(dialog.content)
+                    }
+                    Button {
+                        id: wifiBtn
+                        visible: dialog.isWifi && platformBridge.wifiConnectSupported
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Connect")
+                        Accessible.name: text
+                        onClicked: {
                             var ok = platformBridge.connectToWifi(
                                 dialog.wifi.ssid, dialog.wifi.password,
                                 dialog.wifi.security, dialog.wifi.hidden)
                             if (!ok)
                                 hint.flash(qsTr("Couldn't start Wi-Fi connection"))
-                        } else {
-                            Qt.openUrlExternally(dialog.content)
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Button {
+                        flat: true
+                        text: qsTr("Close")
+                        Accessible.name: qsTr("Close")
+                        onClicked: dialog.close()
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Button {
+                        text: qsTr("Copy")
+                        Accessible.name: qsTr("Copy scanned content")
+                        onClicked: {
+                            clipboardHelper.copyText(dialog.content)
+                            hint.flash(qsTr("Copied to clipboard"))
                         }
                     }
                 }

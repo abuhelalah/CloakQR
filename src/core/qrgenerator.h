@@ -48,6 +48,7 @@ public:
     Q_INVOKABLE QString wifiPayload(const QString& ssid, const QString& password,
                                     const QString& auth, bool hidden = false) const;
     Q_INVOKABLE QString geoPayload(double latitude, double longitude) const;
+    Q_INVOKABLE QString geoPayload(double latitude, double longitude, const QString& label) const;
     Q_INVOKABLE QString vcardPayload(const QString& fullName, const QString& organization = QString(),
                                      const QString& phone = QString(), const QString& email = QString(),
                                      const QString& url = QString()) const;
