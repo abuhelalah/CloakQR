@@ -11,6 +11,10 @@ Page {
     property color primaryColor: "#086C5C"
     property color mutedColor: "#5D6F69"
 
+    // At large text scale or on narrow windows the label + control no longer fit
+    // side by side, so setting rows stack the control under its label instead.
+    readonly property bool stackControls: appSettings.fontScale >= 1.5 || page.width < 380
+
     background: Rectangle {
         color: page.canvasColor
     }
@@ -52,15 +56,18 @@ Page {
                 color: page.primaryColor
             }
 
-            RowLayout {
+            GridLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: page.wideLayout ? 28 : 20
                 Layout.rightMargin: page.wideLayout ? 28 : 20
-                spacing: 12
+                columns: page.stackControls ? 1 : 2
+                columnSpacing: 12
+                rowSpacing: 4
 
                 Label {
                     text: qsTr("Theme")
                     Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
                 }
 
                 ComboBox {
@@ -68,6 +75,8 @@ Page {
                     Accessible.name: qsTr("Theme selector")
                     textRole: "label"
                     valueRole: "value"
+                    Layout.fillWidth: page.stackControls
+                    Layout.alignment: page.stackControls ? Qt.AlignLeft : Qt.AlignRight
                     model: [
                         { label: qsTr("System"), value: "system" },
                         { label: qsTr("Light"),  value: "light" },
@@ -79,19 +88,23 @@ Page {
                 }
             }
 
-            RowLayout {
+            GridLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: page.wideLayout ? 28 : 20
                 Layout.rightMargin: page.wideLayout ? 28 : 20
-                spacing: 12
+                columns: page.stackControls ? 1 : 2
+                columnSpacing: 12
+                rowSpacing: 4
 
                 Label {
                     text: qsTr("High contrast")
                     Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
                 }
 
                 Switch {
                     Accessible.name: qsTr("High contrast toggle")
+                    Layout.alignment: page.stackControls ? Qt.AlignLeft : Qt.AlignRight
                     checked: appSettings.highContrast
                     onToggled: appSettings.highContrast = checked
                 }
@@ -136,15 +149,18 @@ Page {
                 color: page.primaryColor
             }
 
-            RowLayout {
+            GridLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: page.wideLayout ? 28 : 20
                 Layout.rightMargin: page.wideLayout ? 28 : 20
-                spacing: 12
+                columns: page.stackControls ? 1 : 2
+                columnSpacing: 12
+                rowSpacing: 4
 
                 Label {
                     text: qsTr("App language")
                     Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
                 }
 
                 ComboBox {
@@ -152,6 +168,8 @@ Page {
                     Accessible.name: qsTr("Language selector")
                     textRole: "label"
                     valueRole: "value"
+                    Layout.fillWidth: page.stackControls
+                    Layout.alignment: page.stackControls ? Qt.AlignLeft : Qt.AlignRight
                     model: [
                         { label: qsTr("System"),   value: "system" },
                         { label: qsTr("English"),  value: "en" },
@@ -175,19 +193,21 @@ Page {
                 color: page.primaryColor
             }
 
-            RowLayout {
+            GridLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: page.wideLayout ? 28 : 20
                 Layout.rightMargin: page.wideLayout ? 28 : 20
-                spacing: 12
+                columns: page.stackControls ? 1 : 2
+                columnSpacing: 12
+                rowSpacing: 4
 
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 0
-                    Label { text: qsTr("Save scan history") }
+                    Label { text: qsTr("Save scan history"); Layout.fillWidth: true; wrapMode: Text.WordWrap }
                     Label {
                         text: qsTr("Store scanned codes on this device")
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * appSettings.fontScale)
                         opacity: 0.6
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -196,24 +216,27 @@ Page {
 
                 Switch {
                     Accessible.name: qsTr("Save scan history toggle")
+                    Layout.alignment: page.stackControls ? Qt.AlignLeft : Qt.AlignRight
                     checked: appSettings.historyEnabled
                     onToggled: appSettings.historyEnabled = checked
                 }
             }
 
-            RowLayout {
+            GridLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: page.wideLayout ? 28 : 20
                 Layout.rightMargin: page.wideLayout ? 28 : 20
-                spacing: 12
+                columns: page.stackControls ? 1 : 2
+                columnSpacing: 12
+                rowSpacing: 4
 
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 0
-                    Label { text: qsTr("Exclude Wi-Fi passwords") }
+                    Label { text: qsTr("Exclude Wi-Fi passwords"); Layout.fillWidth: true; wrapMode: Text.WordWrap }
                     Label {
                         text: qsTr("Never store Wi-Fi passwords in history")
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * appSettings.fontScale)
                         opacity: 0.6
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -222,6 +245,7 @@ Page {
 
                 Switch {
                     Accessible.name: qsTr("Exclude Wi-Fi passwords toggle")
+                    Layout.alignment: page.stackControls ? Qt.AlignLeft : Qt.AlignRight
                     checked: appSettings.historyExcludeWifiPassword
                     onToggled: appSettings.historyExcludeWifiPassword = checked
                 }

@@ -146,7 +146,9 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             text: modelData.label
                             highlighted: root.currentPage === modelData.page
+                            focusPolicy: Qt.StrongFocus
                             Accessible.name: modelData.a11y
+                            Accessible.role: Accessible.Button
                             onClicked: root.navigateTo(modelData.page)
                         }
                     }
@@ -193,8 +195,10 @@ ApplicationWindow {
                         id: menuButton
                         Layout.preferredWidth: 48
                         Layout.preferredHeight: 48
+                        focusPolicy: Qt.StrongFocus
                         readonly property bool active: navDrawer.opened
                         Accessible.name: qsTr("Open navigation menu")
+                        Accessible.role: Accessible.Button
                         onClicked: navDrawer.opened ? navDrawer.close() : navDrawer.open()
 
                         contentItem: Item {
@@ -434,7 +438,9 @@ ApplicationWindow {
                         width: parent.width
                         text: modelData.label
                         highlighted: root.currentPage === modelData.page
+                        focusPolicy: Qt.StrongFocus
                         Accessible.name: modelData.a11y
+                        Accessible.role: Accessible.Button
                         onClicked: {
                             root.navigateTo(modelData.page)
                             navDrawer.close()

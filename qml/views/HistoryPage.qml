@@ -32,7 +32,7 @@ Page {
 
             Label {
                 text: qsTr("Scan history")
-                font.pixelSize: page.wideLayout ? 28 : 23
+                font.pixelSize: Math.round((page.wideLayout ? 28 : 23) * appSettings.fontScale)
                 font.bold: true
             }
             Label {
@@ -93,20 +93,20 @@ Page {
 
                         Label {
                             text: typeIcon(model.contentType)
-                            font.pixelSize: 16
+                            font.pixelSize: Math.round(16 * appSettings.fontScale)
                         }
 
                         Label {
                             text: model.content
                             Layout.fillWidth: true
                             elide: Text.ElideRight
-                            font.pixelSize: 14
+                            font.pixelSize: Math.round(14 * appSettings.fontScale)
                         }
                     }
 
                     Label {
                         text: model.timestamp
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * appSettings.fontScale)
                         opacity: 0.6
                     }
                 }
@@ -158,13 +158,13 @@ Page {
                     spacing: 8
                     Label {
                         text: "🗑"
-                        font.pixelSize: 15
+                        font.pixelSize: Math.round(15 * appSettings.fontScale)
                         color: clearButton.contentColor
                         verticalAlignment: Text.AlignVCenter
                     }
                     Label {
                         text: qsTr("Clear history")
-                        font.pixelSize: 14
+                        font.pixelSize: Math.round(14 * appSettings.fontScale)
                         font.bold: true
                         color: clearButton.contentColor
                         verticalAlignment: Text.AlignVCenter
