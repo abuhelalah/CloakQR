@@ -48,6 +48,9 @@ public:
     static QString wifi(const QString& ssid, const QString& password, WifiAuth auth,
                         bool hidden = false);
     static QString geo(double latitude, double longitude);
+    // Location payload carrying an optional place/address label ("?q=..."),
+    // which map apps use as the search query when coordinates are 0,0.
+    static QString geo(double latitude, double longitude, const QString& label);
     static QString vcard(const QString& fullName, const QString& organization = QString(),
                          const QString& phone = QString(), const QString& email = QString(),
                          const QString& url = QString());

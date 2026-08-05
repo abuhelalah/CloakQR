@@ -99,6 +99,15 @@ QString QrData::geo(double latitude, double longitude)
         + QLatin1Char(',') + QString::number(longitude, 'f', 6);
 }
 
+QString QrData::geo(double latitude, double longitude, const QString& label)
+{
+    QString result = geo(latitude, longitude);
+    const QString trimmed = label.trimmed();
+    if (!trimmed.isEmpty())
+        result += QStringLiteral("?q=") + QString::fromUtf8(QUrl::toPercentEncoding(trimmed));
+    return result;
+}
+
 QString QrData::vcard(const QString& fullName, const QString& organization,
                       const QString& phone, const QString& email, const QString& url)
 {

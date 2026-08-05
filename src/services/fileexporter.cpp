@@ -22,3 +22,16 @@ bool FileExporter::exportBatchToCSV(const QStringList& rows, const QUrl& outputU
     file.close();
     return true;
 }
+
+bool FileExporter::saveTextFile(const QUrl& outputUrl, const QString& text) const
+{
+    const QString path = outputUrl.isLocalFile() ? outputUrl.toLocalFile() : outputUrl.toString();
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out(&file);
+    out << text;
+    file.close();
+    return true;
+}

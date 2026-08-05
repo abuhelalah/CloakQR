@@ -6,12 +6,30 @@
 #include <QJniObject>
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+#include <QDesktopServices>
+#include <QProcess>
+#include <QStandardPaths>
+#include <QStringList>
+#include <QUrl>
+#include <QUrlQuery>
+#endif
+
 PlatformBridge::PlatformBridge(QObject* parent)
     : QObject(parent)
 {
 }
 
 bool PlatformBridge::wifiConnectSupported() const
+{
+#ifdef Q_OS_ANDROID
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool PlatformBridge::contactInsertSupported() const
 {
 #ifdef Q_OS_ANDROID
     return true;
@@ -106,6 +124,109 @@ bool PlatformBridge::connectToWifi(const QString& ssid,
     Q_UNUSED(password);
     Q_UNUSED(security);
     Q_UNUSED(hidden);
+    return false;
+#endif
+}
+
+bool PlatformBridge::addContact(const QString& name,
+                                const QString& phone,
+                                const QString& email)
+{
+#ifdef Q_OS_ANDROID
+    if (name.isEmpty() && phone.isEmpty() && email.isEmpty())
+        return false;
+
+    QJniEnvironment env;
+
+    const QJniObject action = QJniObject::fromString(
+        QStringLiteral("android.intent.action.INSERT"));
+    QJniObject intent("android/content/Intent",
+                      "(Ljava/lang/String;)V",
+                      action.object<jstring>());
+    if (!intent.isValid())
+        return false;
+
+    const QJniObject type = QJniObject::fromString(
+        QStringLiteral("vnd.android.cursor.dir/contact"));
+    intent.callObjectMethod("setType",
+                            "(Ljava/lang/String;)Landroid/content/Intent;",
+                            type.object<jstring>());
+
+    const auto putExtra = [&intent](const char* key, const QString& value) {
+        if (value.isEmpty())
+            return;
+        const QJniObject jkey = QJniObject::fromString(QString::fromLatin1(key));
+        const QJniObject jval = QJniObject::fromString(value);
+        intent.callObjectMethod(
+            "putExtra",
+            "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+            jkey.object<jstring>(), jval.object<jstring>());
+    };
+    // Keys are the stable ContactsContract.Intents.Insert constants.
+    putExtra("name", name);
+    putExtra("phone", phone);
+    putExtra("email", email);
+
+    intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", 0x10000000);
+
+    QJniObject context = QNativeInterface::QAndroidApplication::context();
+    if (!context.isValid())
+        return false;
+    context.callMethod<void>("startActivity",
+                             "(Landroid/content/Intent;)V",
+                             intent.object());
+
+    return !env.checkAndClearExceptions();
+#else
+    Q_UNUSED(name);
+    Q_UNUSED(phone);
+    Q_UNUSED(email);
+    return false;
+#endif
+}
+
+bool PlatformBridge::composeEmail(const QString& address,
+                                  const QString& subject,
+                                  const QString& body)
+{
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+    QUrl mailto;
+    mailto.setScheme(QStringLiteral("mailto"));
+    mailto.setPath(address);
+    QUrlQuery query;
+    if (!subject.isEmpty())
+        query.addQueryItem(QStringLiteral("subject"), subject);
+    if (!body.isEmpty())
+        query.addQueryItem(QStringLiteral("body"), body);
+    if (!query.isEmpty())
+        mailto.setQuery(query);
+    const QString mailtoStr = mailto.toString(QUrl::FullyEncoded);
+
+    // Prefer a real desktop mail client so we never fall through to a browser
+    // when one is installed. The mailto: URL is understood by all of these.
+    static const QStringList kMailClients = {
+        QStringLiteral("thunderbird"), QStringLiteral("evolution"),
+        QStringLiteral("geary"),       QStringLiteral("kmail"),
+        QStringLiteral("mailspring"),  QStringLiteral("claws-mail"),
+        QStringLiteral("sylpheed"),    QStringLiteral("outlook")
+    };
+    for (const QString& client : kMailClients) {
+        const QString path = QStandardPaths::findExecutable(client);
+        if (path.isEmpty())
+            continue;
+        if (QProcess::startDetached(path, QStringList{ mailtoStr }))
+            return true;
+    }
+
+    // No dedicated client found: let xdg-email pick the configured handler, and
+    // fall back to the generic URL opener if xdg-utils is unavailable.
+    if (QProcess::startDetached(QStringLiteral("xdg-email"), QStringList{ mailtoStr }))
+        return true;
+    return QDesktopServices::openUrl(mailto);
+#else
+    Q_UNUSED(address);
+    Q_UNUSED(subject);
+    Q_UNUSED(body);
     return false;
 #endif
 }

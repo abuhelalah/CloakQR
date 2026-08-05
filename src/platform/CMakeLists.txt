@@ -11,4 +11,5 @@ target_include_directories(cloakqr_platform PUBLIC
 
 target_link_libraries(cloakqr_platform PUBLIC
     Qt6::Core
+    Qt6::Gui
 )
