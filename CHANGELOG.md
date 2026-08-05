@@ -9,10 +9,33 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
+## [1.1.0] - 2026-08-05
+
+### Added
+
+- Location QR generator now offers two input modes: **Coordinates** (latitude/longitude)
+  and **Address** (street, building number, postal code, city, country).
+- Scan result dialog shows a structured **To / Subject / Message** preview for email QR codes.
+- Action buttons for email, SMS, maps, dialing, and contacts are now shown in the scan
+  result dialog for every matching QR type.
+- Desktop: "Send email" opens a real mail client (Thunderbird, Evolution, Geary, KMail,
+  Mailspring, etc.) via `xdg-email`; the browser is only used as a last resort.
+
+### Fixed
+
+- All scan action buttons (Send email, Send message, Open in Maps, Dial, Add contact,
+  Connect) were silently hidden due to a circular `visible` binding; they are now
+  always shown for the matching QR type.
+- MECARD contact QR codes are now correctly parsed alongside standard vCard payloads.
+
 ### Changed
 
 - Compact navigation now uses a contextual app bar with previous/next arrows,
-	an overflow page menu, and a focused four-control bottom navigation strip.
+  an overflow page menu, and a focused four-control bottom navigation strip.
+
+### Internationalization
+
+- 30 new UI strings translated into English, Spanish, French, and Arabic (196 messages total).
 
 ## [1.0.0] - 2026-07-26
 
@@ -41,5 +64,6 @@ All notable changes to CloakQR are documented here. The project follows
 - `ENC:1` is an interim pre-audit construction and should not be represented as
 	independently audited cryptography.
 
-[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/abuhelalah/CloakQR/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/abuhelalah/CloakQR/releases/tag/v1.0.0
