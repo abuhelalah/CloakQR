@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(CloakQR VERSION 1.1.0 LANGUAGES CXX)
+project(CloakQR VERSION 1.2.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -124,6 +124,7 @@ if(BUILD_CLOAKQR_APP)
             qml/common/Header.qml
             qml/common/Footer.qml
             qml/common/FilePickerDialog.qml
+            qml/common/ConfirmDialog.qml
             qml/views/SafePreviewDialog.qml
             qml/views/ScannerPage.qml
             qml/views/HistoryPage.qml
@@ -198,7 +199,7 @@ if(BUILD_CLOAKQR_APP)
             QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/deploy/android"
             QT_ANDROID_PACKAGE_NAME "${CLOAKQR_ANDROID_PACKAGE_NAME}"
             QT_ANDROID_APP_NAME "${CLOAKQR_PRODUCT_NAME}"
-            QT_ANDROID_VERSION_CODE 10100
+            QT_ANDROID_VERSION_CODE 10200
             QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}"
             QT_ANDROID_COMPILE_SDK_VERSION 36
         )

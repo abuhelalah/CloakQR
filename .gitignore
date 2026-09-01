@@ -20,6 +20,7 @@ Testing/
 /scripts/
 /docs/
 /releases/
+/template/
 
 # Downloaded dependencies and package-manager state
 _deps/
@@ -120,3 +121,4 @@ PLAN.md
 what_we_done.md
 forme.md
 window_dump.xml
+test_auth.png

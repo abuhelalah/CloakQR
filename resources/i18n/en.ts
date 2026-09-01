@@ -84,6 +84,24 @@
     </message>
 </context>
 <context>
+    <name>ConfirmDialog</name>
+    <message>
+        <location filename="../../qml/common/ConfirmDialog.qml" line="11"/>
+        <source>Are you sure?</source>
+        <translation>Are you sure?</translation>
+    </message>
+    <message>
+        <location filename="../../qml/common/ConfirmDialog.qml" line="13"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../../qml/common/ConfirmDialog.qml" line="48"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+</context>
+<context>
     <name>FilePickerDialog</name>
     <message>
         <location filename="../../qml/common/FilePickerDialog.qml" line="18"/>
@@ -161,67 +179,67 @@
         <translation>Generator</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="170"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="201"/>
         <source>Create a QR code</source>
         <translation>Create a QR code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="177"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="208"/>
         <source>Build a code for sharing, then export it as an image</source>
         <translation>Build a code for sharing, then export it as an image</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="184"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="219"/>
         <source>Content type</source>
         <translation>Content type</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="191"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="234"/>
         <source>Content type selector</source>
         <translation>Content type selector</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="195"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="238"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="196"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="239"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="197"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="240"/>
         <source>Email</source>
         <translation>Email</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="198"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="241"/>
         <source>Phone</source>
         <translation>Phone</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="199"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="242"/>
         <source>SMS</source>
         <translation>SMS</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="200"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="243"/>
         <source>Wi-Fi</source>
         <translation>Wi-Fi</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="201"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="244"/>
         <source>Location</source>
         <translation>Location</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="215"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="262"/>
         <source>https://example.com</source>
         <translation>https://example.com</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="216"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="263"/>
         <source>name@example.com</source>
         <translation>name@example.com</translation>
     </message>
@@ -230,249 +248,269 @@
         <translation type="vanished">+1 555 0100</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="274"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="276"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="328"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="330"/>
         <source>Recipient number</source>
         <translation>Recipient number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="217"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="264"/>
         <source>Enter text</source>
         <translation>Enter text</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="220"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="225"/>
+        <source>Clear</source>
+        <translation>Clear</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="226"/>
+        <source>Clear all fields</source>
+        <translation>Clear all fields</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="267"/>
         <source>Primary content field</source>
         <translation>Primary content field</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="229"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="272"/>
+        <source>Paste</source>
+        <translation>Paste</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="273"/>
+        <source>Paste from clipboard</source>
+        <translation>Paste from clipboard</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="283"/>
         <source>Name (optional)</source>
         <translation>Name (optional)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="230"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="284"/>
         <source>Contact name</source>
         <translation>Contact name</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="242"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="266"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="296"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="320"/>
         <source>+1</source>
         <translation>+1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="244"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="268"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="298"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="322"/>
         <source>Country code</source>
         <translation>Country code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="250"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="252"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="304"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="306"/>
         <source>Phone number</source>
         <translation>Phone number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="286"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="340"/>
         <source>Subject</source>
         <translation>Subject</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="287"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="341"/>
         <source>Email subject</source>
         <translation>Email subject</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="297"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="351"/>
         <source>Message</source>
         <translation>Message</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="297"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="351"/>
         <source>Body</source>
         <translation>Body</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="298"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="352"/>
         <source>Message body</source>
         <translation>Message body</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="307"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="361"/>
         <source>Network name (SSID)</source>
         <translation>Network name (SSID)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="308"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="362"/>
         <source>Wi-Fi network name</source>
         <translation>Wi-Fi network name</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="317"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="371"/>
         <source>Password</source>
         <translation>Password</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="319"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="373"/>
         <source>Wi-Fi password</source>
         <translation>Wi-Fi password</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="331"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="385"/>
         <source>Wi-Fi security</source>
         <translation>Wi-Fi security</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="335"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="389"/>
         <source>WPA/WPA2</source>
         <translation>WPA/WPA2</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="336"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="390"/>
         <source>WEP</source>
         <translation>WEP</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="337"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="391"/>
         <source>None</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="344"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="398"/>
         <source>Hidden</source>
         <translation>Hidden</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="345"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="399"/>
         <source>Hidden network</source>
         <translation>Hidden network</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="355"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="409"/>
         <source>Location input method</source>
         <translation>Location input method</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="359"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="413"/>
         <source>Coordinates</source>
         <translation>Coordinates</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="360"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="414"/>
         <source>Address</source>
         <translation>Address</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="374"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="376"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="428"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="430"/>
         <source>Latitude</source>
         <translation>Latitude</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="382"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="384"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="436"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="438"/>
         <source>Longitude</source>
         <translation>Longitude</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="394"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="395"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="448"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="449"/>
         <source>Street</source>
         <translation>Street</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="408"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="409"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="462"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="463"/>
         <source>Building number</source>
         <translation>Building number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="415"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="416"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="469"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="470"/>
         <source>Postal code</source>
         <translation>Postal code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="426"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="427"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="480"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="481"/>
         <source>City</source>
         <translation>City</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="436"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="437"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="490"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="491"/>
         <source>Country</source>
         <translation>Country</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="443"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="497"/>
         <source>Error correction</source>
         <translation>Error correction</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="451"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="505"/>
         <source>Error correction level</source>
         <translation>Error correction level</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="453"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="507"/>
         <source>Low (7%)</source>
         <translation>Low (7%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="454"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="508"/>
         <source>Medium (15%)</source>
         <translation>Medium (15%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="455"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="509"/>
         <source>Quartile (25%)</source>
         <translation>Quartile (25%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="456"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="510"/>
         <source>High (30%)</source>
         <translation>High (30%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="468"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="522"/>
         <source>Foreground</source>
         <translation>Foreground</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="483"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="537"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="506"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="560"/>
         <source>Version %1 · %2 / %3 bytes</source>
         <translation>Version %1 · %2 / %3 bytes</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="510"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="564"/>
         <source>Content is too large for the selected error correction level.</source>
         <translation>Content is too large for the selected error correction level.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="538"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="592"/>
         <source>Generated QR code preview</source>
         <translation>Generated QR code preview</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="549"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="589"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="603"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="643"/>
         <source>Save as PNG</source>
         <translation>Save as PNG</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="554"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="608"/>
         <source>Save QR code as PNG</source>
         <translation>Save QR code as PNG</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="579"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="633"/>
         <source>PNG image (*.png)</source>
         <translation>PNG image (*.png)</translation>
     </message>
@@ -498,36 +536,56 @@
         <translation>History</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="34"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="38"/>
         <source>Scan history</source>
         <translation>Scan history</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="39"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="43"/>
         <source>Recent codes stored only on this device</source>
         <translation>Recent codes stored only on this device</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="56"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="60"/>
         <source>History is turned off. New scans will not be saved.</source>
         <translation>History is turned off. New scans will not be saved.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="118"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="139"/>
         <source>No scans yet</source>
         <translation>No scans yet</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="166"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="190"/>
         <source>Clear history</source>
         <translation>Clear history</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/HistoryPage.qml" line="229"/>
+        <source>Delete all saved scans? This cannot be undone.</source>
+        <translation>Delete all saved scans? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/HistoryPage.qml" line="231"/>
+        <source>Delete this saved scan? This cannot be undone.</source>
+        <translation>Delete this saved scan? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/HistoryPage.qml" line="232"/>
+        <source>Delete %1 saved scans? This cannot be undone.</source>
+        <translation>Delete %1 saved scans? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/HistoryPage.qml" line="233"/>
+        <source>Delete all</source>
+        <translation>Delete all</translation>
     </message>
     <message>
         <source>Clear</source>
         <translation type="vanished">Clear</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="147"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="168"/>
         <source>Clear all history</source>
         <translation>Clear all history</translation>
     </message>
@@ -584,12 +642,12 @@
         <translation type="vanished">Host: %1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="317"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="360"/>
         <source>Website link</source>
         <translation>Website link</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="318"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="361"/>
         <source>Wi-Fi network</source>
         <translation>Wi-Fi network</translation>
     </message>
@@ -598,187 +656,217 @@
         <translation type="vanished">Email address</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="321"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="364"/>
         <source>Phone number</source>
         <translation>Phone number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="322"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="365"/>
         <source>Contact card</source>
         <translation>Contact card</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="323"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="366"/>
         <source>Location</source>
         <translation>Location</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="324"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="367"/>
+        <source>Authenticator</source>
+        <translation>Authenticator</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="368"/>
         <source>Plain text</source>
         <translation>Plain text</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="386"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="431"/>
         <source>vCard (*.vcf)</source>
         <translation>vCard (*.vcf)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="392"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="437"/>
         <source>Contact saved</source>
         <translation>Contact saved</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="394"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="439"/>
         <source>Couldn&apos;t save contact</source>
         <translation>Couldn&apos;t save contact</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="422"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="467"/>
         <source>Scan result</source>
         <translation>Scan result</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="437"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="755"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="756"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="482"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="866"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="867"/>
         <source>Close</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="475"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="520"/>
         <source>Opens %1</source>
         <translation>Opens %1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="489"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="534"/>
         <source>Network</source>
         <translation>Network</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="507"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="552"/>
         <source>Open network</source>
         <translation>Open network</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="508"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="553"/>
         <source>Security: %1</source>
         <translation>Security: %1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="510"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="555"/>
         <source>Hidden</source>
         <translation>Hidden</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="535"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="580"/>
         <source>Hide</source>
         <translation>Hide</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="535"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="580"/>
         <source>Show</source>
         <translation>Show</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="541"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="586"/>
         <source>Copy password</source>
         <translation>Copy password</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="544"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="630"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="767"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="589"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="728"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="878"/>
         <source>Copied to clipboard</source>
         <translation>Copied to clipboard</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="557"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="602"/>
         <source>To</source>
         <translation>To</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="572"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="617"/>
         <source>Subject</source>
         <translation>Subject</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="587"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="632"/>
         <source>Message</source>
         <translation>Message</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="673"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="653"/>
+        <source>Account</source>
+        <translation>Account</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="668"/>
+        <source>Issuer</source>
+        <translation>Issuer</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="689"/>
+        <source>digits</source>
+        <translation>digits</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="772"/>
         <source>Send email</source>
         <translation>Send email</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="686"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="785"/>
         <source>Send message</source>
         <translation>Send message</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="695"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="794"/>
         <source>Open in Maps</source>
         <translation>Open in Maps</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="704"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="803"/>
         <source>Dial</source>
         <translation>Dial</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="714"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="813"/>
         <source>Add contact</source>
         <translation>Add contact</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="735"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="834"/>
         <source>Connect</source>
         <translation>Connect</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="742"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="841"/>
         <source>Couldn&apos;t start Wi-Fi connection</source>
         <translation>Couldn&apos;t start Wi-Fi connection</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="540"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="763"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="585"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="874"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="62"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="64"/>
         <source>Open in App Store</source>
         <translation>Open in App Store</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="62"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="64"/>
         <source>Open in Play Store</source>
         <translation>Open in Play Store</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="301"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="344"/>
         <source>Couldn&apos;t open contacts</source>
         <translation>Couldn&apos;t open contacts</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="319"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="362"/>
         <source>Email</source>
         <translation>Email</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="320"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="363"/>
         <source>Text message</source>
         <translation>Text message</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="764"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="849"/>
+        <source>Add to authenticator</source>
+        <translation>Add to authenticator</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="853"/>
+        <source>No authenticator app found</source>
+        <translation>No authenticator app found</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="875"/>
         <source>Copy scanned content</source>
         <translation>Copy scanned content</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="63"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="65"/>
         <source>Open link</source>
         <translation>Open link</translation>
     </message>
@@ -796,63 +884,73 @@
         <translation>Ready to scan</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="38"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="55"/>
         <source>No camera was found</source>
         <translation>No camera was found</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="42"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="59"/>
         <source>Point the camera at a QR code</source>
         <translation>Point the camera at a QR code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="64"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="85"/>
         <source>Camera permission was denied</source>
         <translation>Camera permission was denied</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="90"/>
-        <location filename="../../qml/views/ScannerPage.qml" line="99"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="111"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="120"/>
         <source>Choose a QR code image</source>
         <translation>Choose a QR code image</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="92"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="113"/>
         <source>Images (*.png *.jpg *.jpeg *.bmp *.webp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.bmp *.webp)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="53"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="74"/>
         <source>Scanning image…</source>
         <translation>Scanning image…</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="113"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="134"/>
         <source>QR code detected</source>
         <translation>QR code detected</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="156"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="175"/>
         <source>Scan a QR code</source>
         <translation>Scan a QR code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="161"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="180"/>
         <source>Point your camera at a code or choose an image</source>
         <translation>Point your camera at a code or choose an image</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="221"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="240"/>
         <source>Scanning…</source>
         <translation>Scanning…</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="244"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="265"/>
+        <source>Turn off flashlight</source>
+        <translation>Turn off flashlight</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/ScannerPage.qml" line="266"/>
+        <source>Turn on flashlight</source>
+        <translation>Turn on flashlight</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/ScannerPage.qml" line="300"/>
         <source>Close camera</source>
         <translation>Close camera</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="251"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="307"/>
         <source>Camera closed</source>
         <translation>Camera closed</translation>
     </message>
@@ -869,7 +967,7 @@
         <translation type="vanished">Camera preview</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="244"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="300"/>
         <source>Open camera</source>
         <translation>Open camera</translation>
     </message>
@@ -878,8 +976,8 @@
         <translation type="vanished">Camera scanning is not available in this build</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="261"/>
-        <location filename="../../qml/views/ScannerPage.qml" line="263"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="317"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="319"/>
         <source>Choose image</source>
         <translation>Choose image</translation>
     </message>
@@ -888,7 +986,7 @@
         <translation type="vanished">Image scanning is not available in this build</translation>
     </message>
     <message>
-        <location filename="../../qml/views/ScannerPage.qml" line="298"/>
+        <location filename="../../qml/views/ScannerPage.qml" line="354"/>
         <source>Scanning stays on this device</source>
         <translation>Scanning stays on this device</translation>
     </message>
@@ -1039,6 +1137,16 @@
         <source>Reset all settings</source>
         <translation>Reset all settings</translation>
     </message>
+    <message>
+        <location filename="../../qml/views/SettingsPage.qml" line="285"/>
+        <source>Delete all saved scans? This cannot be undone.</source>
+        <translation>Delete all saved scans? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SettingsPage.qml" line="286"/>
+        <source>Delete all</source>
+        <translation>Delete all</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -1046,13 +1154,13 @@
         <location filename="../../qml/main.qml" line="20"/>
         <location filename="../../qml/main.qml" line="121"/>
         <location filename="../../qml/main.qml" line="251"/>
-        <location filename="../../qml/main.qml" line="408"/>
+        <location filename="../../qml/main.qml" line="409"/>
         <source>CloakQR</source>
         <translation>CloakQR</translation>
     </message>
     <message>
         <location filename="../../qml/main.qml" line="126"/>
-        <location filename="../../qml/main.qml" line="414"/>
+        <location filename="../../qml/main.qml" line="415"/>
         <source>Private by design</source>
         <translation>Private by design</translation>
     </message>
@@ -1085,7 +1193,7 @@
         <location filename="../../qml/main.qml" line="20"/>
         <location filename="../../qml/main.qml" line="121"/>
         <location filename="../../qml/main.qml" line="251"/>
-        <location filename="../../qml/main.qml" line="408"/>
+        <location filename="../../qml/main.qml" line="409"/>
         <source>CloakQR Pro</source>
         <translation>CloakQR Pro</translation>
     </message>

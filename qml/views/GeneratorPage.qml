@@ -65,6 +65,28 @@ Page {
         return parts.join(", ")
     }
 
+    // Resets every input field for the current content type.
+    function clearFields() {
+        fieldText.clear()
+        fieldSubject.clear()
+        fieldBody.clear()
+        fieldContactName.clear()
+        fieldCountryCode.clear()
+        fieldPhoneNumber.clear()
+        fieldSmsCountryCode.clear()
+        fieldSmsNumber.clear()
+        fieldSsid.clear()
+        fieldPassword.clear()
+        fieldLat.clear()
+        fieldLon.clear()
+        fieldStreet.clear()
+        fieldBuilding.clear()
+        fieldPostal.clear()
+        fieldCity.clear()
+        fieldCountry.clear()
+        page.refresh()
+    }
+
     function buildPayload() {
         switch (typeSelector.currentIndex) {
         case typeText:  return qrGenerator.textPayload(fieldText.text)
@@ -95,17 +117,41 @@ Page {
         return ""
     }
 
+    // Debounces rapid field edits so the QR isn't re-encoded on every
+    // keystroke; the preview and capacity label settle after a short pause.
+    Timer {
+        id: refreshTimer
+        interval: 130
+        repeat: false
+        onTriggered: page.refreshNow()
+    }
+
     function refresh() {
+        refreshTimer.restart()
+    }
+
+    // Encodes the payload once for the capacity read-out, then hands the
+    // preview to the image provider, which renders it at the Image's size.
+    function refreshNow() {
         const payload = buildPayload()
         page.currentPayload = payload
+
         if (payload.length === 0) {
             qrImage.source = ""
             page.capacity = ({ fits: false, version: -1, maxBytes: 0, usedBytes: 0 })
             return
         }
+
         page.capacity = qrGenerator.capacityInfo(payload, eccSelector.currentIndex)
-        qrGenerator.requestQr(payload, eccSelector.currentIndex, 640,
-                              fgColor.color, bgColor.color)
+        if (!page.capacity.fits) {
+            qrImage.source = ""
+            return
+        }
+
+        qrImage.source = "image://qrcode/" + encodeURIComponent(payload)
+                         + "?e=" + eccSelector.currentIndex
+                         + "&f=" + page.colorHex(fgColor.color)
+                         + "&b=" + page.colorHex(bgColor.color)
     }
 
     function savePngTo(url) {
@@ -125,21 +171,6 @@ Page {
             return p
         var s = p.replace(/\\/g, "/")
         return s.charAt(0) === "/" ? "file://" + s : "file:///" + s
-    }
-
-    Connections {
-        target: qrGenerator
-        function onQrReady(image, text) {
-            if (text === page.currentPayload)
-                qrImage.source = "image://qrcode/" + encodeURIComponent(text)
-                                 + "?e=" + eccSelector.currentIndex
-                                 + "&f=" + page.colorHex(fgColor.color)
-                                 + "&b=" + page.colorHex(bgColor.color)
-        }
-        function onQrFailed(text, reason) {
-            if (text === page.currentPayload)
-                qrImage.source = ""
-        }
     }
 
     ScrollView {
@@ -180,9 +211,21 @@ Page {
                     Layout.bottomMargin: 8
                 }
 
-                Label {
-                    text: qsTr("Content type")
-                    font.bold: true
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Label {
+                        text: qsTr("Content type")
+                        font.bold: true
+                        Layout.fillWidth: true
+                    }
+
+                    ToolButton {
+                        text: qsTr("Clear")
+                        Accessible.name: qsTr("Clear all fields")
+                        onClicked: page.clearFields()
+                    }
                 }
 
                 ComboBox {
@@ -204,21 +247,32 @@ Page {
                 }
 
                 // --- Generic single-line field (text/url/email) --------------
-                TextField {
-                    id: fieldText
+                RowLayout {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeText
                              || typeSelector.currentIndex === page.typeUrl
                              || typeSelector.currentIndex === page.typeEmail
-                    placeholderText: {
-                        switch (typeSelector.currentIndex) {
-                        case page.typeUrl:   return qsTr("https://example.com")
-                        case page.typeEmail: return qsTr("name@example.com")
-                        default:             return qsTr("Enter text")
+                    spacing: 8
+
+                    TextField {
+                        id: fieldText
+                        Layout.fillWidth: true
+                        placeholderText: {
+                            switch (typeSelector.currentIndex) {
+                            case page.typeUrl:   return qsTr("https://example.com")
+                            case page.typeEmail: return qsTr("name@example.com")
+                            default:             return qsTr("Enter text")
+                            }
                         }
+                        Accessible.name: qsTr("Primary content field")
+                        onTextChanged: page.refresh()
                     }
-                    Accessible.name: qsTr("Primary content field")
-                    onTextChanged: page.refresh()
+
+                    ToolButton {
+                        text: qsTr("Paste")
+                        Accessible.name: qsTr("Paste from clipboard")
+                        onClicked: fieldText.paste()
+                    }
                 }
 
                 // --- Phone (contact) fields ----------------------------------

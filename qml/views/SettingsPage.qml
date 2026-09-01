@@ -173,9 +173,9 @@ Page {
                     model: [
                         { label: qsTr("System"),   value: "system" },
                         { label: qsTr("English"),  value: "en" },
+                        { label: qsTr("العربية"),   value: "ar" },
                         { label: qsTr("Español"),  value: "es" },
-                        { label: qsTr("Français"), value: "fr" },
-                        { label: qsTr("العربية"),   value: "ar" }
+                        { label: qsTr("Français"), value: "fr" }
                     ]
                     Component.onCompleted: currentIndex = indexOfValue(appSettings.language)
                     onModelChanged: currentIndex = indexOfValue(appSettings.language)
@@ -258,7 +258,7 @@ Page {
                 text: qsTr("Clear scan history")
                 enabled: scanHistory !== null && scanHistory.count > 0
                 Accessible.name: qsTr("Clear scan history")
-                onClicked: scanHistory.clear()
+                onClicked: clearConfirm.open()
             }
 
             MenuSeparator { Layout.fillWidth: true }
@@ -278,5 +278,12 @@ Page {
                 }
             }
         }
+    }
+
+    ConfirmDialog {
+        id: clearConfirm
+        message: qsTr("Delete all saved scans? This cannot be undone.")
+        confirmText: qsTr("Delete all")
+        onConfirmed: scanHistory.clear()
     }
 }

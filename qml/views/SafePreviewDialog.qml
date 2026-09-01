@@ -41,6 +41,7 @@ Popup {
     readonly property bool isSms: /^(sms|smsto):/i.test(content)
     readonly property bool isGeo: /^geo:/i.test(content)
     readonly property bool isVCard: /^(BEGIN:VCARD|MECARD:)/i.test(content)
+    readonly property bool isOtp: /^otpauth:\/\//i.test(content)
 
     // True when the current platform can hand a new contact to the OS or, on
     // desktop, when we can offer to save the contact as a .vcf file.
@@ -51,6 +52,7 @@ Popup {
     readonly property var sms: parseSms(content)
     readonly property var geo: parseGeo(content)
     readonly property var vcard: parseVCard(content)
+    readonly property var otp: parseOtp(content)
 
     // Recognises app-store deep links so the action button can offer to open
     // the relevant store. Qt.openUrlExternally already routes these to the
@@ -172,6 +174,47 @@ Popup {
             } else {
                 info.number = body
             }
+        }
+        return info
+    }
+
+    // Parses an "otpauth://TYPE/LABEL?secret=..." URI into its parts. The
+    // label may embed the issuer as "Issuer:account" and/or carry an issuer=.
+    function parseOtp(payload) {
+        var info = { type: "", account: "", issuer: "", secret: "",
+                     algorithm: "", digits: "", period: "" }
+        if (!/^otpauth:\/\//i.test(payload))
+            return info
+        var rest = payload.substring(10)
+        var q = rest.indexOf("?")
+        var path = q >= 0 ? rest.substring(0, q) : rest
+        var query = q >= 0 ? rest.substring(q + 1) : ""
+
+        var slash = path.indexOf("/")
+        if (slash >= 0) {
+            info.type = path.substring(0, slash).toLowerCase()
+            var label = decodeURIComponent(path.substring(slash + 1))
+            var colon = label.indexOf(":")
+            if (colon >= 0) {
+                info.issuer = label.substring(0, colon)
+                info.account = label.substring(colon + 1)
+            } else {
+                info.account = label
+            }
+        }
+
+        var params = query.split("&")
+        for (var i = 0; i < params.length; ++i) {
+            var eq = params[i].indexOf("=")
+            if (eq < 0)
+                continue
+            var key = params[i].substring(0, eq).toLowerCase()
+            var val = decodeURIComponent(params[i].substring(eq + 1).replace(/\+/g, " "))
+            if (key === "secret") info.secret = val
+            else if (key === "issuer") info.issuer = val
+            else if (key === "algorithm") info.algorithm = val
+            else if (key === "digits") info.digits = val
+            else if (key === "period") info.period = val
         }
         return info
     }
@@ -321,6 +364,7 @@ Popup {
         if (isTel) return qsTr("Phone number")
         if (isVCard) return qsTr("Contact card")
         if (isGeo) return qsTr("Location")
+        if (isOtp) return qsTr("Authenticator")
         return qsTr("Plain text")
     }
     readonly property string kindGlyph: {
@@ -331,6 +375,7 @@ Popup {
         if (isTel) return "📞"
         if (isVCard) return "👤"
         if (isGeo) return "📍"
+        if (isOtp) return "🔑"
         return "📄"
     }
 
@@ -598,8 +643,61 @@ Popup {
                 }
             }
 
+            // Structured view for a two-factor code: account, issuer and type.
+            ColumnLayout {
+                visible: dialog.isOtp
+                Layout.fillWidth: true
+                spacing: 4
+
+                Label {
+                    text: qsTr("Account")
+                    color: dialog.mutedColor
+                    font.pixelSize: 11
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: dialog.otp.account
+                    color: Material.foreground
+                    font.pixelSize: 16
+                    font.bold: true
+                    elide: Text.ElideRight
+                }
+                Label {
+                    visible: dialog.otp.issuer.length > 0
+                    Layout.topMargin: 6
+                    text: qsTr("Issuer")
+                    color: dialog.mutedColor
+                    font.pixelSize: 11
+                }
+                Label {
+                    visible: dialog.otp.issuer.length > 0
+                    Layout.fillWidth: true
+                    text: dialog.otp.issuer
+                    color: Material.foreground
+                    font.pixelSize: 14
+                    elide: Text.ElideRight
+                }
+                Label {
+                    Layout.topMargin: 6
+                    text: {
+                        var parts = []
+                        if (dialog.otp.type.length > 0)
+                            parts.push(dialog.otp.type.toUpperCase())
+                        if (dialog.otp.algorithm.length > 0)
+                            parts.push(dialog.otp.algorithm)
+                        if (dialog.otp.digits.length > 0)
+                            parts.push(dialog.otp.digits + " " + qsTr("digits"))
+                        if (dialog.otp.period.length > 0)
+                            parts.push(dialog.otp.period + "s")
+                        return parts.join(" \u00B7 ")
+                    }
+                    color: dialog.mutedColor
+                    font.pixelSize: 12
+                }
+            }
+
             Rectangle {
-                visible: !dialog.isWifi && !dialog.isEmail
+                visible: !dialog.isWifi && !dialog.isEmail && !dialog.isOtp
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(contentText.implicitHeight + 20, 240)
                 radius: 10
@@ -663,6 +761,7 @@ Popup {
                     spacing: 8
                     visible: dialog.isEmail || dialog.isSms || dialog.isGeo
                              || dialog.isTel || dialog.isVCard || dialog.isUrl
+                             || dialog.isOtp
                              || (dialog.isWifi && platformBridge.wifiConnectSupported)
 
                     Button {
@@ -740,6 +839,18 @@ Popup {
                                 dialog.wifi.security, dialog.wifi.hidden)
                             if (!ok)
                                 hint.flash(qsTr("Couldn't start Wi-Fi connection"))
+                        }
+                    }
+                    Button {
+                        id: otpBtn
+                        visible: dialog.isOtp
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Add to authenticator")
+                        Accessible.name: text
+                        onClicked: {
+                            if (!Qt.openUrlExternally(dialog.content))
+                                hint.flash(qsTr("No authenticator app found"))
                         }
                     }
 

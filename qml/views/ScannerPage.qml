@@ -19,8 +19,25 @@ Page {
     property string statusMessage: qsTr("Ready to scan")
     property bool cameraRequested: false
     property bool imageDecoding: false
+    property bool torchOn: false
     readonly property bool useNativePicker: Qt.platform.os === "android"
                                             || Qt.platform.os === "ios"
+
+    // Classifies a scanned payload into the same categories the scan result
+    // dialog recognises, so history entries show a meaningful icon.
+    function classifyType(text) {
+        if (/^https?:\/\//i.test(text)) return "url"
+        if (/^WIFI:/i.test(text)) return "wifi"
+        if (/^(mailto:|MATMSG:)/i.test(text)) return "email"
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) return "email"
+        if (/^tel:/i.test(text)) return "tel"
+        if (/^(sms|smsto):/i.test(text)) return "sms"
+        if (/^geo:/i.test(text)) return "geo"
+        if (/^(BEGIN:VCARD|MECARD:)/i.test(text)) return "vcard"
+        if (/^otpauth:\/\//i.test(text)) return "otp"
+        if (/^ENC:1/i.test(text)) return "encrypted"
+        return "text"
+    }
 
     // Largest square camera preview that still leaves room for the header,
     // buttons and privacy note, so the page fits without scrolling on tablets
@@ -45,6 +62,10 @@ Page {
 
     function stopCamera() {
         page.cameraRequested = false
+        if (page.torchOn) {
+            page.torchOn = false
+            camera.torchMode = Camera.TorchOff
+        }
         camera.active = false
     }
 
@@ -113,10 +134,8 @@ Page {
             page.statusMessage = qsTr("QR code detected")
             const excludedWifi = appSettings.historyExcludeWifiPassword
                                  && text.startsWith("WIFI:")
-            if (appSettings.historyEnabled && !excludedWifi) {
-                const type = /^https?:\/\//i.test(text) ? "url" : "text"
-                scanHistory.addEntry(text, type)
-            }
+            if (appSettings.historyEnabled && !excludedWifi)
+                scanHistory.addEntry(text, page.classifyType(text))
         }
 
         function onDecodeFailed(reason) {
@@ -228,6 +247,43 @@ Page {
                     running: page.imageDecoding
                     visible: running
                     z: 3
+                }
+
+                // Flashlight toggle; only offered when the camera is live and
+                // reports torch support so we never show a dead control.
+                Button {
+                    id: torchButton
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: 10
+                    z: 3
+                    implicitWidth: 44
+                    implicitHeight: 44
+                    visible: page.cameraRequested && camera.active
+                             && camera.isTorchModeSupported(Camera.TorchOn)
+                    Accessible.name: page.torchOn
+                        ? qsTr("Turn off flashlight")
+                        : qsTr("Turn on flashlight")
+                    onClicked: {
+                        page.torchOn = !page.torchOn
+                        camera.torchMode = page.torchOn ? Camera.TorchOn : Camera.TorchOff
+                    }
+
+                    contentItem: Label {
+                        text: "🔦"
+                        font.pixelSize: 18
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        radius: width / 2
+                        color: page.torchOn ? page.primaryColor
+                            : Qt.rgba(0, 0, 0, 0.35)
+                        border.width: 1
+                        border.color: page.torchOn
+                            ? page.primaryColor
+                            : Qt.rgba(1, 1, 1, 0.35)
+                    }
                 }
             }
 

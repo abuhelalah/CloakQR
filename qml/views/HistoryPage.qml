@@ -11,6 +11,10 @@ Page {
     property color surfaceColor: "#FFFFFF"
     property color mutedColor: "#5D6F69"
 
+    // Emitted when the user taps a saved entry; the host reopens the scan
+    // result dialog so its quick actions can be used again.
+    signal itemActivated(string content)
+
     background: Rectangle {
         color: page.canvasColor
     }
@@ -70,18 +74,35 @@ Page {
             model: scanHistory
 
             delegate: ItemDelegate {
+                id: historyDelegate
                 width: historyList.width
+                hoverEnabled: true
                 Accessible.name: model.content
+                onClicked: page.itemActivated(model.content)
 
                 background: Rectangle {
-                    color: page.surfaceColor
+                    color: historyDelegate.pressed
+                        ? Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.18)
+                        : historyDelegate.hovered
+                            ? Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.10)
+                            : page.surfaceColor
                     radius: 6
+                    Behavior on color { ColorAnimation { duration: 120 } }
                 }
 
                 function typeIcon(type) {
-                    if (type === "url") return "🔗"
-                    if (type === "encrypted") return "🔒"
-                    return "📄"
+                    switch (type) {
+                    case "url":       return "🔗"
+                    case "wifi":      return "📶"
+                    case "email":     return "✉️"
+                    case "tel":       return "📞"
+                    case "sms":       return "💬"
+                    case "geo":       return "📍"
+                    case "vcard":     return "👤"
+                    case "otp":       return "🔑"
+                    case "encrypted": return "🔒"
+                    default:          return "📄"
+                    }
                 }
 
                 contentItem: ColumnLayout {
@@ -145,7 +166,7 @@ Page {
                 id: clearButton
                 enabled: scanHistory !== null && scanHistory.count > 0
                 Accessible.name: qsTr("Clear all history")
-                onClicked: scanHistory.clear()
+                onClicked: clearConfirm.open()
 
                 readonly property color dangerColor: "#D32F2F"
                 readonly property color contentColor: enabled ? "#FFFFFF" : page.mutedColor
@@ -153,6 +174,9 @@ Page {
                 Layout.preferredHeight: 46
                 leftPadding: 22
                 rightPadding: 22
+
+                scale: clearButton.pressed ? 0.96 : 1
+                Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutQuad } }
 
                 contentItem: RowLayout {
                     spacing: 8
@@ -169,6 +193,21 @@ Page {
                         color: clearButton.contentColor
                         verticalAlignment: Text.AlignVCenter
                     }
+                    Rectangle {
+                        visible: scanHistory !== null && scanHistory.count > 0
+                        width: countBadge.implicitWidth + 12
+                        height: 20
+                        radius: 10
+                        color: Qt.rgba(1, 1, 1, 0.24)
+                        Label {
+                            id: countBadge
+                            anchors.centerIn: parent
+                            text: scanHistory !== null ? String(scanHistory.count) : ""
+                            color: clearButton.contentColor
+                            font.pixelSize: Math.round(11 * appSettings.fontScale)
+                            font.bold: true
+                        }
+                    }
                 }
 
                 background: Rectangle {
@@ -182,5 +221,16 @@ Page {
                 }
             }
         }
+    }
+
+    ConfirmDialog {
+        id: clearConfirm
+        message: (scanHistory === null || scanHistory.count === 0)
+            ? qsTr("Delete all saved scans? This cannot be undone.")
+            : scanHistory.count === 1
+                ? qsTr("Delete this saved scan? This cannot be undone.")
+                : qsTr("Delete %1 saved scans? This cannot be undone.").arg(scanHistory.count)
+        confirmText: qsTr("Delete all")
+        onConfirmed: scanHistory.clear()
     }
 }

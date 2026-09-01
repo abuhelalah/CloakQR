@@ -9,6 +9,30 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
+## [1.2.0] - 2026-08-31
+
+### Added
+
+- Scan support for two-factor `otpauth://` QR codes, with an **Add to
+  authenticator** action that hands the code to Google Authenticator and other
+  TOTP apps; account, issuer and code type are shown in a structured preview.
+- Flashlight (torch) toggle on the live scanner, shown only when the camera
+  reports flash support.
+- **Paste** and **Clear** helpers in the generator for faster entry.
+
+### Improved
+
+- History entries are now tappable, reopening the full scan-result dialog with
+  its quick actions; entries show type-specific icons (link, email, Wi-Fi,
+  phone, SMS, location, contact, authenticator).
+- Clearing scan history now asks for confirmation to prevent accidental deletes.
+- QR preview generation is debounced and no longer re-encodes redundantly,
+  reducing CPU/battery use while typing.
+
+### Internationalization
+
+- All new strings translated into English, Spanish, French, and Arabic.
+
 ## [1.1.0] - 2026-08-05
 
 ### Added
@@ -64,6 +88,7 @@ All notable changes to CloakQR are documented here. The project follows
 - `ENC:1` is an interim pre-audit construction and should not be represented as
 	independently audited cryptography.
 
-[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/abuhelalah/CloakQR/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/abuhelalah/CloakQR/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/abuhelalah/CloakQR/releases/tag/v1.0.0

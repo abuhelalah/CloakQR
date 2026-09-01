@@ -291,6 +291,7 @@ ApplicationWindow {
                     canvasColor: root.canvasColor
                     surfaceColor: root.surfaceColor
                     mutedColor: root.mutedColor
+                    onItemActivated: (content) => scanResultDialog.show(content)
                 }
                 SettingsPage {
                     wideLayout: !root.compactLayout
