@@ -30,39 +30,100 @@ Popup {
         dialog.open()
     }
 
-    readonly property bool isUrl: /^https?:\/\//i.test(content)
-    readonly property bool isWifi: /^WIFI:/i.test(content)
-    readonly property var wifi: parseWifi(content)
+    // Ordered recognisers — first match wins. Deep links are listed before the
+    // generic URL rule so each is labelled by its target app. An entry is a
+    // [kind, regex] pair; supporting a new scheme is a one-line addition here.
+    readonly property var recognisers: [
+        ["wifi",      /^WIFI:/i],
+        ["email",     /^mailto:|^MATMSG:/i],
+        ["email",     /^[^\s@]+@[^\s@]+\.[^\s@]+$/],
+        ["tel",       /^tel:/i],
+        ["sms",       /^(sms|smsto):/i],
+        ["geo",       /^geo:/i],
+        ["vcard",     /^(BEGIN:VCARD|MECARD:)/i],
+        ["otp",       /^otpauth:\/\//i],
+        ["calendar",  /^BEGIN:VCALENDAR/i],
+        ["sepa",      /^BCD\r?\n/],
+        ["whatsapp",  /^whatsapp:\/\//i],
+        ["whatsapp",  /^https:\/\/(wa\.me|api\.whatsapp\.com)\//i],
+        ["telegram",  /^tg:\/\//i],
+        ["telegram",  /^https:\/\/t\.me\//i],
+        ["signal",    /^sgnl:\/\//i],
+        ["signal",    /^https:\/\/signal\.me\//i],
+        ["facetime",  /^facetime(-audio)?:/i],
+        ["messenger", /^fb-messenger:\/\//i],
+        ["bitcoin",   /^bitcoin:/i],
+        ["ethereum",  /^ethereum:/i],
+        ["upi",       /^upi:\/\//i],
+        ["paypal",    /^https:\/\/(www\.)?paypal\.me\//i],
+        ["store",     /^market:\/\//i],
+        ["store",     /^https?:\/\/(play\.google\.com|apps\.apple\.com|itunes\.apple\.com)\//i],
+        ["url",       /^https?:\/\//i]
+    ]
 
-    // Actionable content types recognised for scan-result quick actions.
-    readonly property var emailData: parseEmail(content)
-    readonly property bool isEmail: emailData.isEmail
-    readonly property bool isTel: /^tel:/i.test(content)
-    readonly property bool isSms: /^(sms|smsto):/i.test(content)
-    readonly property bool isGeo: /^geo:/i.test(content)
-    readonly property bool isVCard: /^(BEGIN:VCARD|MECARD:)/i.test(content)
-    readonly property bool isOtp: /^otpauth:\/\//i.test(content)
+    // Single classification pass over the scanned payload.
+    function detectKind(text) {
+        for (var i = 0; i < recognisers.length; ++i) {
+            if (recognisers[i][1].test(text))
+                return recognisers[i][0]
+        }
+        return "text"
+    }
+
+    readonly property string kind: detectKind(content)
+
+    // Derived type flags consumed by the views and action buttons.
+    readonly property bool isUrl: kind === "url"
+    readonly property bool isWifi: kind === "wifi"
+    readonly property bool isEmail: kind === "email"
+    readonly property bool isTel: kind === "tel"
+    readonly property bool isSms: kind === "sms"
+    readonly property bool isGeo: kind === "geo"
+    readonly property bool isVCard: kind === "vcard"
+    readonly property bool isOtp: kind === "otp"
+    readonly property bool isCalendar: kind === "calendar"
+    readonly property bool isSepa: kind === "sepa"
+    readonly property bool isStoreLink: kind === "store"
 
     // True when the current platform can hand a new contact to the OS or, on
     // desktop, when we can offer to save the contact as a .vcf file.
     readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
 
-    // Parsed data for the actionable types.
+    // Parsed data for the structured types (each parser no-ops for other kinds).
+    readonly property var wifi: parseWifi(content)
+    readonly property var emailData: parseEmail(content)
     readonly property string telNumber: isTel ? content.substring(4) : ""
     readonly property var sms: parseSms(content)
     readonly property var geo: parseGeo(content)
     readonly property var vcard: parseVCard(content)
     readonly property var otp: parseOtp(content)
+    readonly property var calendar: parseCalendar(content)
 
-    // Recognises app-store deep links so the action button can offer to open
-    // the relevant store. Qt.openUrlExternally already routes these to the
-    // installed store app on the device.
+    // App-store links are deep links too; the button just names the store.
     readonly property bool isAppleStore: /apps\.apple\.com|itunes\.apple\.com/i.test(content)
-    readonly property bool isStoreLink: /^market:\/\//i.test(content)
-        || /^https?:\/\/(play\.google\.com|apps\.apple\.com|itunes\.apple\.com)\//i.test(content)
-    readonly property string openLabel: isStoreLink
-        ? (isAppleStore ? qsTr("Open in App Store") : qsTr("Open in Play Store"))
-        : qsTr("Open link")
+
+    // Kinds whose primary action is handing the payload to the OS.
+    readonly property bool isOpenable: kind === "url" || kind === "store"
+        || kind === "whatsapp" || kind === "telegram" || kind === "signal"
+        || kind === "facetime" || kind === "messenger" || kind === "bitcoin"
+        || kind === "ethereum" || kind === "upi" || kind === "paypal"
+
+    // Label for the single "open" action, named after the target app.
+    readonly property string openLabel: {
+        switch (kind) {
+        case "whatsapp":  return qsTr("Open in WhatsApp")
+        case "telegram":  return qsTr("Open in Telegram")
+        case "signal":    return qsTr("Open in Signal")
+        case "facetime":  return qsTr("Start FaceTime")
+        case "messenger": return qsTr("Open in Messenger")
+        case "bitcoin":   return qsTr("Open wallet")
+        case "ethereum":  return qsTr("Open wallet")
+        case "upi":       return qsTr("Pay via UPI")
+        case "paypal":    return qsTr("Open in PayPal")
+        case "store":     return isAppleStore ? qsTr("Open in App Store") : qsTr("Open in Play Store")
+        default:          return qsTr("Open link")
+        }
+    }
 
     // Parses a "WIFI:S:ssid;T:WPA;P:pass;H:true;;" payload into its parts,
     // honouring the backslash escaping defined by the Wi-Fi QR convention.
@@ -219,6 +280,47 @@ Popup {
         return info
     }
 
+    // Converts an iCalendar date value ("20260116T090000Z", "20260116T090000"
+    // or date-only "20260116") to epoch milliseconds. Returns 0 on failure.
+    function icalToMillis(value) {
+        var m = value.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?(Z)?$/)
+        if (!m)
+            return 0
+        var year = parseInt(m[1], 10)
+        var month = parseInt(m[2], 10) - 1
+        var day = parseInt(m[3], 10)
+        var hour = m[4] ? parseInt(m[4], 10) : 0
+        var min = m[5] ? parseInt(m[5], 10) : 0
+        var sec = m[6] ? parseInt(m[6], 10) : 0
+        return m[7] ? Date.UTC(year, month, day, hour, min, sec)
+                    : new Date(year, month, day, hour, min, sec).getTime()
+    }
+
+    // Extracts the summary, description, location and start/end times from an
+    // iCalendar payload, unfolding continuation lines and skipping parameters.
+    function parseCalendar(payload) {
+        var info = { title: "", description: "", location: "", start: 0, end: 0 }
+        if (!/^BEGIN:VCALENDAR/i.test(payload))
+            return info
+        var lines = payload.split(/\r?\n/)
+        for (var i = 0; i < lines.length; ++i) {
+            var line = lines[i]
+            while (i + 1 < lines.length && /^[ \t]/.test(lines[i + 1]))
+                line += lines[++i].substring(1)
+            var colon = line.indexOf(":")
+            if (colon < 0)
+                continue
+            var key = line.substring(0, colon).toUpperCase().split(";")[0]
+            var val = line.substring(colon + 1).trim()
+            if (key === "SUMMARY" && info.title.length === 0) info.title = val
+            else if (key === "DESCRIPTION" && info.description.length === 0) info.description = val
+            else if (key === "LOCATION" && info.location.length === 0) info.location = val
+            else if (key === "DTSTART" && info.start === 0) info.start = icalToMillis(val)
+            else if (key === "DTEND" && info.end === 0) info.end = icalToMillis(val)
+        }
+        return info
+    }
+
     // Parses "geo:lat,lon" with an optional "?q=label" query.
     function parseGeo(payload) {
         var info = { lat: "", lon: "", label: "" }
@@ -356,28 +458,32 @@ Popup {
         const match = content.match(/^https?:\/\/([^/?#]+)/i)
         return match ? match[1] : ""
     }
-    readonly property string kindLabel: {
-        if (isUrl) return qsTr("Website link")
-        if (isWifi) return qsTr("Wi-Fi network")
-        if (isEmail) return qsTr("Email")
-        if (isSms) return qsTr("Text message")
-        if (isTel) return qsTr("Phone number")
-        if (isVCard) return qsTr("Contact card")
-        if (isGeo) return qsTr("Location")
-        if (isOtp) return qsTr("Authenticator")
-        return qsTr("Plain text")
-    }
-    readonly property string kindGlyph: {
-        if (isUrl) return "🔗"
-        if (isWifi) return "📶"
-        if (isEmail) return "✉️"
-        if (isSms) return "💬"
-        if (isTel) return "📞"
-        if (isVCard) return "👤"
-        if (isGeo) return "📍"
-        if (isOtp) return "🔑"
-        return "📄"
-    }
+    // Human label and glyph per recognised kind, keyed by the kind id.
+    readonly property var kindMeta: ({
+        "url":       { label: qsTr("Website link"),   glyph: "🔗" },
+        "wifi":      { label: qsTr("Wi-Fi network"),  glyph: "📶" },
+        "email":     { label: qsTr("Email"),          glyph: "✉️" },
+        "tel":       { label: qsTr("Phone number"),   glyph: "📞" },
+        "sms":       { label: qsTr("Text message"),   glyph: "💬" },
+        "geo":       { label: qsTr("Location"),       glyph: "📍" },
+        "vcard":     { label: qsTr("Contact card"),   glyph: "👤" },
+        "otp":       { label: qsTr("Authenticator"),  glyph: "🔑" },
+        "calendar":  { label: qsTr("Calendar event"), glyph: "📅" },
+        "sepa":      { label: qsTr("Bank transfer"),  glyph: "🏦" },
+        "whatsapp":  { label: qsTr("WhatsApp"),       glyph: "💬" },
+        "telegram":  { label: qsTr("Telegram"),       glyph: "✈️" },
+        "signal":    { label: qsTr("Signal"),         glyph: "🔒" },
+        "facetime":  { label: qsTr("FaceTime"),       glyph: "📹" },
+        "messenger": { label: qsTr("Messenger"),      glyph: "💬" },
+        "bitcoin":   { label: qsTr("Bitcoin"),        glyph: "₿" },
+        "ethereum":  { label: qsTr("Ethereum"),       glyph: "Ξ" },
+        "upi":       { label: qsTr("UPI payment"),    glyph: "💳" },
+        "paypal":    { label: qsTr("PayPal"),         glyph: "💳" },
+        "store":     { label: qsTr("App store"),      glyph: "🛒" },
+        "text":      { label: qsTr("Plain text"),     glyph: "📄" }
+    })
+    readonly property string kindLabel: kindMeta[kind].label
+    readonly property string kindGlyph: kindMeta[kind].glyph
 
     parent: Overlay.overlay
     anchors.centerIn: Overlay.overlay
@@ -437,6 +543,20 @@ Popup {
                 hint.flash(qsTr("Contact saved"))
             else
                 hint.flash(qsTr("Couldn't save contact"))
+        }
+    }
+
+    // Desktop-only: saves the scanned iCalendar payload as a .ics file.
+    FileDialog {
+        id: calendarSaveDialog
+        fileMode: FileDialog.SaveFile
+        nameFilters: [qsTr("iCalendar (*.ics)")]
+        defaultSuffix: "ics"
+        onAccepted: {
+            if (fileExporter.saveTextFile(selectedFile, dialog.content))
+                hint.flash(qsTr("Calendar event saved"))
+            else
+                hint.flash(qsTr("Couldn't save event"))
         }
     }
 
@@ -760,8 +880,8 @@ Popup {
                     Layout.fillWidth: true
                     spacing: 8
                     visible: dialog.isEmail || dialog.isSms || dialog.isGeo
-                             || dialog.isTel || dialog.isVCard || dialog.isUrl
-                             || dialog.isOtp
+                             || dialog.isTel || dialog.isVCard || dialog.isOtp
+                             || dialog.isCalendar || dialog.isOpenable
                              || (dialog.isWifi && platformBridge.wifiConnectSupported)
 
                     Button {
@@ -819,12 +939,15 @@ Popup {
                     }
                     Button {
                         id: openBtn
-                        visible: dialog.isUrl
+                        visible: dialog.isOpenable
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: dialog.openLabel
                         Accessible.name: text
-                        onClicked: Qt.openUrlExternally(dialog.content)
+                        onClicked: {
+                            if (!Qt.openUrlExternally(dialog.content))
+                                hint.flash(qsTr("No app found to open this"))
+                        }
                     }
                     Button {
                         id: wifiBtn
@@ -851,6 +974,26 @@ Popup {
                         onClicked: {
                             if (!Qt.openUrlExternally(dialog.content))
                                 hint.flash(qsTr("No authenticator app found"))
+                        }
+                    }
+                    Button {
+                        id: calendarBtn
+                        visible: dialog.isCalendar
+                        Material.background: dialog.primaryColor
+                        Material.foreground: dialog.primaryTextColor
+                        text: qsTr("Add to calendar")
+                        Accessible.name: text
+                        onClicked: {
+                            var c = dialog.calendar
+                            if (platformBridge.calendarInsertSupported) {
+                                if (!platformBridge.addCalendarEvent(c.title, c.description,
+                                                                     c.location, c.start, c.end))
+                                    hint.flash(qsTr("Couldn't open calendar"))
+                            } else {
+                                calendarSaveDialog.currentFile =
+                                    calendarSaveDialog.currentFolder + "/event.ics"
+                                calendarSaveDialog.open()
+                            }
                         }
                     }
 

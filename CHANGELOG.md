@@ -9,6 +9,33 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
+## [1.2.1] - 2026-09-16
+
+### Added
+
+- Scan recognition for messaging and payment deep links: WhatsApp, Telegram,
+  Signal, FaceTime, Messenger, Bitcoin, Ethereum, PayPal, and UPI QR codes now
+  show a labelled action that opens the target app.
+- Calendar (`VCALENDAR`) QR codes open the calendar app with the event
+  pre-filled via an **Add to calendar** action (title, time, location and
+  description are parsed from the payload).
+- SEPA bank-transfer (`BCD`) QR codes are recognised and labelled.
+
+### Improved
+
+- QR type detection was refactored into a single, data-driven recogniser table,
+  so adding a new scheme is a one-line change and classification runs in one pass.
+- Scan actions now show "No app found to open this" when no handler is installed.
+- The confirmation dialog is now centered on screen, and the clear-history button
+  shows a live entry count and confirms deletion with that count.
+- Arabic localization disambiguated: "scan" now reads "امسح ضوئياً" and
+  clear/delete actions use "حذف" instead of the ambiguous "مسح".
+- Language list reorders Arabic right after English.
+
+### Internationalization
+
+- All new strings translated into English, Spanish, French, and Arabic.
+
 ## [1.2.0] - 2026-08-31
 
 ### Added
@@ -88,7 +115,8 @@ All notable changes to CloakQR are documented here. The project follows
 - `ENC:1` is an interim pre-audit construction and should not be represented as
 	independently audited cryptography.
 
-[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/abuhelalah/CloakQR/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/abuhelalah/CloakQR/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/abuhelalah/CloakQR/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/abuhelalah/CloakQR/releases/tag/v1.0.0

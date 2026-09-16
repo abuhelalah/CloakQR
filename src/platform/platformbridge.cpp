@@ -38,6 +38,15 @@ bool PlatformBridge::contactInsertSupported() const
 #endif
 }
 
+bool PlatformBridge::calendarInsertSupported() const
+{
+#ifdef Q_OS_ANDROID
+    return true;
+#else
+    return false;
+#endif
+}
+
 bool PlatformBridge::connectToWifi(const QString& ssid,
                                    const QString& password,
                                    const QString& security,
@@ -181,6 +190,88 @@ bool PlatformBridge::addContact(const QString& name,
     Q_UNUSED(name);
     Q_UNUSED(phone);
     Q_UNUSED(email);
+    return false;
+#endif
+}
+
+bool PlatformBridge::addCalendarEvent(const QString& title,
+                                      const QString& description,
+                                      const QString& location,
+                                      qint64 startMillis,
+                                      qint64 endMillis)
+{
+#ifdef Q_OS_ANDROID
+    QJniEnvironment env;
+
+    const QJniObject action = QJniObject::fromString(
+        QStringLiteral("android.intent.action.INSERT"));
+    QJniObject intent("android/content/Intent",
+                      "(Ljava/lang/String;)V",
+                      action.object<jstring>());
+    if (!intent.isValid())
+        return false;
+
+    // CalendarContract.Events.CONTENT_URI — "content://com.android.calendar/events".
+    const QJniObject uriString = QJniObject::fromString(
+        QStringLiteral("content://com.android.calendar/events"));
+    const QJniObject uri = QJniObject::callStaticObjectMethod(
+        "android/net/Uri",
+        "parse",
+        "(Ljava/lang/String;)Landroid/net/Uri;",
+        uriString.object<jstring>());
+    if (uri.isValid())
+        intent.callObjectMethod("setData",
+                                "(Landroid/net/Uri;)Landroid/content/Intent;",
+                                uri.object());
+
+    const auto putString = [&intent](const char* key, const QString& value) {
+        if (value.isEmpty())
+            return;
+        const QJniObject jkey = QJniObject::fromString(QString::fromLatin1(key));
+        const QJniObject jval = QJniObject::fromString(value);
+        intent.callObjectMethod(
+            "putExtra",
+            "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+            jkey.object<jstring>(), jval.object<jstring>());
+    };
+    // Keys are the stable CalendarContract.Events / EXTRA_EVENT constants.
+    putString("title", title);
+    putString("description", description);
+    putString("eventLocation", location);
+
+    if (startMillis > 0) {
+        const QJniObject jkey = QJniObject::fromString(
+            QStringLiteral("beginTime"));
+        intent.callObjectMethod(
+            "putExtra",
+            "(Ljava/lang/String;J)Landroid/content/Intent;",
+            jkey.object<jstring>(), jlong(startMillis));
+    }
+    if (endMillis > 0) {
+        const QJniObject jkey = QJniObject::fromString(
+            QStringLiteral("endTime"));
+        intent.callObjectMethod(
+            "putExtra",
+            "(Ljava/lang/String;J)Landroid/content/Intent;",
+            jkey.object<jstring>(), jlong(endMillis));
+    }
+
+    intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", 0x10000000);
+
+    QJniObject context = QNativeInterface::QAndroidApplication::context();
+    if (!context.isValid())
+        return false;
+    context.callMethod<void>("startActivity",
+                             "(Landroid/content/Intent;)V",
+                             intent.object());
+
+    return !env.checkAndClearExceptions();
+#else
+    Q_UNUSED(title);
+    Q_UNUSED(description);
+    Q_UNUSED(location);
+    Q_UNUSED(startMillis);
+    Q_UNUSED(endMillis);
     return false;
 #endif
 }

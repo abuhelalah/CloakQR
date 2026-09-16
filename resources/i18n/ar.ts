@@ -96,7 +96,7 @@
         <translation>حذف</translation>
     </message>
     <message>
-        <location filename="../../qml/common/ConfirmDialog.qml" line="48"/>
+        <location filename="../../qml/common/ConfirmDialog.qml" line="51"/>
         <source>Cancel</source>
         <translation>إلغاء</translation>
     </message>
@@ -642,12 +642,12 @@
         <translation type="vanished">المضيف: %1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="360"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="463"/>
         <source>Website link</source>
         <translation>رابط ويب</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="361"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="464"/>
         <source>Wi-Fi network</source>
         <translation>شبكة Wi-Fi</translation>
     </message>
@@ -656,217 +656,348 @@
         <translation type="vanished">عنوان بريد إلكتروني</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="364"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="466"/>
         <source>Phone number</source>
         <translation>رقم هاتف</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="365"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="469"/>
         <source>Contact card</source>
         <translation>بطاقة اتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="366"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="468"/>
         <source>Location</source>
         <translation>الموقع</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="367"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="114"/>
+        <source>Open in WhatsApp</source>
+        <translation>فتح في واتساب</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="115"/>
+        <source>Open in Telegram</source>
+        <translation>فتح في تيليغرام</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="116"/>
+        <source>Open in Signal</source>
+        <translation>فتح في Signal</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="117"/>
+        <source>Start FaceTime</source>
+        <translation>بدء FaceTime</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="118"/>
+        <source>Open in Messenger</source>
+        <translation>فتح في ماسنجر</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="119"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="120"/>
+        <source>Open wallet</source>
+        <translation>فتح المحفظة</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="121"/>
+        <source>Pay via UPI</source>
+        <translation>الدفع عبر UPI</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="122"/>
+        <source>Open in PayPal</source>
+        <translation>فتح في باي بال</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="470"/>
         <source>Authenticator</source>
         <translation>المصادقة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="368"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="471"/>
+        <source>Calendar event</source>
+        <translation>حدث تقويم</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="472"/>
+        <source>Bank transfer</source>
+        <translation>تحويل مصرفي</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="473"/>
+        <source>WhatsApp</source>
+        <translation>واتساب</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="474"/>
+        <source>Telegram</source>
+        <translation>تيليغرام</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="475"/>
+        <source>Signal</source>
+        <translation>Signal</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="476"/>
+        <source>FaceTime</source>
+        <translation>FaceTime</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="477"/>
+        <source>Messenger</source>
+        <translation>ماسنجر</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="478"/>
+        <source>Bitcoin</source>
+        <translation>بيتكوين</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="479"/>
+        <source>Ethereum</source>
+        <translation>إيثريوم</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="480"/>
+        <source>UPI payment</source>
+        <translation>دفع UPI</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="481"/>
+        <source>PayPal</source>
+        <translation>باي بال</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="482"/>
+        <source>App store</source>
+        <translation>متجر التطبيقات</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="483"/>
         <source>Plain text</source>
         <translation>نص عادي</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="431"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="537"/>
         <source>vCard (*.vcf)</source>
         <translation>vCard (*.vcf)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="437"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="543"/>
         <source>Contact saved</source>
         <translation>تم حفظ جهة الاتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="439"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="545"/>
         <source>Couldn&apos;t save contact</source>
         <translation>تعذّر حفظ جهة الاتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="467"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="553"/>
+        <source>iCalendar (*.ics)</source>
+        <translation>iCalendar (*.ics)</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="557"/>
+        <source>Calendar event saved</source>
+        <translation>تم حفظ حدث التقويم</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="559"/>
+        <source>Couldn&apos;t save event</source>
+        <translation>تعذّر حفظ الحدث</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="587"/>
         <source>Scan result</source>
         <translation>نتيجة المسح</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="482"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="866"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="867"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="602"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="1009"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="1010"/>
         <source>Close</source>
         <translation>إغلاق</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="520"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="640"/>
         <source>Opens %1</source>
         <translation>يفتح %1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="534"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="654"/>
         <source>Network</source>
         <translation>الشبكة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="552"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="672"/>
         <source>Open network</source>
         <translation>شبكة مفتوحة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="553"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="673"/>
         <source>Security: %1</source>
         <translation>الأمان: %1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="555"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="675"/>
         <source>Hidden</source>
         <translation>مخفية</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="580"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="700"/>
         <source>Hide</source>
         <translation>إخفاء</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="580"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="700"/>
         <source>Show</source>
         <translation>إظهار</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="586"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="706"/>
         <source>Copy password</source>
         <translation>نسخ كلمة المرور</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="589"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="728"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="878"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="709"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="848"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="1021"/>
         <source>Copied to clipboard</source>
         <translation>تم النسخ إلى الحافظة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="602"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="722"/>
         <source>To</source>
         <translation>إلى</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="617"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="737"/>
         <source>Subject</source>
         <translation>الموضوع</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="632"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="752"/>
         <source>Message</source>
         <translation>الرسالة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="653"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="773"/>
         <source>Account</source>
         <translation>الحساب</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="668"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="788"/>
         <source>Issuer</source>
         <translation>المُصدر</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="689"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="809"/>
         <source>digits</source>
         <translation>أرقام</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="772"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="892"/>
         <source>Send email</source>
         <translation>إرسال بريد</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="785"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="905"/>
         <source>Send message</source>
         <translation>إرسال رسالة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="794"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="914"/>
         <source>Open in Maps</source>
         <translation>فتح في الخرائط</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="803"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="923"/>
         <source>Dial</source>
         <translation>اتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="813"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="933"/>
         <source>Add contact</source>
         <translation>إضافة جهة اتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="834"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="949"/>
+        <source>No app found to open this</source>
+        <translation>لم يتم العثور على تطبيق لفتح هذا</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="957"/>
         <source>Connect</source>
         <translation>اتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="841"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="964"/>
         <source>Couldn&apos;t start Wi-Fi connection</source>
         <translation>تعذّر بدء اتصال Wi-Fi</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="585"/>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="874"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="705"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="1017"/>
         <source>Copy</source>
         <translation>نسخ</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="64"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="123"/>
         <source>Open in App Store</source>
         <translation>فتح في App Store</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="64"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="123"/>
         <source>Open in Play Store</source>
         <translation>فتح في Play Store</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="344"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="446"/>
         <source>Couldn&apos;t open contacts</source>
         <translation>تعذّر فتح جهات الاتصال</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="362"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="465"/>
         <source>Email</source>
         <translation>البريد الإلكتروني</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="363"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="467"/>
         <source>Text message</source>
         <translation>رسالة نصية</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="849"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="972"/>
         <source>Add to authenticator</source>
         <translation>إضافة إلى المصادقة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="853"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="976"/>
         <source>No authenticator app found</source>
         <translation>لم يتم العثور على تطبيق مصادقة</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="875"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="984"/>
+        <source>Add to calendar</source>
+        <translation>إضافة إلى التقويم</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="991"/>
+        <source>Couldn&apos;t open calendar</source>
+        <translation>تعذّر فتح التقويم</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="1018"/>
         <source>Copy scanned content</source>
         <translation>نسخ المحتوى الممسوح</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SafePreviewDialog.qml" line="65"/>
+        <location filename="../../qml/views/SafePreviewDialog.qml" line="124"/>
         <source>Open link</source>
         <translation>فتح الرابط</translation>
     </message>
@@ -1076,17 +1207,17 @@
         <translation>الإنجليزية</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SettingsPage.qml" line="176"/>
+        <location filename="../../qml/views/SettingsPage.qml" line="177"/>
         <source>Español</source>
         <translation>الإسبانية</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SettingsPage.qml" line="177"/>
+        <location filename="../../qml/views/SettingsPage.qml" line="178"/>
         <source>Français</source>
         <translation>الفرنسية</translation>
     </message>
     <message>
-        <location filename="../../qml/views/SettingsPage.qml" line="178"/>
+        <location filename="../../qml/views/SettingsPage.qml" line="176"/>
         <source>العربية</source>
         <translation>العربية</translation>
     </message>

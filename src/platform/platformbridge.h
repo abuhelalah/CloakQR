@@ -11,12 +11,14 @@ class PlatformBridge : public QObject
     Q_OBJECT
     Q_PROPERTY(bool wifiConnectSupported READ wifiConnectSupported CONSTANT)
     Q_PROPERTY(bool contactInsertSupported READ contactInsertSupported CONSTANT)
+    Q_PROPERTY(bool calendarInsertSupported READ calendarInsertSupported CONSTANT)
 
 public:
     explicit PlatformBridge(QObject* parent = nullptr);
 
     bool wifiConnectSupported() const;
     bool contactInsertSupported() const;
+    bool calendarInsertSupported() const;
 
     // Asks the operating system to add/connect to the given Wi-Fi network,
     // showing a native confirmation prompt. Returns true when the request was
@@ -31,6 +33,15 @@ public:
     Q_INVOKABLE bool addContact(const QString& name,
                                 const QString& phone,
                                 const QString& email);
+
+    // Opens the system calendar's "new event" screen pre-filled from a parsed
+    // iCalendar entry (Android only). Returns true when the request was handed
+    // to the OS. startMillis/endMillis are epoch milliseconds (0 = omitted).
+    Q_INVOKABLE bool addCalendarEvent(const QString& title,
+                                      const QString& description,
+                                      const QString& location,
+                                      qint64 startMillis,
+                                      qint64 endMillis);
 
     // Opens the desktop's email client with a pre-filled draft, preferring a
     // real mail application over a browser-based mailto handler. Returns false
