@@ -25,6 +25,7 @@ public:
     bool open(const QString& dbPath);
 
     Q_INVOKABLE void addEntry(const QString& content, const QString& type = QStringLiteral("text"));
+    Q_INVOKABLE void removeEntry(int row);
     Q_INVOKABLE void clear();
     Q_INVOKABLE int  count() const;
 

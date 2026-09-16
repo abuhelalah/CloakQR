@@ -92,6 +92,24 @@ void ScanHistoryModel::clear()
     }
 }
 
+void ScanHistoryModel::removeEntry(int row)
+{
+    if (row < 0 || row >= m_entries.size() || !m_db.isOpen())
+        return;
+
+    QSqlQuery q(m_db);
+    q.prepare(QStringLiteral("DELETE FROM %1 WHERE id = ?").arg(
+        QString::fromLatin1(kTable)));
+    q.addBindValue(m_entries.at(row).id);
+    if (!q.exec())
+        return;
+
+    beginRemoveRows(QModelIndex(), row, row);
+    m_entries.removeAt(row);
+    endRemoveRows();
+    emit countChanged();
+}
+
 int ScanHistoryModel::count() const
 {
     return m_entries.size();

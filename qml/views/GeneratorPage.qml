@@ -17,6 +17,24 @@ Page {
         color: page.canvasColor
     }
 
+    // Hidden helper used to place the generated payload on the clipboard.
+    TextEdit {
+        id: clipboardHelper
+        visible: false
+        function copyText(value) {
+            text = value
+            selectAll()
+            copy()
+            deselect()
+        }
+    }
+
+    Timer {
+        id: copyTimer
+        interval: 1500
+        onTriggered: copyContentBtn.showingCopied = false
+    }
+
     // Content type indices match the ComboBox model order below.
     readonly property int typeText: 0
     readonly property int typeUrl: 1
@@ -593,24 +611,42 @@ Page {
                 }
             }
 
-            Button {
+            RowLayout {
                 Layout.row: page.wideLayout ? 1 : 2
                 Layout.column: page.wideLayout ? 1 : 0
                 Layout.fillWidth: true
                 Layout.leftMargin: page.wideLayout ? 0 : 20
                 Layout.rightMargin: page.wideLayout ? 28 : 20
                 Layout.bottomMargin: 24
-                text: qsTr("Save as PNG")
-                enabled: qrImage.source.toString().length > 0 && page.capacity.fits
-                Material.background: enabled ? page.primaryColor
-                    : Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.16)
-                Material.foreground: enabled ? page.primaryTextColor : page.mutedColor
-                Accessible.name: qsTr("Save QR code as PNG")
-                onClicked: {
-                    if (Qt.platform.os === "android" || Qt.platform.os === "ios")
-                        saveDialog.open()
-                    else
-                        savePicker.openAt(page.folderUrl())
+                spacing: 10
+
+                Button {
+                    Layout.fillWidth: true
+                    text: qsTr("Save as PNG")
+                    enabled: qrImage.source.toString().length > 0 && page.capacity.fits
+                    Material.background: enabled ? page.primaryColor
+                        : Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.16)
+                    Material.foreground: enabled ? page.primaryTextColor : page.mutedColor
+                    Accessible.name: qsTr("Save QR code as PNG")
+                    onClicked: {
+                        if (Qt.platform.os === "android" || Qt.platform.os === "ios")
+                            saveDialog.open()
+                        else
+                            savePicker.openAt(page.folderUrl())
+                    }
+                }
+
+                Button {
+                    id: copyContentBtn
+                    property bool showingCopied: false
+                    text: copyContentBtn.showingCopied ? qsTr("Copied!") : qsTr("Copy content")
+                    enabled: qrImage.source.toString().length > 0 && page.capacity.fits
+                    Accessible.name: qsTr("Copy QR code content")
+                    onClicked: {
+                        clipboardHelper.copyText(page.currentPayload)
+                        copyContentBtn.showingCopied = true
+                        copyTimer.restart()
+                    }
                 }
             }
         }

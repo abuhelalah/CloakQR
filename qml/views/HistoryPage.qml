@@ -100,6 +100,18 @@ Page {
                     case "geo":       return "📍"
                     case "vcard":     return "👤"
                     case "otp":       return "🔑"
+                    case "calendar":  return "📅"
+                    case "sepa":      return "🏦"
+                    case "whatsapp":  return "💬"
+                    case "telegram":  return "✈️"
+                    case "signal":    return "🔒"
+                    case "facetime":  return "📹"
+                    case "messenger": return "💬"
+                    case "bitcoin":   return "₿"
+                    case "ethereum":  return "Ξ"
+                    case "upi":       return "💳"
+                    case "paypal":    return "💳"
+                    case "store":     return "🛒"
                     case "encrypted": return "🔒"
                     default:          return "📄"
                     }
@@ -122,6 +134,13 @@ Page {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                             font.pixelSize: Math.round(14 * appSettings.fontScale)
+                        }
+
+                        ToolButton {
+                            text: "🗑"
+                            font.pixelSize: Math.round(14 * appSettings.fontScale)
+                            Accessible.name: qsTr("Delete entry")
+                            onClicked: scanHistory.removeEntry(index)
                         }
                     }
 

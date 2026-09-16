@@ -179,67 +179,67 @@
         <translation>Generator</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="201"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="219"/>
         <source>Create a QR code</source>
         <translation>Create a QR code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="208"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="226"/>
         <source>Build a code for sharing, then export it as an image</source>
         <translation>Build a code for sharing, then export it as an image</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="219"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="237"/>
         <source>Content type</source>
         <translation>Content type</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="234"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="252"/>
         <source>Content type selector</source>
         <translation>Content type selector</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="238"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="256"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="239"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="257"/>
         <source>URL</source>
         <translation>URL</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="240"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="258"/>
         <source>Email</source>
         <translation>Email</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="241"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="259"/>
         <source>Phone</source>
         <translation>Phone</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="242"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="260"/>
         <source>SMS</source>
         <translation>SMS</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="243"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="261"/>
         <source>Wi-Fi</source>
         <translation>Wi-Fi</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="244"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="262"/>
         <source>Location</source>
         <translation>Location</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="262"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="280"/>
         <source>https://example.com</source>
         <translation>https://example.com</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="263"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="281"/>
         <source>name@example.com</source>
         <translation>name@example.com</translation>
     </message>
@@ -248,269 +248,284 @@
         <translation type="vanished">+1 555 0100</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="328"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="330"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="346"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="348"/>
         <source>Recipient number</source>
         <translation>Recipient number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="264"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="282"/>
         <source>Enter text</source>
         <translation>Enter text</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="225"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="243"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="226"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="244"/>
         <source>Clear all fields</source>
         <translation>Clear all fields</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="267"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="285"/>
         <source>Primary content field</source>
         <translation>Primary content field</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="272"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="290"/>
         <source>Paste</source>
         <translation>Paste</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="273"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="291"/>
         <source>Paste from clipboard</source>
         <translation>Paste from clipboard</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="283"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="301"/>
         <source>Name (optional)</source>
         <translation>Name (optional)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="284"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="302"/>
         <source>Contact name</source>
         <translation>Contact name</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="296"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="320"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="314"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="338"/>
         <source>+1</source>
         <translation>+1</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="298"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="322"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="316"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="340"/>
         <source>Country code</source>
         <translation>Country code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="304"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="306"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="322"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="324"/>
         <source>Phone number</source>
         <translation>Phone number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="340"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="358"/>
         <source>Subject</source>
         <translation>Subject</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="341"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="359"/>
         <source>Email subject</source>
         <translation>Email subject</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="351"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="369"/>
         <source>Message</source>
         <translation>Message</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="351"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="369"/>
         <source>Body</source>
         <translation>Body</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="352"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="370"/>
         <source>Message body</source>
         <translation>Message body</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="361"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="379"/>
         <source>Network name (SSID)</source>
         <translation>Network name (SSID)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="362"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="380"/>
         <source>Wi-Fi network name</source>
         <translation>Wi-Fi network name</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="371"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="389"/>
         <source>Password</source>
         <translation>Password</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="373"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="391"/>
         <source>Wi-Fi password</source>
         <translation>Wi-Fi password</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="385"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="403"/>
         <source>Wi-Fi security</source>
         <translation>Wi-Fi security</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="389"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="407"/>
         <source>WPA/WPA2</source>
         <translation>WPA/WPA2</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="390"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="408"/>
         <source>WEP</source>
         <translation>WEP</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="391"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="409"/>
         <source>None</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="398"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="416"/>
         <source>Hidden</source>
         <translation>Hidden</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="399"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="417"/>
         <source>Hidden network</source>
         <translation>Hidden network</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="409"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="427"/>
         <source>Location input method</source>
         <translation>Location input method</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="413"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="431"/>
         <source>Coordinates</source>
         <translation>Coordinates</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="414"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="432"/>
         <source>Address</source>
         <translation>Address</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="428"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="430"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="446"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="448"/>
         <source>Latitude</source>
         <translation>Latitude</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="436"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="438"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="454"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="456"/>
         <source>Longitude</source>
         <translation>Longitude</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="448"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="449"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="466"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="467"/>
         <source>Street</source>
         <translation>Street</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="462"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="463"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="480"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="481"/>
         <source>Building number</source>
         <translation>Building number</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="469"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="470"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="487"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="488"/>
         <source>Postal code</source>
         <translation>Postal code</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="480"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="481"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="498"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="499"/>
         <source>City</source>
         <translation>City</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="490"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="491"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="508"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="509"/>
         <source>Country</source>
         <translation>Country</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="497"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="515"/>
         <source>Error correction</source>
         <translation>Error correction</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="505"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="523"/>
         <source>Error correction level</source>
         <translation>Error correction level</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="507"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="525"/>
         <source>Low (7%)</source>
         <translation>Low (7%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="508"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="526"/>
         <source>Medium (15%)</source>
         <translation>Medium (15%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="509"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="527"/>
         <source>Quartile (25%)</source>
         <translation>Quartile (25%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="510"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="528"/>
         <source>High (30%)</source>
         <translation>High (30%)</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="522"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="540"/>
         <source>Foreground</source>
         <translation>Foreground</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="537"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="555"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="560"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="578"/>
         <source>Version %1 · %2 / %3 bytes</source>
         <translation>Version %1 · %2 / %3 bytes</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="564"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="582"/>
         <source>Content is too large for the selected error correction level.</source>
         <translation>Content is too large for the selected error correction level.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="592"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="610"/>
         <source>Generated QR code preview</source>
         <translation>Generated QR code preview</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="603"/>
-        <location filename="../../qml/views/GeneratorPage.qml" line="643"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="625"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="679"/>
         <source>Save as PNG</source>
         <translation>Save as PNG</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="608"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="630"/>
         <source>Save QR code as PNG</source>
         <translation>Save QR code as PNG</translation>
     </message>
     <message>
-        <location filename="../../qml/views/GeneratorPage.qml" line="633"/>
+        <location filename="../../qml/views/GeneratorPage.qml" line="642"/>
+        <source>Copied!</source>
+        <translation>Copied!</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="642"/>
+        <source>Copy content</source>
+        <translation>Copy content</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="644"/>
+        <source>Copy QR code content</source>
+        <translation>Copy QR code content</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/GeneratorPage.qml" line="669"/>
         <source>PNG image (*.png)</source>
         <translation>PNG image (*.png)</translation>
     </message>
@@ -551,32 +566,37 @@
         <translation>History is turned off. New scans will not be saved.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="139"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="130"/>
+        <source>Delete entry</source>
+        <translation>Delete entry</translation>
+    </message>
+    <message>
+        <location filename="../../qml/views/HistoryPage.qml" line="146"/>
         <source>No scans yet</source>
         <translation>No scans yet</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="190"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="197"/>
         <source>Clear history</source>
         <translation>Clear history</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="229"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="236"/>
         <source>Delete all saved scans? This cannot be undone.</source>
         <translation>Delete all saved scans? This cannot be undone.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="231"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="238"/>
         <source>Delete this saved scan? This cannot be undone.</source>
         <translation>Delete this saved scan? This cannot be undone.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="232"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="239"/>
         <source>Delete %1 saved scans? This cannot be undone.</source>
         <translation>Delete %1 saved scans? This cannot be undone.</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="233"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="240"/>
         <source>Delete all</source>
         <translation>Delete all</translation>
     </message>
@@ -585,7 +605,7 @@
         <translation type="vanished">Clear</translation>
     </message>
     <message>
-        <location filename="../../qml/views/HistoryPage.qml" line="168"/>
+        <location filename="../../qml/views/HistoryPage.qml" line="175"/>
         <source>Clear all history</source>
         <translation>Clear all history</translation>
     </message>

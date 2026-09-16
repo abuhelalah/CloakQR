@@ -9,6 +9,27 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
+## [1.2.2] - 2026-09-16
+
+### Added
+
+- Delete individual scan-history entries with a trash button on each row,
+  instead of only being able to clear the whole list.
+- Copy the generated QR content to the clipboard from the generator.
+
+### Improved
+
+- Scanner: video-frame conversion now runs off the UI thread, so the camera
+  preview stays smooth while frames are prepared for decoding.
+- Selected-image decoding no longer copies the image buffer (up to 32 MiB)
+  before decoding.
+- History entries now show the correct type icon for messaging, payment and
+  calendar links (WhatsApp, Telegram, UPI, Bitcoin, VCALENDAR, etc.).
+
+### Internationalization
+
+- All new strings translated into English, Spanish, French, and Arabic.
+
 ## [1.2.1] - 2026-09-16
 
 ### Added
@@ -115,7 +136,8 @@ All notable changes to CloakQR are documented here. The project follows
 - `ENC:1` is an interim pre-audit construction and should not be represented as
 	independently audited cryptography.
 
-[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/abuhelalah/CloakQR/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/abuhelalah/CloakQR/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/abuhelalah/CloakQR/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/abuhelalah/CloakQR/compare/v1.0.0...v1.1.0

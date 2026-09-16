@@ -68,12 +68,13 @@ QImage loadImage(const QUrl& imageUrl)
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly))
         return {};
-    const QByteArray data = file.read(kMaxImageBytes + 1);
+    QByteArray data = file.read(kMaxImageBytes + 1);
     if (data.size() > kMaxImageBytes)
         return {};
 
-    QBuffer buffer;
-    buffer.setData(data);
+    // Wrap the bytes directly instead of QBuffer::setData(), which would copy
+    // the whole (up to 32 MiB) buffer again. `data` outlives `buffer`.
+    QBuffer buffer(&data);
     if (!buffer.open(QIODevice::ReadOnly))
         return {};
 
@@ -158,9 +159,7 @@ void QrDecoder::setVideoSink(QObject* videoSink)
         if (m_frameTimer.isValid() && m_frameTimer.elapsed() < kFrameIntervalMs)
             return;
         m_frameTimer.restart();
-        const QImage image = frame.toImage();
-        if (!image.isNull())
-            startDecode(image, false, kMaxVideoFrameDimension);
+        startDecodeFrame(frame, false, kMaxVideoFrameDimension);
     });
 }
 
@@ -184,6 +183,26 @@ void QrDecoder::startDecode(const QImage& image, bool reportFailure, int maxDime
     }));
 }
 
+void QrDecoder::startDecodeFrame(const QVideoFrame& frame, bool reportFailure, int maxDimension)
+{
+    setBusy(true);
+    auto* watcher = new QFutureWatcher<DecodeResult>(this);
+    connect(watcher, &QFutureWatcher<DecodeResult>::finished, this,
+            [this, watcher, reportFailure]() {
+        const DecodeResult result = watcher->result();
+        watcher->deleteLater();
+        finishDecode(result.text, result.error, reportFailure);
+    });
+    // Frame conversion and scaling happen on the worker thread so the camera
+    // preview never stalls while a frame is prepared for decoding.
+    watcher->setFuture(QtConcurrent::run([frame, maxDimension]() {
+        const QImage image = frame.toImage();
+        if (image.isNull())
+            return DecodeResult{};
+        return decodeQrImage(scaledForDecode(image, maxDimension));
+    }));
+}
+
 void QrDecoder::finishDecode(const QString& text, const QString& error, bool reportFailure)
 {
     setBusy(false);
@@ -192,6 +211,8 @@ void QrDecoder::finishDecode(const QString& text, const QString& error, bool rep
             emit decodeFailed(error);
         return;
     }
+    if (text.isEmpty())
+        return;  // no QR code in this frame
     handleDecodedText(text);
     emit decodeSucceeded(text);
 }

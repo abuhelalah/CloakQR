@@ -7,6 +7,7 @@
 #include <QUrl>
 
 class QVideoSink;
+class QVideoFrame;
 
 class QrDecoder : public QObject
 {
@@ -32,6 +33,7 @@ signals:
 private:
     void finishDecode(const QString& text, const QString& error, bool reportFailure);
     void startDecode(const QImage& image, bool reportFailure, int maxDimension = 0);
+    void startDecodeFrame(const QVideoFrame& frame, bool reportFailure, int maxDimension = 0);
     void setBusy(bool busy);
 
     bool m_busy = false;

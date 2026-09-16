@@ -24,9 +24,9 @@ Page {
                                             || Qt.platform.os === "ios"
 
     // Classifies a scanned payload into the same categories the scan result
-    // dialog recognises, so history entries show a meaningful icon.
+    // dialog recognises, so history entries show a meaningful icon. The order
+    // mirrors SafePreviewDialog's recogniser table (deep links before URLs).
     function classifyType(text) {
-        if (/^https?:\/\//i.test(text)) return "url"
         if (/^WIFI:/i.test(text)) return "wifi"
         if (/^(mailto:|MATMSG:)/i.test(text)) return "email"
         if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) return "email"
@@ -35,6 +35,23 @@ Page {
         if (/^geo:/i.test(text)) return "geo"
         if (/^(BEGIN:VCARD|MECARD:)/i.test(text)) return "vcard"
         if (/^otpauth:\/\//i.test(text)) return "otp"
+        if (/^BEGIN:VCALENDAR/i.test(text)) return "calendar"
+        if (/^BCD\r?\n/.test(text)) return "sepa"
+        if (/^whatsapp:\/\//i.test(text)) return "whatsapp"
+        if (/^https:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(text)) return "whatsapp"
+        if (/^tg:\/\//i.test(text)) return "telegram"
+        if (/^https:\/\/t\.me\//i.test(text)) return "telegram"
+        if (/^sgnl:\/\//i.test(text)) return "signal"
+        if (/^https:\/\/signal\.me\//i.test(text)) return "signal"
+        if (/^facetime(-audio)?:/i.test(text)) return "facetime"
+        if (/^fb-messenger:\/\//i.test(text)) return "messenger"
+        if (/^bitcoin:/i.test(text)) return "bitcoin"
+        if (/^ethereum:/i.test(text)) return "ethereum"
+        if (/^upi:\/\//i.test(text)) return "upi"
+        if (/^https:\/\/(www\.)?paypal\.me\//i.test(text)) return "paypal"
+        if (/^market:\/\//i.test(text)) return "store"
+        if (/^https?:\/\/(play\.google\.com|apps\.apple\.com|itunes\.apple\.com)\//i.test(text)) return "store"
+        if (/^https?:\/\//i.test(text)) return "url"
         if (/^ENC:1/i.test(text)) return "encrypted"
         return "text"
     }
