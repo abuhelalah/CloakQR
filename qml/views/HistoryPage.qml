@@ -129,7 +129,7 @@ Page {
             spacing: 6
             clip: true
             // Recycle delegate items while scrolling so each row's SvgIcon
-            // (Image + ColorOverlay) is reused instead of re-created — the
+            // (Image + tint ShaderEffect) is reused instead of re-created — the
             // offscreen tint is then re-rendered only when the row's content
             // type actually changes, not on every scroll tick.
             reuseItems: true
