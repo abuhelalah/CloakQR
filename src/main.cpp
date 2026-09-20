@@ -110,8 +110,10 @@ int main(int argc, char* argv[])
                      });
 
     const QString dbDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir().mkpath(dbDir);
-    history.open(dbDir + QStringLiteral("/history.db"));
+    // Deferred: the database is opened and loaded lazily on the first History /
+    // Settings visit (ensureLoaded), not during startup, so it never delays the
+    // first frame.
+    history.setDbPath(dbDir + QStringLiteral("/history.db"));
 
     engine.addImageProvider(QStringLiteral("qrcode"), new QrImageProvider(&generator));
 

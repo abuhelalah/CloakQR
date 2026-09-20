@@ -46,6 +46,27 @@ QImage renderImage(const cloakqr::QrCode& code, int targetSize, int quietZone,
                        Qt::IgnoreAspectRatio, Qt::FastTransformation);
 }
 
+// Writes an image to path in the format implied by its extension (PNG when the
+// extension is missing). Returns false when the image is null, the file cannot
+// be opened, or the encode fails.
+bool writeImageToFile(const QImage& image, const QString& path)
+{
+    if (image.isNull())
+        return false;
+
+    const QString suffix = QFileInfo(path).suffix().toUpper();
+    const QByteArray format = suffix.isEmpty() ? QByteArray("PNG") : suffix.toLatin1();
+
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qCWarning(cloakqrCore) << "Unable to open output file:" << path;
+        return false;
+    }
+    const bool ok = image.save(&file, format.constData());
+    file.close();
+    return ok;
+}
+
 } // namespace
 
 QrGenerator::QrGenerator(QObject* parent)
@@ -137,21 +158,36 @@ void QrGenerator::requestQr(const QString& text, int eccLevel, int targetSize,
 
 bool QrGenerator::saveImage(const QImage& image, const QUrl& outputUrl) const
 {
-    if (image.isNull())
-        return false;
-
     const QString path = outputUrl.isLocalFile() ? outputUrl.toLocalFile() : outputUrl.toString();
-    const QString suffix = QFileInfo(path).suffix().toUpper();
-    const QByteArray format = suffix.isEmpty() ? QByteArray("PNG") : suffix.toLatin1();
+    return writeImageToFile(image, path);
+}
 
-    QFile file(path);
-    if (!file.open(QIODevice::WriteOnly)) {
-        qCWarning(cloakqrCore) << "Unable to open output file:" << path;
-        return false;
-    }
-    const bool ok = image.save(&file, format.constData());
-    file.close();
-    return ok;
+void QrGenerator::requestSavePng(const QString& text, int eccLevel, int targetSize,
+                                 const QColor& foreground, const QColor& background,
+                                 const QUrl& outputUrl, int requestId)
+{
+    const QString path = outputUrl.isLocalFile() ? outputUrl.toLocalFile() : outputUrl.toString();
+
+    auto* watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, path, requestId]() {
+        const bool ok = watcher->result();
+        watcher->deleteLater();
+        if (ok)
+            emit saveFinished(path, true, requestId);
+        else
+            emit saveFailed(path, tr("Unable to save the QR code image."), requestId);
+    });
+
+    const cloakqr::QrEcc ecc = toEcc(eccLevel);
+    watcher->setFuture(QtConcurrent::run([text, ecc, targetSize, foreground, background, path]() {
+        const cloakqr::QrCode code = cloakqr::QrEncoder::encodeText(text, ecc);
+        if (!code.isValid()) {
+            qCWarning(cloakqrCore) << "QR generation failed: content does not fit";
+            return false;
+        }
+        const QImage image = renderImage(code, targetSize, 4, foreground, background);
+        return writeImageToFile(image, path);
+    }));
 }
 
 QString QrGenerator::textPayload(const QString& value) const

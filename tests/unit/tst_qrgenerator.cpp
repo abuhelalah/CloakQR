@@ -1,6 +1,9 @@
 #include <QtTest>
+#include <QFile>
 #include <QImage>
 #include <QSignalSpy>
+#include <QTemporaryDir>
+#include <QUrl>
 #include <QXmlStreamReader>
 
 #include "qrdata.h"
@@ -185,6 +188,63 @@ private slots:
         generator.requestQr(QString(6000, 'a'));
         QVERIFY(failedSpy.wait(5000));
         QCOMPARE(failedSpy.count(), 1);
+    }
+
+    // --- Async save -----------------------------------------------------
+
+    void asyncSaveWritesPngIdenticalToSync()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString asyncPath = dir.filePath(QStringLiteral("async.png"));
+        const QString syncPath = dir.filePath(QStringLiteral("sync.png"));
+
+        QrGenerator generator;
+
+        // Synchronous reference write.
+        const QImage reference = generator.generateQr(QStringLiteral("https://example.com"), 1, 512);
+        QVERIFY(!reference.isNull());
+        QVERIFY(generator.saveImage(reference, QUrl::fromLocalFile(syncPath)));
+        QVERIFY(QFile::exists(syncPath));
+
+        // Asynchronous write; must emit saveFinished with ok=true and echo the
+        // caller-supplied request id.
+        QSignalSpy finishedSpy(&generator, &QrGenerator::saveFinished);
+        generator.requestSavePng(QStringLiteral("https://example.com"), 1, 512,
+                                 QColor(Qt::black), QColor(Qt::white),
+                                 QUrl::fromLocalFile(asyncPath), 42);
+        QVERIFY(finishedSpy.wait(5000));
+        QCOMPARE(finishedSpy.count(), 1);
+
+        const QList<QVariant> args = finishedSpy.takeFirst();
+        QCOMPARE(args.at(0).toString(), asyncPath);
+        QCOMPARE(args.at(1).toBool(), true);
+        QCOMPARE(args.at(2).toInt(), 42);
+        QVERIFY(QFile::exists(asyncPath));
+
+        // The async path must produce byte-identical output to the sync path.
+        QFile syncFile(syncPath);
+        QFile asyncFile(asyncPath);
+        QVERIFY(syncFile.open(QIODevice::ReadOnly));
+        QVERIFY(asyncFile.open(QIODevice::ReadOnly));
+        QCOMPARE(asyncFile.readAll(), syncFile.readAll());
+    }
+
+    void asyncSaveFailsForOverflow()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = dir.filePath(QStringLiteral("overflow.png"));
+
+        QrGenerator generator;
+        QSignalSpy failedSpy(&generator, &QrGenerator::saveFailed);
+        generator.requestSavePng(QString(6000, 'a'), 1, 512,
+                                 QColor(Qt::black), QColor(Qt::white),
+                                 QUrl::fromLocalFile(path), 7);
+        QVERIFY(failedSpy.wait(5000));
+        QCOMPARE(failedSpy.count(), 1);
+        QCOMPARE(failedSpy.takeFirst().at(2).toInt(), 7);
+        QVERIFY(!QFile::exists(path));
     }
 
     // --- QrData payloads -------------------------------------------------

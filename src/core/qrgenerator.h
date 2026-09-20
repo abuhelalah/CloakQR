@@ -37,6 +37,14 @@ public:
 
     Q_INVOKABLE bool saveImage(const QImage& image, const QUrl& outputUrl) const;
 
+    // Asynchronously generates a QR image and writes it to outputUrl (PNG when
+    // the extension is missing) on a worker thread. Emits saveFinished() or
+    // saveFailed() with the resolved local path and the caller-supplied
+    // requestId once the write completes.
+    Q_INVOKABLE void requestSavePng(const QString& text, int eccLevel, int targetSize,
+                                    const QColor& foreground, const QColor& background,
+                                    const QUrl& outputUrl, int requestId = 0);
+
     // Payload builders exposed to QML for the generator UI. Each returns the
     // canonical string that should be encoded for the given content type.
     Q_INVOKABLE QString textPayload(const QString& value) const;
@@ -59,4 +67,6 @@ public:
 signals:
     void qrReady(const QImage& image, const QString& text);
     void qrFailed(const QString& text, const QString& reason);
+    void saveFinished(const QString& path, bool ok, int requestId);
+    void saveFailed(const QString& path, const QString& reason, int requestId);
 };

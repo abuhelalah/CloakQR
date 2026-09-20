@@ -2,6 +2,13 @@
 	<qresource prefix="/images">
 		<file alias="Logo_QR_icon.png">images/Logo_QR_icon.png</file>
 	</qresource>
+	<qresource prefix="/icons">
+		<file alias="nav_scan.svg">icons/nav_scan.svg</file>
+		<file alias="nav_create.svg">icons/nav_create.svg</file>
+		<file alias="nav_history.svg">icons/nav_history.svg</file>
+		<file alias="flash.svg">icons/flash.svg</file>
+		<file alias="image.svg">icons/image.svg</file>
+	</qresource>
 	<qresource prefix="/i18n">
 		<file>i18n/en.ts</file>
 		<file>i18n/es.ts</file>

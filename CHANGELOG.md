@@ -9,6 +9,62 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
+## [2.0.0] - 2026-09-20
+
+### Added
+
+- **Biometric lock** (Android): optionally require fingerprint or face to open
+  the app, with a Settings toggle and a full-screen gate on launch.
+- **Share QR codes** (Android): send a generated QR to any app via the system
+  share sheet (PNG handed over through a FileProvider).
+- **Smart save filenames**: saving a QR now proposes a per-type default name
+  (e.g. `url_example.png`, `wifi_MyNetwork.png`, `contact_name.png`), pre-filled
+  and selected in the save dialog, with `.png` appended automatically and no
+  silent overwriting.
+- **Circular torch button** on the scanner, with a translucent-white ring.
+- **History cap**: the on-device history keeps the newest 1,000 entries,
+  silently evicting older ones so the local database stays bounded.
+
+### Improved
+
+- **Performance pass** (on-device):
+  - Non-scanner pages now load lazily, and scan history loads asynchronously,
+    so cold start no longer pays for pages the user hasn't opened.
+  - QR generation, PNG save, Share, and the generator preview now run off the
+    UI thread, keeping the UI responsive.
+  - Scan-history display strings are precomputed, and rows are recycled while
+    scrolling.
+  - Live scanning decodes frames with a single pixel pass (luma-plane direct
+    feed) and lighter decode hints, cutting per-frame CPU.
+  - Release builds enable link-time optimization (LTO), and the unused Qt
+    Widgets dependency was removed.
+- **Large screens & edge-to-edge**: the Android portrait lock was removed so
+  tablets and foldables rotate freely, and Android 15+ edge-to-edge insets are
+  respected so content never sits under the status or navigation bars.
+- Desktop sidebar now shows "Scan QR" for the scanner entry, matching the header.
+
+### Fixed
+
+- Android Share no longer fails to open the share sheet because of a file-path
+  mismatch between the asynchronous save and the share handler.
+- Icons in the scan-result dialog and history rows no longer disappear after
+  the first open (a fragile icon-caching optimisation was reverted).
+- The generator preview no longer renders as a black box on some devices and
+  emulators.
+- The scanner's "Choose image" button no longer overlaps the privacy badge,
+  and the Create page's Save/Share buttons stay correctly placed at every
+  window size.
+
+### Changed
+
+- Create page: "Save as PNG" is now simply "Save", matching the design.
+
+### Internationalization
+
+- New strings added to the English, Spanish, French, and Arabic catalogs;
+  Arabic scan and delete wording was disambiguated (scan reads clearly, and
+  delete/clear actions use "حذف" instead of the ambiguous "مسح").
+
 ## [1.2.2] - 2026-09-16
 
 ### Added
@@ -136,7 +192,8 @@ All notable changes to CloakQR are documented here. The project follows
 - `ENC:1` is an interim pre-audit construction and should not be represented as
 	independently audited cryptography.
 
-[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/abuhelalah/CloakQR/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/abuhelalah/CloakQR/compare/v1.2.2...v2.0.0
 [1.2.2]: https://github.com/abuhelalah/CloakQR/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/abuhelalah/CloakQR/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/abuhelalah/CloakQR/compare/v1.1.0...v1.2.0

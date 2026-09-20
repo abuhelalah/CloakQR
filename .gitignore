@@ -90,6 +90,7 @@ google-services.json
 /third_party/paid/
 /licenses/private/
 /*-paid/
+/style_new/
 
 # Coverage, profiling, and test output
 coverage/

@@ -4,6 +4,9 @@
 #include <QCoreApplication>
 #include <QJniEnvironment>
 #include <QJniObject>
+#include <QMetaObject>
+#include <QUrl>
+#include <jni.h>
 #endif
 
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
@@ -15,10 +18,57 @@
 #include <QUrlQuery>
 #endif
 
+#ifdef Q_OS_ANDROID
+namespace {
+
+// The bridge lives for the whole application lifetime, so a plain pointer is
+// enough to route the JNI callback back to the (single) instance.
+PlatformBridge* s_instance = nullptr;
+
+// Called by BiometricAuthHelper.onResult on its executor thread.
+void onBiometricResultNative(JNIEnv* /*env*/, jobject /*thiz*/, jint code)
+{
+    PlatformBridge* bridge = s_instance;
+    if (!bridge)
+        return;
+    const bool success = (code == 0);
+    QMetaObject::invokeMethod(bridge, [bridge, success]() {
+        emit bridge->biometricAuthenticated(success);
+    }, Qt::QueuedConnection);
+}
+
+} // namespace
+#endif
+
 PlatformBridge::PlatformBridge(QObject* parent)
     : QObject(parent)
 {
+#ifdef Q_OS_ANDROID
+    s_instance = this;
+    registerNativeMethods();
+#endif
 }
+
+PlatformBridge::~PlatformBridge()
+{
+#ifdef Q_OS_ANDROID
+    if (s_instance == this)
+        s_instance = nullptr;
+#endif
+}
+
+#ifdef Q_OS_ANDROID
+void PlatformBridge::registerNativeMethods()
+{
+    QJniEnvironment env;
+    JNINativeMethod methods[] = {
+        { const_cast<char*>("onResult"), const_cast<char*>("(I)V"),
+          reinterpret_cast<void*>(&onBiometricResultNative) }
+    };
+    env.registerNativeMethods(
+        "com/abuhelalah/cloakqr/BiometricAuthHelper", methods, 1);
+}
+#endif
 
 bool PlatformBridge::wifiConnectSupported() const
 {
@@ -319,5 +369,129 @@ bool PlatformBridge::composeEmail(const QString& address,
     Q_UNUSED(subject);
     Q_UNUSED(body);
     return false;
+#endif
+}
+
+bool PlatformBridge::shareFile(const QString& path)
+{
+#ifdef Q_OS_ANDROID
+    // Accept both plain filesystem paths and file:// URLs.
+    const QString localPath = path.startsWith(QLatin1String("file:"))
+        ? QUrl(path).toLocalFile() : path;
+    if (localPath.isEmpty())
+        return false;
+
+    QJniEnvironment env;
+    QJniObject context = QNativeInterface::QAndroidApplication::context();
+    if (!context.isValid())
+        return false;
+
+    // The manifest registers a FileProvider under "<applicationId>.qtprovider".
+    const QJniObject packageName = context.callObjectMethod(
+        "getPackageName", "()Ljava/lang/String;");
+    const QString authority = packageName.toString() + QStringLiteral(".qtprovider");
+
+    const QJniObject jpath = QJniObject::fromString(localPath);
+    const QJniObject file("java/io/File", "(Ljava/lang/String;)V",
+                          jpath.object<jstring>());
+    if (!file.isValid())
+        return false;
+
+    const QJniObject jauth = QJniObject::fromString(authority);
+    const QJniObject uri = QJniObject::callStaticObjectMethod(
+        "androidx/core/content/FileProvider",
+        "getUriForFile",
+        "(Landroid/content/Context;Ljava/lang/String;Ljava/io/File;)Landroid/net/Uri;",
+        context.object(), jauth.object<jstring>(), file.object());
+    if (!uri.isValid()) {
+        env.checkAndClearExceptions();
+        return false;
+    }
+
+    const QJniObject action = QJniObject::fromString(
+        QStringLiteral("android.intent.action.SEND"));
+    QJniObject intent("android/content/Intent", "(Ljava/lang/String;)V",
+                      action.object<jstring>());
+    if (!intent.isValid())
+        return false;
+
+    const QJniObject mime = QJniObject::fromString(QStringLiteral("image/png"));
+    intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
+                            mime.object<jstring>());
+
+    const QJniObject streamKey = QJniObject::fromString(
+        QStringLiteral("android.intent.extra.STREAM"));
+    intent.callObjectMethod(
+        "putExtra",
+        "(Ljava/lang/String;Landroid/os/Parcelable;)Landroid/content/Intent;",
+        streamKey.object<jstring>(), uri.object());
+
+    // FLAG_GRANT_READ_URI_PERMISSION so the receiving app can read the URI.
+    intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", 0x1);
+
+    const QJniObject title = QJniObject::fromString(QStringLiteral("Share QR code"));
+    const QJniObject chooser = QJniObject::callStaticObjectMethod(
+        "android/content/Intent",
+        "createChooser",
+        "(Landroid/content/Intent;Ljava/lang/CharSequence;)Landroid/content/Intent;",
+        intent.object(), title.object<jstring>());
+    if (!chooser.isValid())
+        return false;
+    // FLAG_ACTIVITY_NEW_TASK for starting an activity from a non-activity context.
+    chooser.callObjectMethod("addFlags", "(I)Landroid/content/Intent;", 0x10000000);
+
+    context.callMethod<void>("startActivity", "(Landroid/content/Intent;)V",
+                             chooser.object());
+    return !env.checkAndClearExceptions();
+#else
+    Q_UNUSED(path);
+    return false;
+#endif
+}
+
+bool PlatformBridge::isBiometricAvailable()
+{
+#ifdef Q_OS_ANDROID
+    QJniEnvironment env;
+    const QJniObject context = QNativeInterface::QAndroidApplication::context();
+    if (!context.isValid())
+        return false;
+
+    const bool available = QJniObject::callStaticMethod<jboolean>(
+        "com/abuhelalah/cloakqr/BiometricAuthHelper",
+        "isAvailable",
+        "(Landroid/content/Context;)Z",
+        context.object());
+    env.checkAndClearExceptions();
+    return available;
+#else
+    return false;
+#endif
+}
+
+void PlatformBridge::authenticate()
+{
+#ifdef Q_OS_ANDROID
+    QJniEnvironment env;
+    const QJniObject context = QNativeInterface::QAndroidApplication::context();
+    if (!context.isValid())
+        return;
+
+    const QJniObject title = QJniObject::fromString(QStringLiteral("Unlock CloakQR"));
+    const QJniObject subtitle = QJniObject::fromString(QStringLiteral("Confirm it's you"));
+    const QJniObject description = QJniObject::fromString(
+        QStringLiteral("Use your fingerprint, face or device PIN"));
+    const QJniObject cancel = QJniObject::fromString(QStringLiteral("Cancel"));
+
+    QJniObject::callStaticMethod<void>(
+        "com/abuhelalah/cloakqr/BiometricAuthHelper",
+        "authenticate",
+        "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+        context.object(),
+        title.object<jstring>(), subtitle.object<jstring>(),
+        description.object<jstring>(), cancel.object<jstring>());
+    env.checkAndClearExceptions();
+#else
+    // No-op off Android; the QML caller never invokes it there.
 #endif
 }

@@ -17,5 +17,6 @@ target_link_libraries(cloakqr_ui PUBLIC
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
+    Qt6::Concurrent
     Qt6::Sql
 )

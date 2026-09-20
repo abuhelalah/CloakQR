@@ -43,21 +43,38 @@ ApplicationWindow {
                                                     : Qt.rgba(0, 0, 0, 0.10)
     readonly property color errorColor: darkTheme ? "#CF6679" : "#B00020"
     property int currentPage: 0
+    property int previousTab: 0
+    // Lazily-loaded pages: each becomes true on first navigation so its Loader
+    // activates (and stays active, preserving state between visits).
+    property bool generatorVisited: false
+    property bool historyVisited: false
+    property bool settingsVisited: false
+    property bool aboutVisited: false
+    // Settings, About and the paid tools are "pushed" sub-pages: they get a
+    // back button and hide the bottom navigation bar.
+    readonly property bool subPage: currentPage > 2
 
     readonly property var navModel: {
         var items = [
-            { page: 0, label: qsTr("Scan"), a11y: qsTr("Scanner"), group: 0 },
-            { page: 1, label: qsTr("Create"), a11y: qsTr("Create QR code"), group: 0 }
+            { page: 0, label: qsTr("Scan"), title: qsTr("Scan QR"), a11y: qsTr("Scanner"), group: 0, icon: "qrc:/icons/nav_scan.svg" },
+            { page: 1, label: qsTr("Create QR"), a11y: qsTr("Create QR code"), group: 0, icon: "qrc:/icons/create.svg" }
         ]
         if (appEngine.paidEdition) {
             items.push({ page: 4, label: qsTr("Design Studio"), a11y: qsTr("Design Studio"), group: 1 })
             items.push({ page: 5, label: qsTr("Batch Studio"), a11y: qsTr("Batch Studio"), group: 1 })
         }
-        items.push({ page: 2, label: qsTr("History"), a11y: qsTr("History"), group: 2 })
+        items.push({ page: 2, label: qsTr("History"), a11y: qsTr("History"), group: 2, icon: "qrc:/icons/nav_history.svg" })
         items.push({ page: 3, label: qsTr("Settings"), a11y: qsTr("Settings"), group: 2 })
         items.push({ page: 6, label: qsTr("About"), a11y: qsTr("About"), group: 3 })
         return items
     }
+
+    // Primary tabs shown in the compact bottom navigation bar.
+    readonly property var bottomNavModel: [
+        { page: 0, label: qsTr("Scan"),    a11y: qsTr("Scanner"),        icon: "qrc:/icons/nav_scan.svg" },
+        { page: 1, label: qsTr("Create"),  a11y: qsTr("Create QR code"), icon: "qrc:/icons/nav_create.svg" },
+        { page: 2, label: qsTr("History"), a11y: qsTr("History"),        icon: "qrc:/icons/nav_history.svg" }
+    ]
 
     Material.theme: appSettings.darkMode ? Material.Dark : Material.Light
     Material.primary: Material.Teal
@@ -72,13 +89,46 @@ ApplicationWindow {
     function currentTitle() {
         for (var i = 0; i < navModel.length; ++i)
             if (navModel[i].page === currentPage)
-                return navModel[i].label
+                return navModel[i].title || navModel[i].label
+        return ""
+    }
+
+    function currentIcon() {
+        for (var i = 0; i < navModel.length; ++i)
+            if (navModel[i].page === currentPage)
+                return navModel[i].icon || ""
         return ""
     }
 
     function navigateTo(index) {
-        if (index >= 0 && index < pageStack.count)
+        if (index >= 0 && index < pageStack.count) {
+            if (index <= 2)
+                root.previousTab = index
             root.currentPage = index
+            if (index === 1)
+                root.generatorVisited = true
+            else if (index === 2)
+                root.historyVisited = true
+            else if (index === 3)
+                root.settingsVisited = true
+            else if (index === 6)
+                root.aboutVisited = true
+        }
+    }
+
+    // Gates the app behind biometrics on launch when the user opted in.
+    // Android-only; silently skips when the feature is unavailable.
+    function lockIfNeeded() {
+        if (!appSettings.biometricLockEnabled)
+            return
+        if (Qt.platform.os !== "android")
+            return
+        if (!platformBridge.isBiometricAvailable())
+            return
+        lockOverlay.visible = true
+        unlockButton.visible = false
+        lockHint.text = qsTr("Confirm your identity to continue")
+        authTriggerTimer.start()
     }
 
     SafePreviewDialog {
@@ -98,8 +148,86 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: platformBridge
+
+        function onBiometricAuthenticated(success) {
+            authTriggerTimer.stop()
+            if (success) {
+                lockOverlay.visible = false
+                unlockButton.visible = false
+            } else {
+                lockHint.text = qsTr("Authentication failed or cancelled")
+                unlockButton.visible = true
+            }
+        }
+    }
+
+    // Gives the window/activity a moment to be fully resumed before the system
+    // biometric prompt is presented on top of it.
+    Timer {
+        id: authTriggerTimer
+        interval: 400
+        repeat: false
+        onTriggered: platformBridge.authenticate()
+    }
+
+    // Full-screen shield shown while the biometric prompt is pending (and after
+    // a failed/cancelled attempt) so content stays hidden until unlocked.
+    Rectangle {
+        id: lockOverlay
+        anchors.fill: parent
+        visible: false
+        z: 20
+        color: root.canvasColor
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 12
+
+            SvgIcon {
+                Layout.alignment: Qt.AlignHCenter
+                source: "qrc:/icons/lock.svg"
+                color: root.primaryColor
+                size: 44
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: qsTr("Unlock CloakQR")
+                font.bold: true
+                font.pixelSize: 18
+            }
+            Label {
+                id: lockHint
+                Layout.alignment: Qt.AlignHCenter
+                text: qsTr("Confirm your identity to continue")
+                color: root.mutedColor
+                font.pixelSize: 13
+            }
+            Button {
+                id: unlockButton
+                Layout.alignment: Qt.AlignHCenter
+                Layout.topMargin: 8
+                visible: false
+                text: qsTr("Try again")
+                onClicked: platformBridge.authenticate()
+            }
+        }
+    }
+
+    Component.onCompleted: root.lockIfNeeded()
+
     RowLayout {
         anchors.fill: parent
+        // On Android 15+ (targetSdk 35+) the app draws edge-to-edge, so the
+        // system status bar and gesture navigation bar overlap the window. Keep
+        // the content inside the safe area while the window background colour
+        // still fills the whole screen behind the bars. On desktop (and on
+        // Android < 15) the margins are zero, so this is a no-op there.
+        anchors.topMargin: root.SafeArea.margins.top
+        anchors.bottomMargin: root.SafeArea.margins.bottom
+        anchors.leftMargin: root.SafeArea.margins.left
+        anchors.rightMargin: root.SafeArea.margins.right
         spacing: 0
 
         Rectangle {
@@ -144,7 +272,7 @@ ApplicationWindow {
                         }
                         ItemDelegate {
                             Layout.fillWidth: true
-                            text: modelData.label
+                            text: modelData.title || modelData.label
                             highlighted: root.currentPage === modelData.page
                             focusPolicy: Qt.StrongFocus
                             Accessible.name: modelData.a11y
@@ -187,79 +315,69 @@ ApplicationWindow {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 6
-                    anchors.rightMargin: 16
-                    spacing: 6
+                    anchors.leftMargin: 14
+                    anchors.rightMargin: 10
+                    spacing: 0
 
-                    AbstractButton {
-                        id: menuButton
-                        Layout.preferredWidth: 48
-                        Layout.preferredHeight: 48
+                    ToolButton {
+                        id: backButton
+                        Layout.preferredWidth: 44
+                        Layout.preferredHeight: 44
+                        Layout.alignment: Qt.AlignVCenter
+                        visible: root.subPage
                         focusPolicy: Qt.StrongFocus
-                        readonly property bool active: navDrawer.opened
-                        Accessible.name: qsTr("Open navigation menu")
+                        Accessible.name: qsTr("Back")
                         Accessible.role: Accessible.Button
-                        onClicked: navDrawer.opened ? navDrawer.close() : navDrawer.open()
+                        onClicked: root.navigateTo(root.previousTab)
 
                         contentItem: Item {
-                            Rectangle {
-                                width: 24
-                                height: 2.5
-                                radius: 1.25
-                                color: root.primaryColor
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: menuButton.active ? (parent.height - height) / 2 : parent.height / 2 - 7
-                                rotation: menuButton.active ? 45 : 0
-                                Behavior on y { NumberAnimation { duration: 160; easing.type: Easing.InOutQuad } }
-                                Behavior on rotation { NumberAnimation { duration: 160; easing.type: Easing.InOutQuad } }
-                            }
-                            Rectangle {
-                                width: 24
-                                height: 2.5
-                                radius: 1.25
-                                color: root.primaryColor
+                            SvgIcon {
                                 anchors.centerIn: parent
-                                opacity: menuButton.active ? 0 : 1
-                                Behavior on opacity { NumberAnimation { duration: 120 } }
-                            }
-                            Rectangle {
-                                width: 24
-                                height: 2.5
-                                radius: 1.25
+                                source: "qrc:/icons/chevron_left.svg"
                                 color: root.primaryColor
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: menuButton.active ? (parent.height - height) / 2 : parent.height / 2 + 5
-                                rotation: menuButton.active ? -45 : 0
-                                Behavior on y { NumberAnimation { duration: 160; easing.type: Easing.InOutQuad } }
-                                Behavior on rotation { NumberAnimation { duration: 160; easing.type: Easing.InOutQuad } }
+                                size: 22
                             }
                         }
                     }
 
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 0
-                        Label {
-                            Layout.fillWidth: true
-                            text: root.currentTitle()
-                            font.bold: true
-                            font.pixelSize: 18
-                            elide: Text.ElideRight
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            text: appEngine.paidEdition ? qsTr("CloakQR Pro") : qsTr("CloakQR")
-                            color: root.mutedColor
-                            font.pixelSize: 11
-                            elide: Text.ElideRight
-                        }
+                    SvgIcon {
+                        visible: !root.subPage
+                        source: root.currentIcon()
+                        color: root.primaryColor
+                        size: 20
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
-                    Rectangle {
-                        Layout.preferredWidth: 9
-                        Layout.preferredHeight: 9
-                        radius: 4.5
-                        color: root.primaryColor
+                    Label {
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 12
+                        Layout.alignment: Qt.AlignVCenter
+                        text: root.currentTitle()
+                        font.bold: true
+                        font.pixelSize: 18
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    ToolButton {
+                        id: moreButton
+                        visible: !root.subPage
+                        Layout.preferredWidth: 44
+                        Layout.preferredHeight: 44
+                        Layout.alignment: Qt.AlignVCenter
+                        focusPolicy: Qt.StrongFocus
+                        Accessible.name: qsTr("Settings")
+                        Accessible.role: Accessible.Button
+                        onClicked: root.navigateTo(3)
+
+                        contentItem: Item {
+                            SvgIcon {
+                                anchors.centerIn: parent
+                                source: "qrc:/icons/settings.svg"
+                                color: root.primaryColor
+                                size: 20
+                            }
+                        }
                     }
                 }
             }
@@ -271,6 +389,7 @@ ApplicationWindow {
                 currentIndex: root.currentPage
 
                 ScannerPage {
+                    id: scannerPage
                     wideLayout: !root.compactLayout
                     canvasColor: root.canvasColor
                     surfaceColor: root.surfaceColor
@@ -279,25 +398,131 @@ ApplicationWindow {
                     mutedColor: root.mutedColor
                     accentColor: root.accentColor
                 }
-                GeneratorPage {
-                    wideLayout: !root.compactLayout
-                    canvasColor: root.canvasColor
-                    primaryColor: root.primaryColor
-                    primaryTextColor: root.primaryTextColor
-                    mutedColor: root.mutedColor
+                Loader {
+                    id: generatorLoader
+                    active: root.generatorVisited
+                    asynchronous: true
+                    source: "views/GeneratorPage.qml"
                 }
-                HistoryPage {
-                    wideLayout: !root.compactLayout
-                    canvasColor: root.canvasColor
-                    surfaceColor: root.surfaceColor
-                    mutedColor: root.mutedColor
-                    onItemActivated: (content) => scanResultDialog.show(content)
+                Binding {
+                    target: generatorLoader.item
+                    property: "wideLayout"
+                    value: !root.compactLayout
+                    when: generatorLoader.status === Loader.Ready
                 }
-                SettingsPage {
-                    wideLayout: !root.compactLayout
-                    canvasColor: root.canvasColor
-                    primaryColor: root.primaryColor
-                    mutedColor: root.mutedColor
+                Binding {
+                    target: generatorLoader.item
+                    property: "canvasColor"
+                    value: root.canvasColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: generatorLoader.item
+                    property: "primaryColor"
+                    value: root.primaryColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: generatorLoader.item
+                    property: "primaryTextColor"
+                    value: root.primaryTextColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: generatorLoader.item
+                    property: "mutedColor"
+                    value: root.mutedColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Loader {
+                    id: historyLoader
+                    active: root.historyVisited
+                    asynchronous: true
+                    source: "views/HistoryPage.qml"
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "wideLayout"
+                    value: !root.compactLayout
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "canvasColor"
+                    value: root.canvasColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "surfaceColor"
+                    value: root.surfaceColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "primaryColor"
+                    value: root.primaryColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "mutedColor"
+                    value: root.mutedColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Connections {
+                    target: historyLoader.item
+                    function onItemActivated(content) {
+                        scanResultDialog.show(content)
+                    }
+                }
+                Loader {
+                    id: settingsLoader
+                    active: root.settingsVisited
+                    asynchronous: true
+                    source: "views/SettingsPage.qml"
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "wideLayout"
+                    value: !root.compactLayout
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "canvasColor"
+                    value: root.canvasColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "surfaceColor"
+                    value: root.surfaceColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "primaryColor"
+                    value: root.primaryColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "primaryTextColor"
+                    value: root.primaryTextColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "mutedColor"
+                    value: root.mutedColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Connections {
+                    target: settingsLoader.item
+                    function onOpenAbout() {
+                        root.navigateTo(6)
+                    }
                 }
                 Loader {
                     id: paidStudioLoader
@@ -369,82 +594,96 @@ ApplicationWindow {
                     value: root.mutedColor
                     when: paidBatchLoader.status === Loader.Ready
                 }
-                AboutPage {
-                    wideLayout: !root.compactLayout
-                    canvasColor: root.canvasColor
-                    surfaceColor: root.surfaceColor
-                    primaryColor: root.primaryColor
-                    mutedColor: root.mutedColor
+                Loader {
+                    id: aboutLoader
+                    active: root.aboutVisited
+                    asynchronous: true
+                    source: "views/AboutPage.qml"
+                }
+                Binding {
+                    target: aboutLoader.item
+                    property: "wideLayout"
+                    value: !root.compactLayout
+                    when: aboutLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: aboutLoader.item
+                    property: "canvasColor"
+                    value: root.canvasColor
+                    when: aboutLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: aboutLoader.item
+                    property: "surfaceColor"
+                    value: root.surfaceColor
+                    when: aboutLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: aboutLoader.item
+                    property: "primaryColor"
+                    value: root.primaryColor
+                    when: aboutLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: aboutLoader.item
+                    property: "mutedColor"
+                    value: root.mutedColor
+                    when: aboutLoader.status === Loader.Ready
                 }
             }
 
-        }
-    }
-
-    Drawer {
-        id: navDrawer
-        edge: Qt.application.layoutDirection === Qt.RightToLeft ? Qt.RightEdge : Qt.LeftEdge
-        width: Math.min(300, root.width * 0.82)
-        height: root.height
-        interactive: !root.railLayout
-        Material.background: root.surfaceColor
-
-        onOpened: if (root.railLayout) close()
-
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: 0
-
+            // Compact bottom navigation bar (SCAN / CREATE / HISTORY).
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 96
-                color: root.primaryColor
+                Layout.preferredHeight: 64
+                visible: !root.railLayout && !root.subPage
+                color: root.surfaceColor
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 18
-                    spacing: 2
-                    Item { Layout.fillHeight: true }
-                    Label {
-                        text: appEngine.paidEdition ? qsTr("CloakQR Pro") : qsTr("CloakQR")
-                        color: appSettings.darkMode ? "#0E1715" : "#FFFFFF"
-                        font.bold: true
-                        font.pixelSize: 20
-                    }
-                    Label {
-                        text: qsTr("Private by design")
-                        color: appSettings.darkMode ? "#0E1715" : "#EAF7F3"
-                        font.pixelSize: 12
-                    }
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: root.outlineColor
                 }
-            }
 
-            ListView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                model: root.navModel
-                delegate: Column {
-                    required property var modelData
-                    required property int index
-                    width: ListView.view.width
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 0
 
-                    MenuSeparator {
-                        width: parent.width
-                        visible: index > 0
-                            && modelData.group !== root.navModel[index - 1].group
-                    }
-                    ItemDelegate {
-                        width: parent.width
-                        text: modelData.label
-                        highlighted: root.currentPage === modelData.page
-                        focusPolicy: Qt.StrongFocus
-                        Accessible.name: modelData.a11y
-                        Accessible.role: Accessible.Button
-                        onClicked: {
-                            root.navigateTo(modelData.page)
-                            navDrawer.close()
+                    Repeater {
+                        model: root.bottomNavModel
+                        delegate: ItemDelegate {
+                            id: navTab
+                            required property var modelData
+                            required property int index
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            highlighted: root.currentPage === modelData.page
+                            focusPolicy: Qt.StrongFocus
+                            Accessible.name: modelData.a11y
+                            Accessible.role: Accessible.Button
+                            onClicked: root.navigateTo(modelData.page)
+
+                            background: Rectangle {
+                                color: "transparent"
+                            }
+
+                            contentItem: ColumnLayout {
+                                spacing: 2
+                                SvgIcon {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    source: modelData.icon
+                                    color: navTab.highlighted ? root.primaryColor : root.mutedColor
+                                    size: 22
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: modelData.label
+                                    font.pixelSize: 10
+                                    font.bold: navTab.highlighted
+                                    color: navTab.highlighted ? root.primaryColor : root.mutedColor
+                                }
+                            }
                         }
                     }
                 }

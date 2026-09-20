@@ -458,50 +458,51 @@ Popup {
         const match = content.match(/^https?:\/\/([^/?#]+)/i)
         return match ? match[1] : ""
     }
-    // Human label and glyph per recognised kind, keyed by the kind id.
+    // Human label and icon per recognised kind, keyed by the kind id.
     readonly property var kindMeta: ({
-        "url":       { label: qsTr("Website link"),   glyph: "🔗" },
-        "wifi":      { label: qsTr("Wi-Fi network"),  glyph: "📶" },
-        "email":     { label: qsTr("Email"),          glyph: "✉️" },
-        "tel":       { label: qsTr("Phone number"),   glyph: "📞" },
-        "sms":       { label: qsTr("Text message"),   glyph: "💬" },
-        "geo":       { label: qsTr("Location"),       glyph: "📍" },
-        "vcard":     { label: qsTr("Contact card"),   glyph: "👤" },
-        "otp":       { label: qsTr("Authenticator"),  glyph: "🔑" },
-        "calendar":  { label: qsTr("Calendar event"), glyph: "📅" },
-        "sepa":      { label: qsTr("Bank transfer"),  glyph: "🏦" },
-        "whatsapp":  { label: qsTr("WhatsApp"),       glyph: "💬" },
-        "telegram":  { label: qsTr("Telegram"),       glyph: "✈️" },
-        "signal":    { label: qsTr("Signal"),         glyph: "🔒" },
-        "facetime":  { label: qsTr("FaceTime"),       glyph: "📹" },
-        "messenger": { label: qsTr("Messenger"),      glyph: "💬" },
-        "bitcoin":   { label: qsTr("Bitcoin"),        glyph: "₿" },
-        "ethereum":  { label: qsTr("Ethereum"),       glyph: "Ξ" },
-        "upi":       { label: qsTr("UPI payment"),    glyph: "💳" },
-        "paypal":    { label: qsTr("PayPal"),         glyph: "💳" },
-        "store":     { label: qsTr("App store"),      glyph: "🛒" },
-        "text":      { label: qsTr("Plain text"),     glyph: "📄" }
+        "url":       { label: qsTr("Website link"),   icon: "qrc:/icons/url.svg" },
+        "wifi":      { label: qsTr("Wi-Fi network"),  icon: "qrc:/icons/wifi.svg" },
+        "email":     { label: qsTr("Email"),          icon: "qrc:/icons/email.svg" },
+        "tel":       { label: qsTr("Phone number"),   icon: "qrc:/icons/phone.svg" },
+        "sms":       { label: qsTr("Text message"),   icon: "qrc:/icons/sms.svg" },
+        "geo":       { label: qsTr("Location"),       icon: "qrc:/icons/location.svg" },
+        "vcard":     { label: qsTr("Contact card"),   icon: "qrc:/icons/contact.svg" },
+        "otp":       { label: qsTr("Authenticator"),  icon: "qrc:/icons/key.svg" },
+        "calendar":  { label: qsTr("Calendar event"), icon: "qrc:/icons/calendar.svg" },
+        "sepa":      { label: qsTr("Bank transfer"),  icon: "qrc:/icons/bank.svg" },
+        "whatsapp":  { label: qsTr("WhatsApp"),       icon: "qrc:/icons/chat.svg" },
+        "telegram":  { label: qsTr("Telegram"),       icon: "qrc:/icons/send.svg" },
+        "signal":    { label: qsTr("Signal"),         icon: "qrc:/icons/lock.svg" },
+        "facetime":  { label: qsTr("FaceTime"),       icon: "qrc:/icons/video.svg" },
+        "messenger": { label: qsTr("Messenger"),      icon: "qrc:/icons/chat.svg" },
+        "bitcoin":   { label: qsTr("Bitcoin"),        icon: "qrc:/icons/money.svg" },
+        "ethereum":  { label: qsTr("Ethereum"),       icon: "qrc:/icons/money.svg" },
+        "upi":       { label: qsTr("UPI payment"),    icon: "qrc:/icons/money.svg" },
+        "paypal":    { label: qsTr("PayPal"),         icon: "qrc:/icons/money.svg" },
+        "store":     { label: qsTr("App store"),      icon: "qrc:/icons/store.svg" },
+        "text":      { label: qsTr("Plain text"),     icon: "qrc:/icons/text.svg" }
     })
     readonly property string kindLabel: kindMeta[kind].label
-    readonly property string kindGlyph: kindMeta[kind].glyph
+    readonly property string kindIcon: kindMeta[kind].icon
 
     parent: Overlay.overlay
     anchors.centerIn: Overlay.overlay
-    modal: true
-    dim: true
+    // Non-modal dialog: it must not dim or block the underlying page and
+    // bottom navigation bar.
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     focus: true
-    closePolicy: Popup.CloseOnEscape
     padding: 0
-    width: Math.min((Overlay.overlay ? Overlay.overlay.width : 400) - 48, 480)
-
-    Overlay.modal: Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.55)
-    }
+    width: Math.min((Overlay.overlay ? Overlay.overlay.width : 400)
+                    - (dialog.isMobile ? 32 : 48), 480)
+    // Cap the height so very long payloads never push the dialog off-screen;
+    // the payload area itself already scrolls.
+    height: Math.min(implicitHeight,
+                     (Overlay.overlay ? Overlay.overlay.height : 800) - 160)
 
     enter: Transition {
         ParallelAnimation {
-            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 150 }
-            NumberAnimation { property: "scale"; from: 0.92; to: 1.0; duration: 180; easing.type: Easing.OutBack }
+            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 160 }
+            NumberAnimation { property: "scale"; from: 0.94; to: 1.0; duration: 180; easing.type: Easing.OutCubic }
         }
     }
     exit: Transition {
@@ -513,7 +514,7 @@ Popup {
 
     background: Rectangle {
         color: dialog.surfaceColor
-        radius: 16
+        radius: dialog.isMobile ? 22 : 16
         border.width: 1
         border.color: Qt.rgba(dialog.mutedColor.r, dialog.mutedColor.g, dialog.mutedColor.b, 0.16)
     }
@@ -567,18 +568,22 @@ Popup {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
             color: dialog.primaryColor
-            topLeftRadius: 16
-            topRightRadius: 16
+            topLeftRadius: dialog.isMobile ? 22 : 16
+            topRightRadius: dialog.isMobile ? 22 : 16
 
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 18
-                anchors.rightMargin: 10
+                // Reserve space on the right so the title never sits under the
+                // close button, which is pinned to the trailing edge.
+                anchors.rightMargin: 66
                 spacing: 12
 
-                Label {
-                    text: dialog.kindGlyph
-                    font.pixelSize: 22
+                SvgIcon {
+                    source: dialog.kindIcon
+                    color: dialog.primaryTextColor
+                    size: 22
+                    Layout.alignment: Qt.AlignVCenter
                 }
                 ColumnLayout {
                     Layout.fillWidth: true
@@ -595,27 +600,34 @@ Popup {
                         font.pixelSize: 11
                     }
                 }
-                ToolButton {
-                    id: closeButton
-                    implicitWidth: 40
-                    implicitHeight: 40
-                    Accessible.name: qsTr("Close")
-                    onClicked: dialog.close()
-                    contentItem: Label {
-                        text: "\u00D7"
+            }
+
+            // Pinned to the trailing edge of the header, aligned with the
+            // dialog's content padding (18) so it lines up with the text and
+            // action buttons below.
+            ToolButton {
+                id: closeButton
+                anchors.right: parent.right
+                anchors.rightMargin: 18
+                anchors.verticalCenter: parent.verticalCenter
+                implicitWidth: 44
+                implicitHeight: 44
+                Accessible.name: qsTr("Close")
+                onClicked: dialog.close()
+                contentItem: Item {
+                    SvgIcon {
+                        anchors.centerIn: parent
+                        source: "qrc:/icons/close_circle.svg"
                         color: dialog.primaryTextColor
-                        font.pixelSize: 28
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                        size: 30
                     }
-                    background: Rectangle {
-                        radius: 8
-                        color: closeButton.pressed ? Qt.rgba(1, 0.36, 0.36, 0.55)
-                             : closeButton.hovered ? Qt.rgba(1, 0.36, 0.36, 0.32)
-                             : "transparent"
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                    }
+                }
+                background: Rectangle {
+                    radius: 22
+                    color: closeButton.pressed ? Qt.rgba(1, 0.36, 0.36, 0.45)
+                         : closeButton.hovered ? Qt.rgba(1, 0.36, 0.36, 0.28)
+                         : "transparent"
+                    Behavior on color { ColorAnimation { duration: 120 } }
                 }
             }
         }
@@ -760,6 +772,8 @@ Popup {
                     color: Material.foreground
                     font.pixelSize: 14
                     wrapMode: Text.WordWrap
+                    maximumLineCount: 4
+                    elide: Text.ElideRight
                 }
             }
 
@@ -871,22 +885,18 @@ Popup {
                 Layout.fillWidth: true
                 spacing: 10
 
-                // Type-specific quick actions for the recognised content type.
-                // The row's visibility must depend on the data (not on the
-                // children's `visible`), because QML propagates `visible` from
-                // parent to child — deriving it from children would deadlock.
+                // Quick actions + Copy share one row. Each visible button takes
+                // an equal share of the row width; at most three actions exist
+                // per content type, so nothing wraps on phone widths.
                 RowLayout {
                     id: actionRow
                     Layout.fillWidth: true
                     spacing: 8
-                    visible: dialog.isEmail || dialog.isSms || dialog.isGeo
-                             || dialog.isTel || dialog.isVCard || dialog.isOtp
-                             || dialog.isCalendar || dialog.isOpenable
-                             || (dialog.isWifi && platformBridge.wifiConnectSupported)
 
                     Button {
                         id: emailBtn
                         visible: dialog.isEmail
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Send email")
@@ -900,6 +910,7 @@ Popup {
                     Button {
                         id: smsBtn
                         visible: dialog.isSms
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Send message")
@@ -909,6 +920,7 @@ Popup {
                     Button {
                         id: mapBtn
                         visible: dialog.isGeo
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Open in Maps")
@@ -918,6 +930,7 @@ Popup {
                     Button {
                         id: dialBtn
                         visible: dialog.isTel || (dialog.isVCard && dialog.vcard.phone.length > 0)
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Dial")
@@ -928,6 +941,7 @@ Popup {
                     Button {
                         id: contactBtn
                         visible: dialog.isTel || dialog.isVCard
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Add contact")
@@ -940,6 +954,7 @@ Popup {
                     Button {
                         id: openBtn
                         visible: dialog.isOpenable
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: dialog.openLabel
@@ -952,6 +967,7 @@ Popup {
                     Button {
                         id: wifiBtn
                         visible: dialog.isWifi && platformBridge.wifiConnectSupported
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Connect")
@@ -967,6 +983,7 @@ Popup {
                     Button {
                         id: otpBtn
                         visible: dialog.isOtp
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Add to authenticator")
@@ -979,6 +996,7 @@ Popup {
                     Button {
                         id: calendarBtn
                         visible: dialog.isCalendar
+                        Layout.fillWidth: true
                         Material.background: dialog.primaryColor
                         Material.foreground: dialog.primaryTextColor
                         text: qsTr("Add to calendar")
@@ -997,23 +1015,8 @@ Popup {
                         }
                     }
 
-                    Item { Layout.fillWidth: true }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-
                     Button {
-                        flat: true
-                        text: qsTr("Close")
-                        Accessible.name: qsTr("Close")
-                        onClicked: dialog.close()
-                    }
-
-                    Item { Layout.fillWidth: true }
-
-                    Button {
+                        Layout.fillWidth: true
                         text: qsTr("Copy")
                         Accessible.name: qsTr("Copy scanned content")
                         onClicked: {

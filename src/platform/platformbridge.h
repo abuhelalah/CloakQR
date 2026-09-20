@@ -15,6 +15,7 @@ class PlatformBridge : public QObject
 
 public:
     explicit PlatformBridge(QObject* parent = nullptr);
+    ~PlatformBridge() override;
 
     bool wifiConnectSupported() const;
     bool contactInsertSupported() const;
@@ -50,4 +51,27 @@ public:
     Q_INVOKABLE bool composeEmail(const QString& address,
                                   const QString& subject,
                                   const QString& body);
+
+    // Shares a local file (e.g. a generated QR PNG) via the Android share
+    // sheet using the app's FileProvider authority. Returns true when the
+    // intent was handed off; false otherwise (and always false off-Android).
+    Q_INVOKABLE bool shareFile(const QString& path);
+
+    // Reports whether the device can authenticate with biometrics (fingerprint
+    // or face). Always false off-Android.
+    Q_INVOKABLE bool isBiometricAvailable();
+
+    // Shows the system BiometricPrompt to unlock the app (Android only; no-op
+    // elsewhere). The result is delivered via biometricAuthenticated().
+    Q_INVOKABLE void authenticate();
+
+signals:
+    // Emitted with true when biometric authentication succeeded, false when it
+    // failed or was cancelled.
+    void biometricAuthenticated(bool success);
+
+private:
+#ifdef Q_OS_ANDROID
+    void registerNativeMethods();
+#endif
 };

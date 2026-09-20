@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(CloakQR VERSION 1.2.2 LANGUAGES CXX)
+project(CloakQR VERSION 2.0.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -13,6 +13,13 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
+
+# Link-time optimization for release builds only: smaller/faster native code,
+# while debug builds stay fast to compile and debuggable. Respect an explicit
+# -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=... from the command line.
+if(CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
 
 option(BUILD_CLOAKQR_APP "Build the main CloakQR application target" ON)
 set(CLOAKQR_EDITION "FREE" CACHE STRING "Application edition: FREE or PAID")
@@ -46,7 +53,7 @@ configure_file(
 set(CLOAKQR_QT_COMPONENTS Core Gui Sql Test Concurrent Multimedia)
 
 if(BUILD_CLOAKQR_APP)
-    list(APPEND CLOAKQR_QT_COMPONENTS Quick Qml QuickControls2 Widgets LinguistTools)
+    list(APPEND CLOAKQR_QT_COMPONENTS Quick Qml QuickControls2 LinguistTools)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS ${CLOAKQR_QT_COMPONENTS})
@@ -119,12 +126,57 @@ if(BUILD_CLOAKQR_APP)
             resources/images/Logo_QR_icon.png
     )
 
+    qt_add_resources(CloakQR cloakqr_icons
+        PREFIX "/icons"
+        BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons"
+        FILES
+            resources/icons/nav_scan.svg
+            resources/icons/nav_create.svg
+            resources/icons/nav_history.svg
+            resources/icons/flash.svg
+            resources/icons/image.svg
+            resources/icons/create.svg
+            resources/icons/url.svg
+            resources/icons/text.svg
+            resources/icons/wifi.svg
+            resources/icons/email.svg
+            resources/icons/phone.svg
+            resources/icons/sms.svg
+            resources/icons/location.svg
+            resources/icons/paste.svg
+            resources/icons/chevron_down.svg
+            resources/icons/chevron_left.svg
+            resources/icons/chevron_right.svg
+            resources/icons/chevron_up.svg
+            resources/icons/settings.svg
+            resources/icons/shield.svg
+            resources/icons/trash.svg
+            resources/icons/close.svg
+            resources/icons/close_circle.svg
+            resources/icons/folder.svg
+            resources/icons/file.svg
+            resources/icons/contact.svg
+            resources/icons/key.svg
+            resources/icons/calendar.svg
+            resources/icons/bank.svg
+            resources/icons/chat.svg
+            resources/icons/send.svg
+            resources/icons/lock.svg
+            resources/icons/video.svg
+            resources/icons/money.svg
+            resources/icons/store.svg
+            resources/icons/download.svg
+            resources/icons/share.svg
+    )
+
     set(CLOAKQR_QML_FILES
             qml/main.qml
             qml/common/Header.qml
             qml/common/Footer.qml
             qml/common/FilePickerDialog.qml
             qml/common/ConfirmDialog.qml
+            qml/common/SvgIcon.qml
+            qml/common/PasteField.qml
             qml/views/SafePreviewDialog.qml
             qml/views/ScannerPage.qml
             qml/views/HistoryPage.qml
@@ -158,7 +210,6 @@ if(BUILD_CLOAKQR_APP)
     target_link_libraries(CloakQR PRIVATE
         Qt6::Quick
         Qt6::QuickControls2
-        Qt6::Widgets
         Qt6::Sql
         cloakqr_core
         cloakqr_services
@@ -199,7 +250,7 @@ if(BUILD_CLOAKQR_APP)
             QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/deploy/android"
             QT_ANDROID_PACKAGE_NAME "${CLOAKQR_ANDROID_PACKAGE_NAME}"
             QT_ANDROID_APP_NAME "${CLOAKQR_PRODUCT_NAME}"
-            QT_ANDROID_VERSION_CODE 10202
+            QT_ANDROID_VERSION_CODE 20000
             QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}"
             QT_ANDROID_COMPILE_SDK_VERSION 36
         )

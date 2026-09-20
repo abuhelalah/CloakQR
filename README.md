@@ -21,7 +21,7 @@ The current `ENC:1` encrypted payload implementation is pre-audit; see
 ## Build
 
 Requirements: CMake 3.21+, Ninja or Make, a C++17 compiler, and Qt 6 with Core,
-Gui, Sql, Test, Concurrent, Multimedia, Quick, Qml, QuickControls2, Widgets, and
+Gui, Sql, Test, Concurrent, Multimedia, Quick, Qml, QuickControls2, and
 LinguistTools. CMake fetches the pinned ZXing-C++ reader during configuration.
 
 ```bash

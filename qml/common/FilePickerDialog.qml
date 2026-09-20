@@ -42,16 +42,44 @@ Popup {
     }
 
     readonly property bool canAccept: saveMode
-        ? nameField.text.trim().length > 0
+        ? true   // an empty name falls back to the suggested default
         : selectedFile.toString().length > 0
+
+    function nameExists(fullName) {
+        for (var i = 0; i < folderModel.count; ++i) {
+            if (folderModel.get(i, "fileName") === fullName)
+                return true
+        }
+        return false
+    }
+
+    // Appends _1, _2, ... when the target file already exists so an existing
+    // QR is never silently overwritten.
+    function uniqueName(fullName) {
+        if (!nameExists(fullName))
+            return fullName
+        const dot = fullName.lastIndexOf(".")
+        const base = dot > 0 ? fullName.substring(0, dot) : fullName
+        const ext = dot > 0 ? fullName.substring(dot) : ""
+        var n = 1
+        var candidate = base + "_" + n + ext
+        while (nameExists(candidate)) {
+            ++n
+            candidate = base + "_" + n + ext
+        }
+        return candidate
+    }
 
     function acceptSelection() {
         if (!canAccept)
             return
         if (saveMode) {
             var name = nameField.text.trim()
+            if (name.length === 0)
+                name = root.suggestedName.length > 0 ? root.suggestedName : "file"
             if (defaultSuffix.length > 0 && name.lastIndexOf(".") <= 0)
                 name += "." + defaultSuffix
+            name = uniqueName(name)
             var base = root.currentFolder.toString()
             if (!base.endsWith("/"))
                 base += "/"
@@ -79,6 +107,14 @@ Popup {
     padding: 0
     width: Math.min((Overlay.overlay ? Overlay.overlay.width : 640) - 48, 640)
     height: Math.min((Overlay.overlay ? Overlay.overlay.height : 720) - 48, 620)
+
+    // Select the pre-filled default name so the first keystroke replaces it.
+    onOpened: {
+        if (root.saveMode) {
+            nameField.selectAll()
+            nameField.forceActiveFocus()
+        }
+    }
 
     Overlay.modal: Rectangle {
         color: Qt.rgba(0, 0, 0, 0.55)
@@ -134,13 +170,13 @@ Popup {
                     implicitHeight: 40
                     Accessible.name: qsTr("Close")
                     onClicked: root.close()
-                    contentItem: Label {
-                        text: "\u00D7"
-                        color: root.primaryTextColor
-                        font.pixelSize: 26
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                    contentItem: Item {
+                        SvgIcon {
+                            anchors.centerIn: parent
+                            source: "qrc:/icons/close.svg"
+                            color: root.primaryTextColor
+                            size: 18
+                        }
                     }
                     background: Rectangle {
                         radius: 8
@@ -192,12 +228,13 @@ Popup {
                 enabled: folderModel.parentFolder.toString().length > 0
                          && folderModel.parentFolder.toString() !== root.currentFolder.toString()
                 onClicked: root.currentFolder = folderModel.parentFolder
-                contentItem: Label {
-                    text: "\u2B06"
-                    font.pixelSize: 18
-                    color: upButton.enabled ? Material.foreground : root.mutedColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+                contentItem: Item {
+                    SvgIcon {
+                        anchors.centerIn: parent
+                        source: "qrc:/icons/chevron_up.svg"
+                        color: upButton.enabled ? Material.foreground : root.mutedColor
+                        size: 18
+                    }
                 }
             }
             Label {
@@ -267,9 +304,11 @@ Popup {
 
                     contentItem: RowLayout {
                         spacing: 10
-                        Label {
-                            text: rowDelegate.fileIsDir ? "\uD83D\uDCC1" : "\uD83D\uDDBC\uFE0F"
-                            font.pixelSize: 18
+                        SvgIcon {
+                            source: rowDelegate.fileIsDir ? "qrc:/icons/folder.svg" : "qrc:/icons/file.svg"
+                            color: Material.foreground
+                            size: 18
+                            Layout.alignment: Qt.AlignVCenter
                         }
                         Label {
                             Layout.fillWidth: true

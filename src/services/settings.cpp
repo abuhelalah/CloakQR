@@ -11,6 +11,7 @@ constexpr auto kHighContrast = "highContrast";
 constexpr auto kFontScale = "fontScale";
 constexpr auto kHistoryEnabled = "historyEnabled";
 constexpr auto kHistoryExcludeWifiPassword = "historyExcludeWiFiPassword";
+constexpr auto kBiometricLockEnabled = "biometricLockEnabled";
 constexpr auto kDefaultSaveDirectory = "defaultSaveDirectory";
 constexpr auto kRecentExportDirectory = "recentExportDirectory";
 constexpr auto kLastPopupDate = "lastPopupDate";
@@ -124,6 +125,19 @@ void Settings::setHistoryExcludeWifiPassword(bool value)
     emit historyExcludeWifiPasswordChanged();
 }
 
+bool Settings::biometricLockEnabled() const
+{
+    return m_store.value(kBiometricLockEnabled, false).toBool();
+}
+
+void Settings::setBiometricLockEnabled(bool value)
+{
+    if (biometricLockEnabled() == value)
+        return;
+    m_store.setValue(kBiometricLockEnabled, value);
+    emit biometricLockEnabledChanged();
+}
+
 QString Settings::defaultSaveDirectory() const
 {
     const QString fallback =
@@ -174,6 +188,7 @@ void Settings::resetToDefaults()
     emit fontScaleChanged();
     emit historyEnabledChanged();
     emit historyExcludeWifiPasswordChanged();
+    emit biometricLockEnabledChanged();
     emit defaultSaveDirectoryChanged();
     emit recentExportDirectoryChanged();
 }

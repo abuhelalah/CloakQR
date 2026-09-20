@@ -1,8 +1,11 @@
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QVideoFrame>
+#include <QVideoFrameFormat>
 #include <QVideoSink>
 #include <QtTest>
+
+#include <cstring>
 
 #include "qrdecoder.h"
 #include "qrgenerator.h"
@@ -16,6 +19,7 @@ private slots:
     void decodesGeneratedImage();
     void decodesImageFileAsynchronously();
     void decodesVideoSinkFrame();
+    void decodesYuvFrameViaLumaPlane();
     void rejectsImageWithoutCode();
 };
 
@@ -93,6 +97,35 @@ void TestQrDecoder::decodesVideoSinkFrame()
     QCOMPARE(successSpy.first().first().toString(), payload);
     decoder.setVideoSink(nullptr);
 }
+void TestQrDecoder::decodesYuvFrameViaLumaPlane()
+{
+    const QString payload = QStringLiteral("yuv luma payload");
+    QrGenerator generator;
+    QVideoSink sink;
+    QrDecoder decoder;
+    QSignalSpy successSpy(&decoder, &QrDecoder::decodeSucceeded);
+    decoder.setVideoSink(&sink);
 
+    // Build a YUV420P frame whose luma (Y) plane carries the QR; U/V are left
+    // zeroed because zxing only reads the luma plane.
+    const QImage gray = generator.generateQr(payload, 1, 480)
+                            .convertToFormat(QImage::Format_Grayscale8);
+
+    QVideoFrameFormat format(gray.size(), QVideoFrameFormat::Format_YUV420P);
+    QVideoFrame frame(format);
+    QVERIFY(frame.isValid());
+    QVERIFY(frame.map(QVideoFrame::WriteOnly));
+    const int strideY = frame.bytesPerLine(0);
+    for (int y = 0; y < gray.height(); ++y)
+        std::memcpy(frame.bits(0) + y * strideY, gray.constScanLine(y),
+                    static_cast<size_t>(gray.width()));
+    frame.unmap();
+
+    sink.setVideoFrame(frame);
+
+    QVERIFY(successSpy.wait(5000));
+    QCOMPARE(successSpy.first().first().toString(), payload);
+    decoder.setVideoSink(nullptr);
+}
 QTEST_GUILESS_MAIN(TestQrDecoder)
 #include "tst_qrdecoder.moc"

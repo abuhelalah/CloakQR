@@ -22,6 +22,8 @@ class Settings : public QObject
     Q_PROPERTY(bool historyEnabled READ historyEnabled WRITE setHistoryEnabled NOTIFY historyEnabledChanged)
     Q_PROPERTY(bool historyExcludeWifiPassword READ historyExcludeWifiPassword
                    WRITE setHistoryExcludeWifiPassword NOTIFY historyExcludeWifiPasswordChanged)
+    Q_PROPERTY(bool biometricLockEnabled READ biometricLockEnabled
+                   WRITE setBiometricLockEnabled NOTIFY biometricLockEnabledChanged)
     Q_PROPERTY(QString defaultSaveDirectory READ defaultSaveDirectory
                    WRITE setDefaultSaveDirectory NOTIFY defaultSaveDirectoryChanged)
     Q_PROPERTY(QString recentExportDirectory READ recentExportDirectory
@@ -50,6 +52,9 @@ public:
     bool historyExcludeWifiPassword() const;
     void setHistoryExcludeWifiPassword(bool value);
 
+    bool biometricLockEnabled() const;
+    void setBiometricLockEnabled(bool value);
+
     QString defaultSaveDirectory() const;
     void setDefaultSaveDirectory(const QString& value);
 
@@ -67,6 +72,7 @@ signals:
     void darkModeChanged();
     void languageChanged();
     void highContrastChanged();
+    void biometricLockEnabledChanged();
     void fontScaleChanged();
     void historyEnabledChanged();
     void historyExcludeWifiPasswordChanged();

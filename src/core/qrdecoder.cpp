@@ -11,6 +11,7 @@
 #include <QImageReader>
 #include <QUrl>
 #include <QVideoFrame>
+#include <QVideoFrameFormat>
 #include <QVideoSink>
 #include <QtConcurrent/QtConcurrentRun>
 
@@ -27,18 +28,16 @@ struct DecodeResult
     QString error;
 };
 
-DecodeResult decodeQrImage(const QImage& image)
+// Runs zxing over an 8-bit luma buffer. tryHarder enables a more exhaustive
+// search (used for still images); live frames use the lighter default so each
+// failed frame stays cheap. tryRotate is intentionally never set: QR detection
+// is rotation-invariant, so it only adds retry work for no benefit.
+DecodeResult decodeLum(const uchar* bits, int width, int height, int stride, bool tryHarder)
 {
-    if (image.isNull())
-        return {{}, QrDecoder::tr("The selected image could not be opened.")};
-
-    const QImage grayscale = image.convertToFormat(QImage::Format_Grayscale8);
-    const ZXing::ImageView imageView(grayscale.constBits(), grayscale.width(), grayscale.height(),
-                                     ZXing::ImageFormat::Lum, grayscale.bytesPerLine());
-    const ZXing::DecodeHints options = ZXing::DecodeHints()
-        .setFormats(ZXing::BarcodeFormat::QRCode)
-        .setTryHarder(true)
-        .setTryRotate(true);
+    const ZXing::ImageView imageView(bits, width, height, ZXing::ImageFormat::Lum, stride);
+    ZXing::DecodeHints options = ZXing::DecodeHints().setFormats(ZXing::BarcodeFormat::QRCode);
+    if (tryHarder)
+        options.setTryHarder(true);
     const ZXing::Result result = ZXing::ReadBarcode(imageView, options);
     if (!result.isValid())
         return {{}, QrDecoder::tr("No QR code was found in the image.")};
@@ -49,6 +48,37 @@ DecodeResult decodeQrImage(const QImage& image)
         return {{}, QrDecoder::tr("The QR code does not contain valid UTF-8 text.")};
 
     return {text, {}};
+}
+
+DecodeResult decodeQrImage(const QImage& image, bool tryHarder)
+{
+    if (image.isNull())
+        return {{}, QrDecoder::tr("The selected image could not be opened.")};
+
+    const QImage grayscale = image.convertToFormat(QImage::Format_Grayscale8);
+    return decodeLum(grayscale.constBits(), grayscale.width(), grayscale.height(),
+                     grayscale.bytesPerLine(), tryHarder);
+}
+
+// True when plane 0 of a YUV frame is a full-resolution 8-bit luma plane that
+// zxing can consume directly (planar/semi-planar 4:2:0 and 4:2:2, and luma-only).
+bool hasDirectLumaPlane(QVideoFrameFormat::PixelFormat fmt)
+{
+    switch (fmt) {
+    case QVideoFrameFormat::Format_YUV420P:
+    case QVideoFrameFormat::Format_YUV422P:
+    case QVideoFrameFormat::Format_YV12:
+    case QVideoFrameFormat::Format_NV12:
+    case QVideoFrameFormat::Format_NV21:
+    case QVideoFrameFormat::Format_IMC1:
+    case QVideoFrameFormat::Format_IMC2:
+    case QVideoFrameFormat::Format_IMC3:
+    case QVideoFrameFormat::Format_IMC4:
+    case QVideoFrameFormat::Format_Y8:
+        return true;
+    default:
+        return false;
+    }
 }
 
 QImage scaledForDecode(const QImage& image, int maxDimension)
@@ -114,7 +144,7 @@ void QrDecoder::handleDecodedText(const QString& text)
 
 bool QrDecoder::decodeImage(const QImage& image)
 {
-    const DecodeResult result = decodeQrImage(image);
+    const DecodeResult result = decodeQrImage(image, true);
     if (!result.error.isEmpty()) {
         emit decodeFailed(result.error);
         return false;
@@ -138,7 +168,7 @@ void QrDecoder::decodeImageFile(const QUrl& imageUrl)
         finishDecode(result.text, result.error, true);
     });
     watcher->setFuture(QtConcurrent::run([imageUrl]() {
-        return decodeQrImage(loadImage(imageUrl));
+        return decodeQrImage(loadImage(imageUrl), true);
     }));
 }
 
@@ -179,7 +209,7 @@ void QrDecoder::startDecode(const QImage& image, bool reportFailure, int maxDime
         finishDecode(result.text, result.error, reportFailure);
     });
     watcher->setFuture(QtConcurrent::run([image, maxDimension]() {
-        return decodeQrImage(scaledForDecode(image, maxDimension));
+        return decodeQrImage(scaledForDecode(image, maxDimension), true);
     }));
 }
 
@@ -196,10 +226,28 @@ void QrDecoder::startDecodeFrame(const QVideoFrame& frame, bool reportFailure, i
     // Frame conversion and scaling happen on the worker thread so the camera
     // preview never stalls while a frame is prepared for decoding.
     watcher->setFuture(QtConcurrent::run([frame, maxDimension]() {
-        const QImage image = frame.toImage();
+        // Non-const working copy: QVideoFrame::map()/unmap() are non-const.
+        QVideoFrame working = frame;
+
+        // Single-pass path: when the frame exposes a full-resolution 8-bit Y
+        // plane, feed it to zxing directly instead of the YUV→RGB→gray double
+        // conversion. The wrapped QImage shares the mapped frame buffer, so the
+        // frame must stay mapped until decoding is done.
+        if (hasDirectLumaPlane(working.pixelFormat()) && working.map(QVideoFrame::ReadOnly)) {
+            const QImage luma(working.bits(0), working.width(), working.height(),
+                              working.bytesPerLine(0), QImage::Format_Grayscale8);
+            const QImage scaled = scaledForDecode(luma, maxDimension);
+            const DecodeResult result = decodeLum(scaled.constBits(), scaled.width(),
+                                                  scaled.height(), scaled.bytesPerLine(), false);
+            working.unmap();
+            return result;
+        }
+
+        // Fallback: convert the whole frame to an image and decode from there.
+        const QImage image = working.toImage();
         if (image.isNull())
             return DecodeResult{};
-        return decodeQrImage(scaledForDecode(image, maxDimension));
+        return decodeQrImage(scaledForDecode(image, maxDimension), false);
     }));
 }
 
