@@ -128,10 +128,9 @@ Page {
             Layout.margins: 8
             spacing: 6
             clip: true
-            // Recycle delegate items while scrolling so each row's SvgIcon
-            // (Image + tint ShaderEffect) is reused instead of re-created — the
-            // offscreen tint is then re-rendered only when the row's content
-            // type actually changes, not on every scroll tick.
+            // Recycle delegate items while scrolling so each row's SvgIcon is
+            // reused instead of re-created — the tint is then re-applied only
+            // when the row's content type changes, not on every scroll tick.
             reuseItems: true
             model: scanHistory
 
