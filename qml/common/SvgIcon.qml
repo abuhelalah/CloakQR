@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.impl
 
 // A monochrome icon tinted with `color`. IconImage renders the source using
 // only its alpha channel and fills it with `color`, so the stroke/fill colour
@@ -8,7 +8,7 @@ import QtQuick.Controls
 //
 // This replaces the old ColorOverlay from Qt5Compat.GraphicalEffects, which is
 // an optional Qt installer component and was absent on the Windows build
-// machine. IconImage is part of QtQuick.Controls (available in every Qt 6
+// machine. IconImage lives in QtQuick.Controls.impl (available in every Qt 6
 // install), needs no shader code, and works identically on every platform and
 // rendering backend (OpenGL, D3D, Metal, Vulkan).
 Item {
