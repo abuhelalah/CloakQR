@@ -150,9 +150,11 @@ Page {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 420
                 model: [
-                    { key: "",          label: qsTr("All") },
-                    { key: "scanned",   label: qsTr("Scanned") },
-                    { key: "generated", label: qsTr("Created") }
+                    // Own context comment so the filter can use longer labels
+                    // than the per-row "Scanned"/"Created" tags.
+                    { key: "",          label: qsTr("All", "history filter") },
+                    { key: "scanned",   label: qsTr("Scanned", "history filter") },
+                    { key: "generated", label: qsTr("Created", "history filter") }
                 ]
                 currentKey: page.originFilter
                 fillColor: page.surfaceColor

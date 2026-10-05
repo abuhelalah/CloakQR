@@ -66,7 +66,15 @@ Rectangle {
                     text: segment.modelData.label
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
+                    // Long labels (e.g. Arabic) wrap to two lines and shrink a
+                    // little to fit, rather than being cut off.
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    lineHeight: 0.9
+                    leftPadding: 4
+                    rightPadding: 4
+                    fontSizeMode: Text.Fit
+                    minimumPixelSize: 10
                     font.pixelSize: 13
                     font.weight: Font.DemiBold
                     color: segment.selected ? control.selectedTextColor : control.textColor

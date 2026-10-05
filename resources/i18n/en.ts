@@ -721,6 +721,21 @@
     <name>HistoryPage</name>
     <message>
         <source>All</source>
+        <comment>history filter</comment>
+        <translation>All</translation>
+    </message>
+    <message>
+        <source>Scanned</source>
+        <comment>history filter</comment>
+        <translation>Scanned</translation>
+    </message>
+    <message>
+        <source>Created</source>
+        <comment>history filter</comment>
+        <translation>Created</translation>
+    </message>
+    <message>
+        <source>All</source>
         <translation>All</translation>
     </message>
     <message>

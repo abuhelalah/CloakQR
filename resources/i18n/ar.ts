@@ -721,6 +721,21 @@
     <name>HistoryPage</name>
     <message>
         <source>All</source>
+        <comment>history filter</comment>
+        <translation>الكل</translation>
+    </message>
+    <message>
+        <source>Scanned</source>
+        <comment>history filter</comment>
+        <translation>الرموز الممسوحة ضوئياً</translation>
+    </message>
+    <message>
+        <source>Created</source>
+        <comment>history filter</comment>
+        <translation>الرموز المنشأة</translation>
+    </message>
+    <message>
+        <source>All</source>
         <translation>الكل</translation>
     </message>
     <message>
