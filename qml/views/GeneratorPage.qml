@@ -14,10 +14,18 @@ Page {
     // threshold and this width the page falls back to the single-column layout
     // so the Save/Share actions are never squeezed into a tiny gutter.
     readonly property bool twoColumn: page.wideLayout && page.width >= 980
-    property color canvasColor: "#F3F7F5"
-    property color primaryColor: "#086C5C"
+    property color canvasColor: "#F1F5F3"
+    property color primaryColor: "#0B6B5E"
     property color primaryTextColor: "#FFFFFF"
-    property color mutedColor: "#5D6F69"
+    property color mutedColor: "#4B5754"
+    property color surfaceColor: "#FFFFFF"
+    property color containerColor: "#D5EBE4"
+    property color containerTextColor: "#053B33"
+    property color errorColor: "#B3261E"
+    readonly property real sideMargin: page.twoColumn ? 28 : 16
+    // The rail layout has no top bar, so the page shows its own title there.
+    readonly property bool showTitle: ApplicationWindow.window !== null
+                                      && ApplicationWindow.window.railLayout === true
 
     background: Rectangle {
         color: page.canvasColor
@@ -36,6 +44,12 @@ Page {
     }
 
     Timer {
+        id: previewTimer
+        interval: 250
+        onTriggered: page.refreshNow()
+    }
+
+    Timer {
         id: copyTimer
         interval: 1500
         onTriggered: shareBtn.showingCopied = false
@@ -49,6 +63,8 @@ Page {
     readonly property int typeSms: 4
     readonly property int typeWifi: 5
     readonly property int typeGeo: 6
+    readonly property int typeWhatsapp: 7
+    readonly property int typeContact: 8
 
     // Location input methods offered for the geo type.
     readonly property int geoModeCoords: 0
@@ -57,6 +73,13 @@ Page {
     property string currentPayload: ""
     property var capacity: ({ fits: false, version: -1, maxBytes: 0, usedBytes: 0 })
     property bool moreTypesShown: false
+    // QR appearance: error-correction index (L, M, Q, H) and module colours.
+    property int eccLevel: 1
+    property color fgColor: "#000000"
+    property color bgColor: "#FFFFFF"
+    property string wifiAuthValue: "WPA"
+    property int geoMode: geoModeCoords
+    readonly property bool hasQr: qrImage.source.toString().length > 0
     // Request id of the in-flight async share save (0 = none). When the PNG is
     // written it is handed to the platform share sheet.
     property int shareSaveRequest: 0
@@ -93,48 +116,81 @@ Page {
         return parts.join(", ")
     }
 
-    // Resets every input field for the current content type.
-    function clearFields() {
-        fieldText.clear()
-        fieldSubject.clear()
-        fieldBody.clear()
-        fieldContactName.clear()
-        fieldCountryCode.clear()
-        fieldPhoneNumber.clear()
-        fieldSmsCountryCode.clear()
-        fieldSmsNumber.clear()
-        fieldSsid.clear()
-        fieldPassword.clear()
-        fieldLat.clear()
-        fieldLon.clear()
-        fieldStreet.clear()
-        fieldBuilding.clear()
-        fieldPostal.clear()
-        fieldCity.clear()
-        fieldCountry.clear()
-        page.refresh()
+    // True when the selected type has nothing worth encoding yet, so the live
+    // preview stays empty instead of showing e.g. "geo:0,0" or a blank Wi-Fi.
+    function inputEmpty() {
+        const blank = (f) => f.text.trim().length === 0
+        switch (typeSelector.currentIndex) {
+        case typeText:
+        case typeUrl:
+        case typeEmail: return blank(fieldText)
+        case typePhone: return blank(fieldPhoneNumber)
+        case typeSms:   return blank(fieldSmsNumber) && blank(fieldBody)
+        case typeWhatsapp: return blank(fieldSmsNumber)
+        case typeContact:  return blank(fieldContactName) && blank(fieldPhoneNumber)
+                                  && blank(fieldContactEmail)
+        case typeWifi:  return blank(fieldSsid)
+        case typeGeo:
+            return page.geoMode === page.geoModeAddress
+                   ? page.composedAddress().length === 0
+                   : (blank(fieldLat) || blank(fieldLon))
+        }
+        return true
+    }
+
+    // History type for the current payload, matching the scanner's categories.
+    function historyType() {
+        switch (typeSelector.currentIndex) {
+        case typeUrl:   return "url"
+        case typeEmail: return "email"
+        case typePhone: return "tel"
+        case typeSms:   return "sms"
+        case typeWhatsapp: return "whatsapp"
+        case typeContact:  return "vcard"
+        case typeWifi:  return "wifi"
+        case typeGeo:   return "geo"
+        }
+        return "text"
+    }
+
+    // Records a created code once it is saved or shared, under the same rules
+    // as scans: only with history on, and Wi-Fi codes skipped when excluded.
+    property string lastRecordedPayload: ""
+    function recordInHistory() {
+        const payload = page.currentPayload
+        if (payload.length === 0 || payload === page.lastRecordedPayload)
+            return
+        if (!appSettings.historyEnabled)
+            return
+        if (appSettings.historyExcludeWifiPassword && payload.startsWith("WIFI:"))
+            return
+        scanHistory.addEntry(payload, page.historyType(), "generated")
+        page.lastRecordedPayload = payload
     }
 
     function buildPayload() {
+        if (page.inputEmpty())
+            return ""
         switch (typeSelector.currentIndex) {
         case typeText:  return qrGenerator.textPayload(fieldText.text)
         case typeUrl:   return qrGenerator.urlPayload(fieldText.text)
         case typeEmail: return qrGenerator.emailPayload(fieldText.text, fieldSubject.text, fieldBody.text)
-        case typePhone: {
-            var pnum = page.combinedNumber(fieldCountryCode.text, fieldPhoneNumber.text)
-            // A name turns the code into a contact card so scanners can add it;
-            // without a name a plain "tel:" that dials directly is generated.
-            if (fieldContactName.text.trim().length > 0)
-                return qrGenerator.vcardPayload(fieldContactName.text, "", pnum, "", "")
-            return qrGenerator.phonePayload(pnum)
-        }
+        case typePhone: return qrGenerator.phonePayload(
+                            page.combinedNumber(fieldCountryCode.text, fieldPhoneNumber.text))
+        case typeContact: return qrGenerator.vcardPayload(
+                              fieldContactName.text.trim(), fieldContactOrg.text.trim(),
+                              page.combinedNumber(fieldCountryCode.text, fieldPhoneNumber.text),
+                              fieldContactEmail.text.trim(), fieldContactUrl.text.trim())
+        case typeWhatsapp: return qrGenerator.whatsappPayload(
+                               page.combinedNumber(fieldSmsCountryCode.text, fieldSmsNumber.text),
+                               fieldBody.text)
         case typeSms:   return qrGenerator.smsPayload(
                             page.combinedNumber(fieldSmsCountryCode.text, fieldSmsNumber.text),
                             fieldBody.text)
         case typeWifi:  return qrGenerator.wifiPayload(fieldSsid.text, fieldPassword.text,
-                                                       wifiAuth.currentValue, wifiHidden.checked)
+                                                       page.wifiAuthValue, wifiHidden.checked)
         case typeGeo: {
-            if (geoModeSelector.currentIndex === page.geoModeAddress) {
+            if (page.geoMode === page.geoModeAddress) {
                 var addr = page.composedAddress()
                 return addr.length > 0 ? qrGenerator.geoPayload(0, 0, addr) : ""
             }
@@ -145,12 +201,10 @@ Page {
         return ""
     }
 
-    // Editing any input clears the previously generated QR. Generation only
-    // runs when the user taps the "Generate" button — there is no live preview.
+    // Live preview: any edit schedules a re-encode once typing pauses, so the
+    // QR is not rebuilt on every keystroke.
     function refresh() {
-        qrImage.source = ""
-        page.currentPayload = ""
-        page.capacity = ({ fits: false, version: -1, maxBytes: 0, usedBytes: 0 })
+        previewTimer.restart()
     }
 
     // Encodes the payload once for the capacity read-out, then hands the
@@ -165,21 +219,22 @@ Page {
             return
         }
 
-        page.capacity = qrGenerator.capacityInfo(payload, eccSelector.currentIndex)
+        page.capacity = qrGenerator.capacityInfo(payload, page.eccLevel)
         if (!page.capacity.fits) {
             qrImage.source = ""
             return
         }
 
         qrImage.source = "image://qrcode/" + encodeURIComponent(payload)
-                         + "?e=" + eccSelector.currentIndex
-                         + "&f=" + page.colorHex(fgColor.color)
-                         + "&b=" + page.colorHex(bgColor.color)
+                         + "?e=" + page.eccLevel
+                         + "&f=" + page.colorHex(page.fgColor)
+                         + "&b=" + page.colorHex(page.bgColor)
     }
 
     function savePngTo(url) {
-        qrGenerator.requestSavePng(page.currentPayload, eccSelector.currentIndex,
-                                   2048, fgColor.color, bgColor.color, url)
+        page.recordInHistory()
+        qrGenerator.requestSavePng(page.currentPayload, page.eccLevel,
+                                   2048, page.fgColor, page.bgColor, url)
     }
 
     // Builds a valid file: URL from a plain filesystem path. On Windows a drive
@@ -284,13 +339,15 @@ Page {
         }
         case typeWifi:
             return makeBaseName("wifi", sanitizeComponent(fieldSsid.text, true))
-        case typePhone: {
+        case typePhone:
+            return makeBaseName("phone", sanitizeComponent(fieldPhoneNumber.text, true))
+        case typeContact: {
             if (fieldContactName.text.trim().length > 0)
                 return makeBaseName("contact", sanitizeComponent(fieldContactName.text, true))
-            if (fieldPhoneNumber.text.trim().length > 0)
-                return makeBaseName("contact", sanitizeComponent(fieldPhoneNumber.text, true))
-            return "contact_" + filenameTimestamp()
+            return makeBaseName("contact", sanitizeComponent(fieldPhoneNumber.text, true))
         }
+        case typeWhatsapp:
+            return makeBaseName("whatsapp", sanitizeComponent(fieldSmsNumber.text, true))
         case typeSms: {
             const num = sanitizeComponent(fieldSmsNumber.text, true)
             const msg = sanitizeComponent(firstWord(fieldBody.text))
@@ -303,7 +360,7 @@ Page {
             return "sms_" + filenameTimestamp()
         }
         case typeGeo:
-            if (geoModeSelector.currentIndex === page.geoModeAddress) {
+            if (page.geoMode === page.geoModeAddress) {
                 const street = sanitizeComponent(fieldStreet.text)
                 const building = sanitizeComponent(fieldBuilding.text)
                 if (street.length > 0 && building.length > 0)
@@ -334,6 +391,84 @@ Page {
         return base + encodeURIComponent(page.suggestedBaseName() + ".png")
     }
 
+    // --- Building blocks -----------------------------------------------------
+    component SectionHeader: Label {
+        Layout.fillWidth: true
+        Layout.leftMargin: 4
+        font.pixelSize: 12
+        font.bold: true
+        font.capitalization: Font.AllUppercase
+        font.letterSpacing: 1.2
+        color: page.mutedColor
+    }
+
+    component Field: PasteField {
+        Layout.fillWidth: true
+        fillColor: page.surfaceColor
+        mutedColor: page.mutedColor
+        onChanged: page.refresh()
+    }
+
+    // A row of colour swatches plus a "custom" swatch that opens a picker.
+    component SwatchRow: RowLayout {
+        id: swatchRow
+        property var presets: []
+        property color current
+        signal picked(color value)
+        signal customRequested()
+        readonly property bool isCustom: {
+            for (var i = 0; i < presets.length; ++i)
+                if (Qt.colorEqual(presets[i], current))
+                    return false
+            return true
+        }
+        spacing: 8
+
+        Repeater {
+            model: swatchRow.presets.concat(["custom"])
+            delegate: AbstractButton {
+                id: swatch
+                required property var modelData
+                readonly property bool custom: modelData === "custom"
+                readonly property bool selected: custom ? swatchRow.isCustom
+                                                        : Qt.colorEqual(modelData, swatchRow.current)
+                implicitWidth: 52
+                implicitHeight: 52
+                checkable: true
+                checked: selected
+                Accessible.role: Accessible.RadioButton
+                Accessible.name: custom ? qsTr("Custom colour") : modelData
+                onClicked: custom ? swatchRow.customRequested() : swatchRow.picked(modelData)
+
+                // Selection ring with a 2px gap, as in the design.
+                background: Rectangle {
+                    radius: 16
+                    color: "transparent"
+                    border.width: swatch.selected ? 2 : 0
+                    border.color: page.primaryColor
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        radius: 12
+                        color: swatch.custom ? (swatchRow.isCustom ? swatchRow.current : page.surfaceColor)
+                                             : swatch.modelData
+                        border.width: 1
+                        border.color: Material.theme === Material.Dark ? Qt.rgba(1, 1, 1, 0.3)
+                                                                       : Qt.rgba(0, 0, 0, 0.2)
+                        SvgIcon {
+                            anchors.centerIn: parent
+                            visible: swatch.custom && !swatchRow.isCustom
+                            source: "qrc:/icons/nav_create.svg"
+                            color: page.mutedColor
+                            size: 20
+                        }
+                    }
+                }
+                contentItem: Item {}
+            }
+        }
+    }
+
     ScrollView {
         anchors.fill: parent
         contentWidth: availableWidth
@@ -343,40 +478,36 @@ Page {
             width: Math.min(page.width, page.twoColumn ? 1160 : 600)
             x: Math.max(0, (page.width - width) / 2)
             columns: page.twoColumn ? 2 : 1
-            columnSpacing: 28
-            rowSpacing: 16
+            columnSpacing: 24
+            rowSpacing: 24
 
+            // ===== TYPE + CONTENT =====
             ColumnLayout {
-                Layout.fillWidth: true
                 Layout.row: 0
                 Layout.column: 0
-                Layout.rowSpan: page.twoColumn ? 3 : 1
+                Layout.fillWidth: true
                 Layout.preferredWidth: page.twoColumn ? 540 : -1
-                Layout.leftMargin: page.twoColumn ? 28 : 20
-                Layout.rightMargin: page.twoColumn ? 0 : 20
+                Layout.leftMargin: page.sideMargin
+                Layout.rightMargin: page.twoColumn ? 0 : page.sideMargin
                 Layout.topMargin: page.twoColumn ? 28 : 20
-                Layout.bottomMargin: page.twoColumn ? 28 : 0
                 spacing: 12
 
-                // ===== SELECT TYPE =====
                 Label {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 4
-                    text: qsTr("Select type")
-                    font.pixelSize: 11
+                    visible: page.showTitle
+                    Layout.bottomMargin: 4
+                    text: qsTr("Create QR")
+                    font.pixelSize: Math.round(28 * appSettings.fontScale)
                     font.bold: true
-                    font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 1.2
-                    color: page.mutedColor
                 }
+
+                SectionHeader { text: qsTr("Type") }
 
                 GridLayout {
                     Layout.fillWidth: true
-                    columns: page.twoColumn ? 6 : 3
-                    columnSpacing: 8
-                    rowSpacing: 8
+                    columns: page.twoColumn ? 4 : 3
+                    columnSpacing: 10
+                    rowSpacing: 10
                     uniformCellWidths: true
-                    uniformCellHeights: true
 
                     Repeater {
                         model: [
@@ -386,46 +517,53 @@ Page {
                             { type: page.typeEmail, label: qsTr("Email"),    icon: "qrc:/icons/email.svg",    primary: true },
                             { type: page.typePhone, label: qsTr("Phone"),    icon: "qrc:/icons/phone.svg",    primary: true },
                             { type: page.typeGeo,   label: qsTr("Location"), icon: "qrc:/icons/location.svg", primary: true },
-                            { type: page.typeSms,   label: qsTr("SMS"),      icon: "qrc:/icons/sms.svg",      primary: false }
+                            { type: page.typeSms,   label: qsTr("SMS"),      icon: "qrc:/icons/sms.svg",      primary: false },
+                            { type: page.typeWhatsapp, label: qsTr("WhatsApp"), icon: "qrc:/icons/chat.svg",   primary: false },
+                            { type: page.typeContact,  label: qsTr("Contact"),  icon: "qrc:/icons/contact.svg", primary: false }
                         ]
 
-                        delegate: Button {
-                            id: typeChip
+                        delegate: AbstractButton {
+                            id: typeTile
                             required property var modelData
                             readonly property bool selected: typeSelector.currentIndex === modelData.type
-                            visible: modelData.primary || page.moreTypesShown
+                            // Tablets have room for every type; phones fold the rest away.
+                            visible: modelData.primary || page.moreTypesShown || page.twoColumn
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 72
+                            Layout.preferredHeight: 76
+                            checkable: true
+                            checked: selected
                             focusPolicy: Qt.StrongFocus
                             Accessible.name: modelData.label
-                            Accessible.role: Accessible.Button
+                            Accessible.role: Accessible.RadioButton
                             onClicked: typeSelector.currentIndex = modelData.type
 
                             contentItem: ColumnLayout {
-                                spacing: 4
+                                spacing: 6
+                                Item { Layout.fillHeight: true }
                                 SvgIcon {
                                     Layout.alignment: Qt.AlignHCenter
-                                    source: modelData.icon
-                                    color: typeChip.selected ? page.primaryTextColor : Material.foreground
+                                    source: typeTile.modelData.icon
+                                    color: typeTile.selected ? page.primaryTextColor : Material.foreground
                                     size: 22
                                 }
                                 Label {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignHCenter
-                                    text: modelData.label
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                    color: typeChip.selected ? page.primaryTextColor : Material.foreground
+                                    text: typeTile.modelData.label
+                                    font.pixelSize: 14
+                                    font.weight: Font.DemiBold
+                                    color: typeTile.selected ? page.primaryTextColor : Material.foreground
                                     elide: Text.ElideRight
                                 }
+                                Item { Layout.fillHeight: true }
                             }
                             background: Rectangle {
-                                radius: 10
-                                color: typeChip.selected ? page.primaryColor
-                                    : Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.10)
+                                radius: 16
+                                color: typeTile.selected ? page.primaryColor
+                                     : typeTile.down ? page.containerColor : page.surfaceColor
                                 border.width: 1
-                                border.color: typeChip.selected ? page.primaryColor
-                                    : Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.22)
+                                border.color: typeTile.selected ? page.primaryColor
+                                    : Material.theme === Material.Dark ? Qt.rgba(1, 1, 1, 0.12) : "#E3E8E6"
                             }
                         }
                     }
@@ -433,42 +571,31 @@ Page {
 
                 Button {
                     id: moreTypesButton
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 42
+                    visible: !page.twoColumn
+                    flat: true
                     focusPolicy: Qt.StrongFocus
-                    Accessible.name: qsTr("Show more types")
+                    Accessible.name: text
+                    text: page.moreTypesShown ? qsTr("Fewer types") : qsTr("More types")
                     onClicked: page.moreTypesShown = !page.moreTypesShown
-
-                    contentItem: Row {
-                        anchors.centerIn: parent
-                        spacing: 8
+                    contentItem: RowLayout {
+                        spacing: 6
                         Label {
-                            text: page.moreTypesShown ? qsTr("Show less types") : qsTr("Show more types")
-                            font.pixelSize: 12
-                            font.bold: true
-                            font.capitalization: Font.AllUppercase
-                            font.letterSpacing: 0.6
+                            text: moreTypesButton.text
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
                             color: page.primaryColor
-                            anchors.verticalCenter: parent.verticalCenter
                         }
                         SvgIcon {
                             source: "qrc:/icons/chevron_down.svg"
                             color: page.primaryColor
-                            size: 16
+                            size: 18
                             rotation: page.moreTypesShown ? 180 : 0
-                            anchors.verticalCenter: parent.verticalCenter
                             Behavior on rotation { NumberAnimation { duration: 150 } }
                         }
                     }
-                    background: Rectangle {
-                        radius: 8
-                        color: "transparent"
-                        border.width: 1
-                        border.color: page.primaryColor
-                    }
                 }
 
-                // Hidden state holder; the chips above drive its index.
+                // Hidden state holder; the tiles above drive its index.
                 ComboBox {
                     id: typeSelector
                     visible: false
@@ -482,27 +609,21 @@ Page {
                         { label: qsTr("Phone"),     value: "phone" },
                         { label: qsTr("SMS"),       value: "sms" },
                         { label: qsTr("Wi-Fi"),     value: "wifi" },
-                        { label: qsTr("Location"),  value: "geo" }
+                        { label: qsTr("Location"),  value: "geo" },
+                        { label: qsTr("WhatsApp"),  value: "whatsapp" },
+                        { label: qsTr("Contact"),   value: "contact" }
                     ]
                     onCurrentIndexChanged: page.refresh()
                 }
 
-                // ===== DATA TO ENCODE =====
-                Label {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 14
-                    text: qsTr("Data to encode")
-                    font.pixelSize: 11
-                    font.bold: true
-                    font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 1.2
-                    color: page.mutedColor
+                SectionHeader {
+                    Layout.topMargin: 12
+                    text: qsTr("Content")
                 }
 
                 // --- Generic single-line field (text/url/email) --------------
-                PasteField {
+                Field {
                     id: fieldText
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeText
                              || typeSelector.currentIndex === page.typeUrl
                              || typeSelector.currentIndex === page.typeEmail
@@ -513,468 +634,507 @@ Page {
                         default:             return qsTr("Enter text")
                         }
                     }
-                    accessibleName: qsTr("Primary content field")
-                    onChanged: page.refresh()
+                    accessibleName: {
+                        switch (typeSelector.currentIndex) {
+                        case page.typeUrl:   return qsTr("Website address")
+                        case page.typeEmail: return qsTr("Email address")
+                        default:             return qsTr("Text")
+                        }
+                    }
                 }
 
-                // --- Phone (contact) fields ----------------------------------
-                PasteField {
+                // --- Contact / phone fields ----------------------------------
+                Field {
                     id: fieldContactName
-                    Layout.fillWidth: true
-                    visible: typeSelector.currentIndex === page.typePhone
-                    placeholderText: qsTr("Name (optional)")
+                    visible: typeSelector.currentIndex === page.typeContact
                     accessibleName: qsTr("Contact name")
-                    onChanged: page.refresh()
+                }
+
+                Field {
+                    id: fieldContactOrg
+                    visible: typeSelector.currentIndex === page.typeContact
+                    placeholderText: qsTr("Optional")
+                    accessibleName: qsTr("Organization")
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typePhone
+                             || typeSelector.currentIndex === page.typeContact
                     spacing: 8
 
-                    PasteField {
+                    Field {
                         id: fieldCountryCode
-                        Layout.preferredWidth: 130
+                        Layout.fillWidth: false
+                        Layout.preferredWidth: 110
+                        showActions: false
                         placeholderText: qsTr("+1")
                         inputMethodHints: Qt.ImhDialableCharactersOnly
                         accessibleName: qsTr("Country code")
-                        onChanged: page.refresh()
                     }
-                    PasteField {
+                    Field {
                         id: fieldPhoneNumber
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Phone number")
                         inputMethodHints: Qt.ImhDialableCharactersOnly
                         accessibleName: qsTr("Phone number")
-                        onChanged: page.refresh()
                     }
                 }
 
-                // --- SMS number fields ---------------------------------------
+                Field {
+                    id: fieldContactEmail
+                    visible: typeSelector.currentIndex === page.typeContact
+                    placeholderText: qsTr("name@example.com")
+                    inputMethodHints: Qt.ImhEmailCharactersOnly
+                    accessibleName: qsTr("Email address")
+                }
+
+                Field {
+                    id: fieldContactUrl
+                    visible: typeSelector.currentIndex === page.typeContact
+                    placeholderText: qsTr("Optional")
+                    inputMethodHints: Qt.ImhUrlCharactersOnly
+                    accessibleName: qsTr("Website")
+                }
+
+                // --- SMS / WhatsApp number fields ----------------------------
                 RowLayout {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeSms
+                             || typeSelector.currentIndex === page.typeWhatsapp
                     spacing: 8
 
-                    PasteField {
+                    Field {
                         id: fieldSmsCountryCode
-                        Layout.preferredWidth: 130
+                        Layout.fillWidth: false
+                        Layout.preferredWidth: 110
+                        showActions: false
                         placeholderText: qsTr("+1")
                         inputMethodHints: Qt.ImhDialableCharactersOnly
                         accessibleName: qsTr("Country code")
-                        onChanged: page.refresh()
                     }
-                    PasteField {
+                    Field {
                         id: fieldSmsNumber
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Recipient number")
                         inputMethodHints: Qt.ImhDialableCharactersOnly
                         accessibleName: qsTr("Recipient number")
-                        onChanged: page.refresh()
                     }
                 }
 
                 // --- Email / SMS extras --------------------------------------
-                PasteField {
+                Field {
                     id: fieldSubject
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeEmail
-                    placeholderText: qsTr("Subject")
                     accessibleName: qsTr("Email subject")
-                    onChanged: page.refresh()
                 }
 
-                PasteField {
+                Field {
                     id: fieldBody
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeEmail
                              || typeSelector.currentIndex === page.typeSms
-                    placeholderText: typeSelector.currentIndex === page.typeSms
-                                     ? qsTr("Message") : qsTr("Body")
+                             || typeSelector.currentIndex === page.typeWhatsapp
+                    label: typeSelector.currentIndex === page.typeEmail ? qsTr("Body") : qsTr("Message")
+                    placeholderText: typeSelector.currentIndex === page.typeEmail ? "" : qsTr("Optional")
                     accessibleName: qsTr("Message body")
-                    onChanged: page.refresh()
                 }
 
                 // --- Wi-Fi fields --------------------------------------------
-                PasteField {
+                Field {
                     id: fieldSsid
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeWifi
                     placeholderText: qsTr("Network name (SSID)")
                     accessibleName: qsTr("Wi-Fi network name")
-                    onChanged: page.refresh()
                 }
 
-                PasteField {
-                    id: fieldPassword
+                SegmentedControl {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeWifi
-                             && wifiAuth.currentValue !== "none"
-                    placeholderText: qsTr("Password")
+                    model: [
+                        { key: "WPA",  label: qsTr("WPA/WPA2") },
+                        { key: "WEP",  label: qsTr("WEP") },
+                        { key: "none", label: qsTr("None") }
+                    ]
+                    currentKey: page.wifiAuthValue
+                    fillColor: page.surfaceColor
+                    selectedColor: page.containerColor
+                    selectedTextColor: page.containerTextColor
+                    textColor: page.mutedColor
+                    Accessible.name: qsTr("Wi-Fi security")
+                    onActivated: (key) => { page.wifiAuthValue = key; page.refresh() }
+                }
+
+                Field {
+                    id: fieldPassword
+                    visible: typeSelector.currentIndex === page.typeWifi
+                             && page.wifiAuthValue !== "none"
                     echoMode: TextInput.Password
                     accessibleName: qsTr("Wi-Fi password")
-                    onChanged: page.refresh()
                 }
 
-                RowLayout {
-                    Layout.fillWidth: true
+                Switch {
+                    id: wifiHidden
                     visible: typeSelector.currentIndex === page.typeWifi
-                    spacing: 12
-
-                    ComboBox {
-                        id: wifiAuth
-                        Layout.fillWidth: true
-                        Accessible.name: qsTr("Wi-Fi security")
-                        textRole: "label"
-                        valueRole: "value"
-                        model: [
-                            { label: qsTr("WPA/WPA2"), value: "WPA" },
-                            { label: qsTr("WEP"),      value: "WEP" },
-                            { label: qsTr("None"),     value: "none" }
-                        ]
-                        onCurrentIndexChanged: page.refresh()
-                    }
-
-                    CheckBox {
-                        id: wifiHidden
-                        text: qsTr("Hidden")
-                        Accessible.name: qsTr("Hidden network")
-                        onCheckedChanged: page.refresh()
-                    }
+                    text: qsTr("Hidden")
+                    Accessible.name: qsTr("Hidden network")
+                    onCheckedChanged: page.refresh()
                 }
 
                 // --- Geo fields ----------------------------------------------
-                ComboBox {
-                    id: geoModeSelector
+                SegmentedControl {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
-                    Accessible.name: qsTr("Location input method")
-                    textRole: "label"
-                    valueRole: "value"
                     model: [
-                        { label: qsTr("Coordinates"), value: "coords" },
-                        { label: qsTr("Address"),     value: "address" }
+                        { key: "0", label: qsTr("Coordinates") },
+                        { key: "1", label: qsTr("Address") }
                     ]
-                    onActivated: page.refresh()
+                    currentKey: String(page.geoMode)
+                    fillColor: page.surfaceColor
+                    selectedColor: page.containerColor
+                    selectedTextColor: page.containerTextColor
+                    textColor: page.mutedColor
+                    Accessible.name: qsTr("Location input method")
+                    onActivated: (key) => { page.geoMode = parseInt(key); page.refresh() }
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
-                             && geoModeSelector.currentIndex === page.geoModeCoords
+                             && page.geoMode === page.geoModeCoords
                     spacing: 8
 
-                    PasteField {
+                    Field {
                         id: fieldLat
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Latitude")
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
                         accessibleName: qsTr("Latitude")
-                        onChanged: page.refresh()
                     }
-                    PasteField {
+                    Field {
                         id: fieldLon
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Longitude")
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
                         accessibleName: qsTr("Longitude")
-                        onChanged: page.refresh()
                     }
                 }
 
-                PasteField {
+                Field {
                     id: fieldStreet
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
-                             && geoModeSelector.currentIndex === page.geoModeAddress
-                    placeholderText: qsTr("Street")
+                             && page.geoMode === page.geoModeAddress
                     accessibleName: qsTr("Street")
-                    onChanged: page.refresh()
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
-                             && geoModeSelector.currentIndex === page.geoModeAddress
+                             && page.geoMode === page.geoModeAddress
                     spacing: 8
 
-                    PasteField {
+                    Field {
                         id: fieldBuilding
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Building number")
                         accessibleName: qsTr("Building number")
-                        onChanged: page.refresh()
                     }
-                    PasteField {
+                    Field {
                         id: fieldPostal
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Postal code")
                         accessibleName: qsTr("Postal code")
-                        onChanged: page.refresh()
                     }
                 }
 
-                PasteField {
+                Field {
                     id: fieldCity
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
-                             && geoModeSelector.currentIndex === page.geoModeAddress
-                    placeholderText: qsTr("City")
+                             && page.geoMode === page.geoModeAddress
                     accessibleName: qsTr("City")
-                    onChanged: page.refresh()
                 }
 
-                PasteField {
+                Field {
                     id: fieldCountry
-                    Layout.fillWidth: true
                     visible: typeSelector.currentIndex === page.typeGeo
-                             && geoModeSelector.currentIndex === page.geoModeAddress
-                    placeholderText: qsTr("Country")
+                             && page.geoMode === page.geoModeAddress
                     accessibleName: qsTr("Country")
-                    onChanged: page.refresh()
-                }
-
-                // Clears every field for the selected type.
-                Button {
-                    Layout.alignment: Qt.AlignRight
-                    Layout.topMargin: 4
-                    flat: true
-                    Accessible.name: qsTr("Clear all fields")
-                    onClicked: page.clearFields()
-
-                    contentItem: Label {
-                        text: qsTr("Clear")
-                        font.capitalization: Font.AllUppercase
-                        font.letterSpacing: 0.6
-                        color: page.primaryColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
-
-                // ===== QR CONFIGURATION =====
-                Label {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 14
-                    text: qsTr("QR configuration")
-                    font.pixelSize: 11
-                    font.bold: true
-                    font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 1.2
-                    color: page.mutedColor
-                }
-
-                // --- Error correction ----------------------------------------
-                Label {
-                    text: qsTr("Error correction")
-                    font.bold: true
-                }
-
-                ComboBox {
-                    id: eccSelector
-                    Layout.fillWidth: true
-                    currentIndex: 1
-                    Accessible.name: qsTr("Error correction level")
-                    model: [
-                        qsTr("L (7%)"),
-                        qsTr("M (15%)"),
-                        qsTr("Q (25%)"),
-                        qsTr("H (30%)")
-                    ]
-                    onCurrentIndexChanged: page.refresh()
-                }
-
-                // --- Colours -------------------------------------------------
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 12
-
-                    ColumnLayout {
-                        spacing: 4
-                        Label { text: qsTr("Foreground") }
-                        Rectangle {
-                            id: fgColor
-                            Layout.preferredWidth: 48
-                            Layout.preferredHeight: 32
-                            radius: 4
-                            color: "#000000"
-                            border.color: Material.dividerColor
-                            border.width: 1
-                            TapHandler { onTapped: { fgDialog.selectedColor = fgColor.color; fgDialog.open() } }
-                        }
-                    }
-
-                    ColumnLayout {
-                        spacing: 4
-                        Label { text: qsTr("Background") }
-                        Rectangle {
-                            id: bgColor
-                            Layout.preferredWidth: 48
-                            Layout.preferredHeight: 32
-                            radius: 4
-                            color: "#ffffff"
-                            border.color: Material.dividerColor
-                            border.width: 1
-                            TapHandler { onTapped: { bgDialog.selectedColor = bgColor.color; bgDialog.open() } }
-                        }
-                    }
-
-                    Item { Layout.fillWidth: true }
-                }
-
-                // --- Capacity feedback ---------------------------------------
-                Label {
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    visible: page.currentPayload.length > 0
-                    color: page.capacity.fits ? Material.foreground : Material.color(Material.Red)
-                    text: page.capacity.fits
-                          ? qsTr("Version %1 · %2 / %3 bytes")
-                              .arg(page.capacity.version)
-                              .arg(page.capacity.usedBytes)
-                              .arg(page.capacity.maxBytes)
-                          : qsTr("Content is too large for the selected error correction level.")
-                }
-
-                // --- Generate ------------------------------------------------
-                Button {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 6
-                    focusPolicy: Qt.StrongFocus
-                    Accessible.name: qsTr("Generate QR code")
-                    onClicked: page.refreshNow()
-
-                    contentItem: Label {
-                        text: qsTr("Generate Cloaked QR")
-                        font.pixelSize: 14
-                        font.bold: true
-                        font.capitalization: Font.AllUppercase
-                        font.letterSpacing: 0.6
-                        color: page.primaryTextColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    background: Rectangle {
-                        radius: 8
-                        color: page.primaryColor
-                    }
                 }
             }
 
-            // --- Preview -----------------------------------------------------
+            // ===== PREVIEW =====
             Rectangle {
                 Layout.row: page.twoColumn ? 0 : 1
                 Layout.column: page.twoColumn ? 1 : 0
-                Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: page.twoColumn ? 72 : 8
-                Layout.preferredWidth: page.twoColumn ? 360 : 280
-                Layout.preferredHeight: Layout.preferredWidth
-                color: bgColor.color
-                radius: 8
-                border.color: Material.dividerColor
-                border.width: 1
-                visible: qrImage.source.toString().length > 0
+                Layout.rowSpan: page.twoColumn ? 2 : 1
+                Layout.alignment: Qt.AlignTop
+                Layout.fillWidth: true
+                Layout.preferredWidth: page.twoColumn ? 440 : -1
+                Layout.leftMargin: page.twoColumn ? 0 : page.sideMargin
+                Layout.rightMargin: page.sideMargin
+                Layout.topMargin: page.twoColumn ? (page.showTitle ? 72 : 28) : 0
+                radius: 24
+                color: page.surfaceColor
+                implicitHeight: previewColumn.implicitHeight + 40
 
-                Image {
-                    id: qrImage
+                ColumnLayout {
+                    id: previewColumn
                     anchors.fill: parent
-                    anchors.margins: 12
-                    asynchronous: true
-                    fillMode: Image.PreserveAspectFit
-                    Accessible.role: Accessible.Graphic
-                    Accessible.name: qsTr("Generated QR code preview")
+                    anchors.margins: 20
+                    spacing: 16
+
+                    // QR (or a placeholder until there is something to encode).
+                    Rectangle {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.preferredWidth: page.twoColumn ? 300 : 220
+                        Layout.preferredHeight: Layout.preferredWidth
+                        radius: 12
+                        color: page.hasQr ? page.bgColor : page.canvasColor
+
+                        Image {
+                            id: qrImage
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            asynchronous: true
+                            fillMode: Image.PreserveAspectFit
+                            Accessible.role: Accessible.Graphic
+                            Accessible.name: qsTr("Generated QR code preview")
+                        }
+
+                        ColumnLayout {
+                            anchors.centerIn: parent
+                            width: parent.width - 32
+                            visible: !page.hasQr
+                            spacing: 10
+                            SvgIcon {
+                                Layout.alignment: Qt.AlignHCenter
+                                source: "qrc:/icons/nav_create.svg"
+                                color: page.mutedColor
+                                size: 32
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                wrapMode: Text.WordWrap
+                                text: qsTr("Your QR code will appear here")
+                                color: page.mutedColor
+                                font.pixelSize: 14
+                            }
+                        }
+                    }
+
+                    // Capacity read-out.
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        visible: page.currentPayload.length > 0
+                        spacing: 6
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            visible: page.capacity.fits
+                            Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Version %1 · ECC %2").arg(page.capacity.version)
+                                      .arg(["L", "M", "Q", "H"][page.eccLevel])
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                            }
+                            Label {
+                                text: qsTr("%1 / %2 bytes").arg(page.capacity.usedBytes)
+                                      .arg(page.capacity.maxBytes)
+                                font.pixelSize: 13
+                                color: page.mutedColor
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            visible: page.capacity.fits
+                            implicitHeight: 6
+                            radius: 3
+                            color: Material.theme === Material.Dark ? Qt.rgba(1, 1, 1, 0.12) : "#E3E8E6"
+                            Rectangle {
+                                height: parent.height
+                                radius: 3
+                                width: page.capacity.maxBytes > 0
+                                       ? parent.width * Math.min(1, page.capacity.usedBytes / page.capacity.maxBytes)
+                                       : 0
+                                color: page.primaryColor
+                            }
+                        }
+                        Label {
+                            Layout.fillWidth: true
+                            visible: !page.capacity.fits
+                            wrapMode: Text.WordWrap
+                            color: page.errorColor
+                            text: qsTr("Content is too large for the selected error correction level.")
+                        }
+                    }
+
+                    // Save / Share once a QR exists.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: page.hasQr
+                        spacing: 8
+
+                        Button {
+                            id: saveBtn
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 1
+                            Layout.preferredHeight: 48
+                            topInset: 0
+                            bottomInset: 0
+                            text: qsTr("Save")
+                            enabled: page.hasQr && page.capacity.fits
+                            Accessible.name: qsTr("Save QR code as PNG")
+                            onClicked: {
+                                if (Qt.platform.os === "android" || Qt.platform.os === "ios") {
+                                    saveDialog.currentFile = page.defaultSaveFileUrl()
+                                    saveDialog.open()
+                                } else {
+                                    savePicker.openAt(page.folderUrl())
+                                }
+                            }
+                            background: Rectangle {
+                                radius: height / 2
+                                color: page.primaryColor
+                                opacity: saveBtn.down ? 0.85 : 1
+                            }
+                            contentItem: RowLayout {
+                                spacing: 8
+                                Item { Layout.fillWidth: true }
+                                SvgIcon {
+                                    source: "qrc:/icons/download.svg"
+                                    color: page.primaryTextColor
+                                    size: 18
+                                }
+                                Label {
+                                    text: saveBtn.text
+                                    color: page.primaryTextColor
+                                    font.pixelSize: 15
+                                    font.weight: Font.DemiBold
+                                }
+                                Item { Layout.fillWidth: true }
+                            }
+                        }
+
+                        Button {
+                            id: shareBtn
+                            property bool showingCopied: false
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 1
+                            Layout.preferredHeight: 48
+                            topInset: 0
+                            bottomInset: 0
+                            text: shareBtn.showingCopied ? qsTr("Copied!") : qsTr("Share")
+                            enabled: page.hasQr && page.capacity.fits
+                            Accessible.name: qsTr("Share QR code")
+                            onClicked: {
+                                page.recordInHistory()
+                                if (Qt.platform.os !== "android") {
+                                    // Desktop fallback: put the payload on the clipboard.
+                                    clipboardHelper.copyText(page.currentPayload)
+                                    shareBtn.showingCopied = true
+                                    copyTimer.restart()
+                                    return
+                                }
+                                if (page.shareSaveRequest !== 0)
+                                    return
+                                const dir = StandardPaths.writableLocation(StandardPaths.AppDataLocation)
+                                page.shareSaveRequest = 1
+                                qrGenerator.requestSavePng(page.currentPayload, page.eccLevel,
+                                                           1024, page.fgColor, page.bgColor,
+                                                           dir + "/qr_share.png", page.shareSaveRequest)
+                            }
+                            background: Rectangle {
+                                radius: height / 2
+                                color: shareBtn.down ? Qt.darker(page.containerColor, 1.08) : page.containerColor
+                            }
+                            contentItem: RowLayout {
+                                spacing: 8
+                                Item { Layout.fillWidth: true }
+                                SvgIcon {
+                                    source: "qrc:/icons/share.svg"
+                                    color: page.containerTextColor
+                                    size: 18
+                                }
+                                Label {
+                                    text: shareBtn.text
+                                    color: page.containerTextColor
+                                    font.pixelSize: 15
+                                    font.weight: Font.DemiBold
+                                }
+                                Item { Layout.fillWidth: true }
+                            }
+                        }
+                    }
                 }
             }
 
-            RowLayout {
+            // ===== APPEARANCE =====
+            // A card on tablets; a plain section on phones, as in the design.
+            Rectangle {
                 Layout.row: page.twoColumn ? 1 : 2
-                Layout.column: page.twoColumn ? 1 : 0
+                Layout.column: 0
                 Layout.fillWidth: true
-                Layout.leftMargin: page.twoColumn ? 0 : 20
-                Layout.rightMargin: page.twoColumn ? 28 : 20
-                Layout.bottomMargin: 24
-                spacing: 10
+                Layout.leftMargin: page.sideMargin
+                Layout.rightMargin: page.twoColumn ? 0 : page.sideMargin
+                Layout.bottomMargin: 28
+                radius: 20
+                color: page.twoColumn ? page.surfaceColor : "transparent"
+                implicitHeight: appearanceColumn.implicitHeight + (page.twoColumn ? 36 : 0)
 
-                Button {
-                    id: saveBtn
-                    Layout.fillWidth: true
-                    text: qsTr("Save")
-                    enabled: qrImage.source.toString().length > 0 && page.capacity.fits
-                    Material.background: enabled ? page.primaryColor
-                        : Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.16)
-                    Material.foreground: enabled ? page.primaryTextColor : page.mutedColor
-                    Accessible.name: qsTr("Save QR code as PNG")
-                    onClicked: {
-                        if (Qt.platform.os === "android" || Qt.platform.os === "ios") {
-                            saveDialog.currentFile = page.defaultSaveFileUrl()
-                            saveDialog.open()
-                        } else {
-                            savePicker.openAt(page.folderUrl())
+                ColumnLayout {
+                    id: appearanceColumn
+                    anchors.fill: parent
+                    anchors.margins: page.twoColumn ? 18 : 0
+                    spacing: 16
+
+                    SectionHeader { text: qsTr("Appearance") }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            text: qsTr("Error correction")
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                        }
+                        SegmentedControl {
+                            Layout.fillWidth: true
+                            implicitHeight: 48
+                            model: [
+                                { key: "0", label: qsTr("L 7%") },
+                                { key: "1", label: qsTr("M 15%") },
+                                { key: "2", label: qsTr("Q 25%") },
+                                { key: "3", label: qsTr("H 30%") }
+                            ]
+                            currentKey: String(page.eccLevel)
+                            fillColor: page.surfaceColor
+                            selectedColor: page.containerColor
+                            selectedTextColor: page.containerTextColor
+                            textColor: page.mutedColor
+                            Accessible.name: qsTr("Error correction level")
+                            onActivated: (key) => { page.eccLevel = parseInt(key); page.refresh() }
                         }
                     }
 
-                    contentItem: Item {
-                        RowLayout {
-                            anchors.centerIn: parent
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: 24
+
+                        ColumnLayout {
                             spacing: 8
-                            SvgIcon {
-                                source: "qrc:/icons/download.svg"
-                                color: saveBtn.enabled ? page.primaryTextColor : page.mutedColor
-                                size: 18
-                                Layout.alignment: Qt.AlignVCenter
-                            }
                             Label {
-                                text: saveBtn.text
-                                color: saveBtn.enabled ? page.primaryTextColor : page.mutedColor
+                                text: qsTr("Foreground")
                                 font.pixelSize: 14
-                                Layout.alignment: Qt.AlignVCenter
+                                font.weight: Font.DemiBold
+                            }
+                            SwatchRow {
+                                presets: ["#000000", "#0B6B5E", "#0F1B2D"]
+                                current: page.fgColor
+                                onPicked: (value) => { page.fgColor = value; page.refresh() }
+                                onCustomRequested: { fgDialog.selectedColor = page.fgColor; fgDialog.open() }
                             }
                         }
-                    }
-                }
-
-                Button {
-                    id: shareBtn
-                    property bool showingCopied: false
-                    Layout.fillWidth: true
-                    text: shareBtn.showingCopied ? qsTr("Copied!") : qsTr("Share")
-                    enabled: qrImage.source.toString().length > 0 && page.capacity.fits
-                    Material.background: enabled ? page.primaryColor
-                        : Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.16)
-                    Material.foreground: enabled ? page.primaryTextColor : page.mutedColor
-                    Accessible.name: qsTr("Share QR code")
-                    onClicked: {
-                        if (Qt.platform.os !== "android") {
-                            // Desktop fallback: put the payload on the clipboard.
-                            clipboardHelper.copyText(page.currentPayload)
-                            shareBtn.showingCopied = true
-                            copyTimer.restart()
-                            return
-                        }
-                        if (page.shareSaveRequest !== 0)
-                            return
-                        const dir = StandardPaths.writableLocation(StandardPaths.AppDataLocation)
-                        page.shareSaveRequest = 1
-                        qrGenerator.requestSavePng(page.currentPayload, eccSelector.currentIndex,
-                                                   1024, fgColor.color, bgColor.color,
-                                                   dir + "/qr_share.png", page.shareSaveRequest)
-                    }
-
-                    contentItem: Item {
-                        RowLayout {
-                            anchors.centerIn: parent
+                        ColumnLayout {
                             spacing: 8
-                            SvgIcon {
-                                source: "qrc:/icons/share.svg"
-                                color: shareBtn.enabled ? page.primaryTextColor : page.mutedColor
-                                size: 18
-                                Layout.alignment: Qt.AlignVCenter
-                            }
                             Label {
-                                text: shareBtn.text
-                                color: shareBtn.enabled ? page.primaryTextColor : page.mutedColor
+                                text: qsTr("Background")
                                 font.pixelSize: 14
-                                Layout.alignment: Qt.AlignVCenter
+                                font.weight: Font.DemiBold
+                            }
+                            SwatchRow {
+                                presets: ["#FFFFFF", "#F4F1EA"]
+                                current: page.bgColor
+                                onPicked: (value) => { page.bgColor = value; page.refresh() }
+                                onCustomRequested: { bgDialog.selectedColor = page.bgColor; bgDialog.open() }
                             }
                         }
                     }
@@ -985,12 +1145,12 @@ Page {
 
     ColorDialog {
         id: fgDialog
-        onAccepted: { fgColor.color = selectedColor; page.refresh() }
+        onAccepted: { page.fgColor = selectedColor; page.refresh() }
     }
 
     ColorDialog {
         id: bgDialog
-        onAccepted: { bgColor.color = selectedColor; page.refresh() }
+        onAccepted: { page.bgColor = selectedColor; page.refresh() }
     }
 
     // When the async share save lands, hand the written PNG to the platform

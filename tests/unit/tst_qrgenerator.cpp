@@ -272,6 +272,15 @@ private slots:
         QTest::newRow("phone")
             << QrData::phone(QStringLiteral("+1 555 010"))
             << QStringLiteral("tel:+1555010");
+        QTest::newRow("whatsapp")
+            << QrData::whatsapp(QStringLiteral("+34 600-123 456"))
+            << QStringLiteral("https://wa.me/34600123456");
+        QTest::newRow("whatsapp-message")
+            << QrData::whatsapp(QStringLiteral("+34600123456"), QStringLiteral("Hi & bye"))
+            << QStringLiteral("https://wa.me/34600123456?text=Hi%20%26%20bye");
+        QTest::newRow("vcard")
+            << QrData::vcard(QStringLiteral("Ada Lovelace"), QString(), QStringLiteral("+44 20"))
+            << QStringLiteral("BEGIN:VCARD\nVERSION:3.0\nN:Ada Lovelace\nFN:Ada Lovelace\nTEL:+44 20\nEND:VCARD");
     }
 
     void payloads()

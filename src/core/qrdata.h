@@ -51,6 +51,10 @@ public:
     // Location payload carrying an optional place/address label ("?q=..."),
     // which map apps use as the search query when coordinates are 0,0.
     static QString geo(double latitude, double longitude, const QString& label);
+    // WhatsApp click-to-chat link ("https://wa.me/<digits>?text=..."). The
+    // number is reduced to digits in international form (no '+' or spaces),
+    // as wa.me requires; phone cameras open it straight in WhatsApp.
+    static QString whatsapp(const QString& number, const QString& message = QString());
     static QString vcard(const QString& fullName, const QString& organization = QString(),
                          const QString& phone = QString(), const QString& email = QString(),
                          const QString& url = QString());

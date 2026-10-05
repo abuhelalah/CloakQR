@@ -10,6 +10,7 @@ class ScanHistoryModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int maxEntries READ maxEntries CONSTANT)
 
 public:
     enum Roles {
@@ -51,6 +52,7 @@ public:
     Q_INVOKABLE void removeEntry(int row);
     Q_INVOKABLE void clear();
     Q_INVOKABLE int  count() const;
+    int maxEntries() const { return kMaxHistoryEntries; }
 
     // QAbstractListModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

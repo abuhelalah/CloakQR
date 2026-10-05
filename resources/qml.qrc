@@ -1,6 +1,8 @@
 <RCC>
 	<qresource prefix="/images">
 		<file alias="Logo_QR_icon.png">images/Logo_QR_icon.png</file>
+		<file alias="logo.svg">images/logo.svg</file>
+		<file alias="logo_on_dark.svg">images/logo_on_dark.svg</file>
 	</qresource>
 	<qresource prefix="/icons">
 		<file alias="nav_scan.svg">icons/nav_scan.svg</file>

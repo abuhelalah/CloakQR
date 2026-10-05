@@ -23,9 +23,9 @@ Popup {
 
     // Brand colours supplied by the host page; everything else derives from the
     // active Material theme so the dialog is always legible.
-    property color primaryColor: "#086C5C"
+    property color primaryColor: "#0B6B5E"
     property color primaryTextColor: "#FFFFFF"
-    property color mutedColor: "#5D6F69"
+    property color mutedColor: "#4B5754"
 
     signal accepted(url file)
 

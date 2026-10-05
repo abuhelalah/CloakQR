@@ -216,6 +216,11 @@ QString QrGenerator::smsPayload(const QString& number, const QString& message) c
     return cloakqr::QrData::sms(number, message);
 }
 
+QString QrGenerator::whatsappPayload(const QString& number, const QString& message) const
+{
+    return cloakqr::QrData::whatsapp(number, message);
+}
+
 QString QrGenerator::wifiPayload(const QString& ssid, const QString& password,
                                  const QString& auth, bool hidden) const
 {

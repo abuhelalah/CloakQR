@@ -27,21 +27,26 @@ ApplicationWindow {
     // space, surfaces grow lighter at higher elevation to convey depth, and the
     // brand teal is desaturated so it clears WCAG AA (4.5:1) on every surface.
     // Large areas stay dark; saturated colour is reserved for small accents.
-    readonly property color canvasColor: darkTheme ? "#121212" : "#F3F7F5"
+    // Light values follow the style_new design tokens (ink #0F1B2D, primary
+    // #0B6B5E, hood mint #3CCFB4, container #D5EBE4).
+    readonly property color canvasColor: darkTheme ? "#121212" : "#F1F5F3"
     readonly property color surfaceColor: darkTheme ? "#1D2321" : "#FFFFFF"
     readonly property color elevatedSurfaceColor: darkTheme ? "#262D2B" : "#FFFFFF"
     readonly property color primaryColor: appSettings.highContrast
                                           ? (darkTheme ? "#80FFE9" : "#003D33")
-                                          : (darkTheme ? "#5FD7C0" : "#086C5C")
+                                          : (darkTheme ? "#3CCFB4" : "#0B6B5E")
     // Readable text/icon colour for content placed on top of primaryColor.
     // In dark mode the primary is a light teal, so "on-primary" is near-black;
     // in light mode the primary is dark teal, so "on-primary" is white.
     readonly property color primaryTextColor: darkTheme ? "#08211C" : "#FFFFFF"
-    readonly property color mutedColor: darkTheme ? "#A6B3AF" : "#5D6F69"
+    // Tonal pill behind the selected nav item / chips, and the text on it.
+    readonly property color containerColor: darkTheme ? "#1F3D37" : "#D5EBE4"
+    readonly property color containerTextColor: darkTheme ? "#CDEFE8" : "#053B33"
+    readonly property color textColor: darkTheme ? "#E3E8E6" : "#1A1F1E"
+    readonly property color mutedColor: darkTheme ? "#A6B3AF" : "#4B5754"
     readonly property color accentColor: darkTheme ? "#FFB59A" : "#C84F2D"
-    readonly property color outlineColor: darkTheme ? Qt.rgba(1, 1, 1, 0.12)
-                                                    : Qt.rgba(0, 0, 0, 0.10)
-    readonly property color errorColor: darkTheme ? "#CF6679" : "#B00020"
+    readonly property color outlineColor: darkTheme ? Qt.rgba(1, 1, 1, 0.12) : "#E3E8E6"
+    readonly property color errorColor: darkTheme ? "#CF6679" : "#B3261E"
     property int currentPage: 0
     property int previousTab: 0
     // Lazily-loaded pages: each becomes true on first navigation so its Loader
@@ -57,15 +62,15 @@ ApplicationWindow {
     readonly property var navModel: {
         var items = [
             { page: 0, label: qsTr("Scan"), title: qsTr("Scan QR"), a11y: qsTr("Scanner"), group: 0, icon: "qrc:/icons/nav_scan.svg" },
-            { page: 1, label: qsTr("Create QR"), a11y: qsTr("Create QR code"), group: 0, icon: "qrc:/icons/create.svg" }
+            { page: 1, label: qsTr("Create QR"), a11y: qsTr("Create QR code"), group: 0, icon: "qrc:/icons/nav_create.svg" }
         ]
         if (appEngine.paidEdition) {
             items.push({ page: 4, label: qsTr("Design Studio"), a11y: qsTr("Design Studio"), group: 1 })
             items.push({ page: 5, label: qsTr("Batch Studio"), a11y: qsTr("Batch Studio"), group: 1 })
         }
-        items.push({ page: 2, label: qsTr("History"), a11y: qsTr("History"), group: 2, icon: "qrc:/icons/nav_history.svg" })
-        items.push({ page: 3, label: qsTr("Settings"), a11y: qsTr("Settings"), group: 2 })
-        items.push({ page: 6, label: qsTr("About"), a11y: qsTr("About"), group: 3 })
+        items.push({ page: 2, label: qsTr("History"), a11y: qsTr("History"), group: 0, icon: "qrc:/icons/nav_history.svg" })
+        items.push({ page: 3, label: qsTr("Settings"), a11y: qsTr("Settings"), group: 3, icon: "qrc:/icons/settings.svg" })
+        items.push({ page: 6, label: qsTr("About"), a11y: qsTr("About"), group: 3, icon: "qrc:/icons/info.svg" })
         return items
     }
 
@@ -77,8 +82,10 @@ ApplicationWindow {
     ]
 
     Material.theme: appSettings.darkMode ? Material.Dark : Material.Light
-    Material.primary: Material.Teal
-    Material.accent: Material.Teal
+    // Brand colours drive every stock control (switches, sliders, focus rings).
+    Material.primary: primaryColor
+    Material.accent: primaryColor
+    Material.foreground: textColor
     font.pixelSize: Math.round(14 * appSettings.fontScale)
     color: canvasColor
 
@@ -138,6 +145,8 @@ ApplicationWindow {
         primaryTextColor: root.primaryTextColor
         mutedColor: root.mutedColor
         accentColor: root.accentColor
+        containerColor: root.containerColor
+        containerTextColor: root.containerTextColor
     }
 
     Connections {
@@ -232,28 +241,45 @@ ApplicationWindow {
 
         Rectangle {
             Layout.fillHeight: true
-            Layout.preferredWidth: 232
+            Layout.preferredWidth: 260
             visible: root.railLayout
             color: root.surfaceColor
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
-                spacing: 6
+                anchors.topMargin: 20
+                anchors.bottomMargin: 20
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                spacing: 4
 
-                ColumnLayout {
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.bottomMargin: 12
-                    spacing: 0
-                    Label {
-                        text: appEngine.paidEdition ? qsTr("CloakQR Pro") : qsTr("CloakQR")
-                        font.bold: true
-                        font.pixelSize: 18
+                    Layout.leftMargin: 12
+                    Layout.topMargin: 4
+                    Layout.bottomMargin: 20
+                    spacing: 12
+                    Image {
+                        // Light-tile lockup on dark backgrounds, per the brand sheet.
+                        source: root.darkTheme ? "qrc:/images/logo_on_dark.svg" : "qrc:/images/logo.svg"
+                        sourceSize: Qt.size(44, 44)
+                        Layout.preferredWidth: 44
+                        Layout.preferredHeight: 44
+                        Accessible.ignored: true
                     }
-                    Label {
-                        text: qsTr("Private by design")
-                        color: root.mutedColor
-                        font.pixelSize: 11
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 0
+                        Label {
+                            text: appEngine.paidEdition ? qsTr("CloakQR Pro") : qsTr("CloakQR")
+                            font.bold: true
+                            font.pixelSize: 18
+                        }
+                        Label {
+                            text: qsTr("Private by design")
+                            color: root.mutedColor
+                            font.pixelSize: 12
+                        }
                     }
                 }
 
@@ -263,40 +289,93 @@ ApplicationWindow {
                         required property var modelData
                         required property int index
                         Layout.fillWidth: true
-                        spacing: 6
+                        spacing: 4
 
-                        MenuSeparator {
+                        Rectangle {
                             Layout.fillWidth: true
+                            Layout.leftMargin: 16
+                            Layout.rightMargin: 16
+                            Layout.topMargin: 6
+                            Layout.bottomMargin: 6
+                            implicitHeight: 1
+                            color: root.outlineColor
                             visible: index > 0
                                 && modelData.group !== root.navModel[index - 1].group
                         }
                         ItemDelegate {
+                            id: railItem
                             Layout.fillWidth: true
-                            text: modelData.title || modelData.label
+                            implicitHeight: 52
+                            leftPadding: 16
+                            rightPadding: 16
                             highlighted: root.currentPage === modelData.page
                             focusPolicy: Qt.StrongFocus
                             Accessible.name: modelData.a11y
                             Accessible.role: Accessible.Button
                             onClicked: root.navigateTo(modelData.page)
+
+                            background: Rectangle {
+                                radius: height / 2
+                                color: railItem.highlighted ? root.containerColor
+                                     : railItem.hovered ? Qt.rgba(root.primaryColor.r, root.primaryColor.g,
+                                                                  root.primaryColor.b, 0.06)
+                                     : "transparent"
+                            }
+                            contentItem: RowLayout {
+                                spacing: 14
+                                SvgIcon {
+                                    // Paid tools have no icon; keep labels aligned.
+                                    source: modelData.icon || ""
+                                    color: railItem.highlighted ? root.containerTextColor : root.mutedColor
+                                    size: 22
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: modelData.title || modelData.label
+                                    font.pixelSize: 15
+                                    font.weight: railItem.highlighted ? Font.Bold : Font.Medium
+                                    color: railItem.highlighted ? root.containerTextColor : root.mutedColor
+                                    elide: Text.ElideRight
+                                }
+                            }
                         }
                     }
                 }
 
                 Item { Layout.fillHeight: true }
 
-                ColumnLayout {
+                Rectangle {
                     Layout.fillWidth: true
-                    spacing: 2
-                    Label {
-                        text: qsTr("LOCAL ONLY")
-                        color: root.primaryColor
-                        font.bold: true
-                        font.pixelSize: 10
-                    }
-                    Label {
-                        text: qsTr("No tracking · v%1").arg(Qt.application.version)
-                        color: root.mutedColor
-                        font.pixelSize: 11
+                    implicitHeight: localOnlyRow.implicitHeight + 24
+                    radius: 16
+                    color: root.darkTheme ? root.containerColor : "#EAF1EE"
+
+                    RowLayout {
+                        id: localOnlyRow
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        spacing: 10
+                        SvgIcon {
+                            source: "qrc:/icons/shield.svg"
+                            color: root.containerTextColor
+                            size: 18
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+                            Label {
+                                text: qsTr("Local only")
+                                color: root.containerTextColor
+                                font.bold: true
+                                font.pixelSize: 12
+                            }
+                            Label {
+                                text: qsTr("No tracking · v%1").arg(Qt.application.version)
+                                color: root.containerTextColor
+                                font.pixelSize: 12
+                            }
+                        }
                     }
                 }
             }
@@ -309,7 +388,7 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 60
+                Layout.preferredHeight: 64
                 visible: !root.railLayout
                 color: root.surfaceColor
 
@@ -354,7 +433,7 @@ ApplicationWindow {
                         Layout.alignment: Qt.AlignVCenter
                         text: root.currentTitle()
                         font.bold: true
-                        font.pixelSize: 18
+                        font.pixelSize: 22
                         elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -397,6 +476,9 @@ ApplicationWindow {
                     primaryTextColor: root.primaryTextColor
                     mutedColor: root.mutedColor
                     accentColor: root.accentColor
+                    containerColor: root.containerColor
+                    containerTextColor: root.containerTextColor
+                    errorColor: root.errorColor
                 }
                 Loader {
                     id: generatorLoader
@@ -434,6 +516,30 @@ ApplicationWindow {
                     value: root.mutedColor
                     when: generatorLoader.status === Loader.Ready
                 }
+                Binding {
+                    target: generatorLoader.item
+                    property: "surfaceColor"
+                    value: root.surfaceColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: generatorLoader.item
+                    property: "containerColor"
+                    value: root.containerColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: generatorLoader.item
+                    property: "containerTextColor"
+                    value: root.containerTextColor
+                    when: generatorLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: generatorLoader.item
+                    property: "errorColor"
+                    value: root.errorColor
+                    when: generatorLoader.status === Loader.Ready
+                }
                 Loader {
                     id: historyLoader
                     active: root.historyVisited
@@ -468,6 +574,24 @@ ApplicationWindow {
                     target: historyLoader.item
                     property: "mutedColor"
                     value: root.mutedColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "containerColor"
+                    value: root.containerColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "containerTextColor"
+                    value: root.containerTextColor
+                    when: historyLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: historyLoader.item
+                    property: "errorColor"
+                    value: root.errorColor
                     when: historyLoader.status === Loader.Ready
                 }
                 Connections {
@@ -516,6 +640,24 @@ ApplicationWindow {
                     target: settingsLoader.item
                     property: "mutedColor"
                     value: root.mutedColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "containerColor"
+                    value: root.containerColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "containerTextColor"
+                    value: root.containerTextColor
+                    when: settingsLoader.status === Loader.Ready
+                }
+                Binding {
+                    target: settingsLoader.item
+                    property: "errorColor"
+                    value: root.errorColor
                     when: settingsLoader.status === Loader.Ready
                 }
                 Connections {
@@ -635,7 +777,7 @@ ApplicationWindow {
             // Compact bottom navigation bar (SCAN / CREATE / HISTORY).
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 64
+                Layout.preferredHeight: 80
                 visible: !root.railLayout && !root.subPage
                 color: root.surfaceColor
 
@@ -668,20 +810,27 @@ ApplicationWindow {
                             }
 
                             contentItem: ColumnLayout {
-                                spacing: 2
-                                SvgIcon {
+                                spacing: 4
+                                Rectangle {
                                     Layout.alignment: Qt.AlignHCenter
-                                    source: modelData.icon
-                                    color: navTab.highlighted ? root.primaryColor : root.mutedColor
-                                    size: 22
+                                    implicitWidth: 64
+                                    implicitHeight: 32
+                                    radius: 16
+                                    color: navTab.highlighted ? root.containerColor : "transparent"
+                                    SvgIcon {
+                                        anchors.centerIn: parent
+                                        source: modelData.icon
+                                        color: navTab.highlighted ? root.containerTextColor : root.mutedColor
+                                        size: 22
+                                    }
                                 }
                                 Label {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignHCenter
                                     text: modelData.label
-                                    font.pixelSize: 10
-                                    font.bold: navTab.highlighted
-                                    color: navTab.highlighted ? root.primaryColor : root.mutedColor
+                                    font.pixelSize: 12
+                                    font.weight: navTab.highlighted ? Font.Bold : Font.Medium
+                                    color: navTab.highlighted ? root.containerTextColor : root.mutedColor
                                 }
                             }
                         }

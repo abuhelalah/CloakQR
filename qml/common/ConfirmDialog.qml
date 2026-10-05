@@ -11,7 +11,7 @@ Dialog {
     property string heading: qsTr("Are you sure?")
     property string message: ""
     property string confirmText: qsTr("Delete")
-    property color dangerColor: "#D32F2F"
+    property color dangerColor: "#B3261E"
 
     signal confirmed()
 

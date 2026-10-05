@@ -4,6 +4,26 @@
 <context>
     <name>AboutPage</name>
     <message>
+        <source>No accounts, no tracking, no network access</source>
+        <translation>بلا حسابات ولا تتبع ولا وصول إلى الشبكة</translation>
+    </message>
+    <message>
+        <source>Scanning and creating happen locally</source>
+        <translation>يتم المسح والإنشاء محليًا</translation>
+    </message>
+    <message>
+        <source>History stays on this device and is never uploaded</source>
+        <translation>يبقى السجل على هذا الجهاز ولا يُرفع أبدًا</translation>
+    </message>
+    <message>
+        <source>Source code &amp; issues</source>
+        <translation>الشيفرة المصدرية والمشكلات</translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation>الترخيص</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/AboutPage.qml" line="8"/>
         <location filename="../../qml/views/AboutPage.qml" line="33"/>
         <source>About</source>
@@ -173,6 +193,90 @@
 </context>
 <context>
     <name>GeneratorPage</name>
+    <message>
+        <source>WhatsApp</source>
+        <translation>واتساب</translation>
+    </message>
+    <message>
+        <source>Contact</source>
+        <translation>جهة اتصال</translation>
+    </message>
+    <message>
+        <source>Organization</source>
+        <translation>المؤسسة</translation>
+    </message>
+    <message>
+        <source>Website</source>
+        <translation>الموقع الإلكتروني</translation>
+    </message>
+    <message>
+        <source>Optional</source>
+        <translation>اختياري</translation>
+    </message>
+    <message>
+        <source>%1 / %2 bytes</source>
+        <translation>%1 / %2 بايت</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation>المظهر</translation>
+    </message>
+    <message>
+        <source>Content</source>
+        <translation>المحتوى</translation>
+    </message>
+    <message>
+        <source>Create QR</source>
+        <translation>إنشاء QR</translation>
+    </message>
+    <message>
+        <source>Custom colour</source>
+        <translation>لون مخصص</translation>
+    </message>
+    <message>
+        <source>Email address</source>
+        <translation>عنوان البريد الإلكتروني</translation>
+    </message>
+    <message>
+        <source>Fewer types</source>
+        <translation>أنواع أقل</translation>
+    </message>
+    <message>
+        <source>L 7%</source>
+        <translation>L 7%</translation>
+    </message>
+    <message>
+        <source>M 15%</source>
+        <translation>M 15%</translation>
+    </message>
+    <message>
+        <source>Q 25%</source>
+        <translation>Q 25%</translation>
+    </message>
+    <message>
+        <source>H 30%</source>
+        <translation>H 30%</translation>
+    </message>
+    <message>
+        <source>More types</source>
+        <translation>أنواع أكثر</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>النوع</translation>
+    </message>
+    <message>
+        <source>Version %1 · ECC %2</source>
+        <translation>الإصدار %1 · ECC %2</translation>
+    </message>
+    <message>
+        <source>Website address</source>
+        <translation>عنوان الموقع</translation>
+    </message>
+    <message>
+        <source>Your QR code will appear here</source>
+        <translation>سيظهر رمز QR هنا</translation>
+    </message>
     <message>
         <location filename="../../qml/views/GeneratorPage.qml" line="10"/>
         <source>Generator</source>
@@ -616,6 +720,30 @@
 <context>
     <name>HistoryPage</name>
     <message>
+        <source>All</source>
+        <translation>الكل</translation>
+    </message>
+    <message>
+        <source>Created</source>
+        <translation>المُنشأة</translation>
+    </message>
+    <message>
+        <source>No history yet</source>
+        <translation>لا يوجد سجل بعد</translation>
+    </message>
+    <message>
+        <source>Nothing here yet</source>
+        <translation>لا شيء هنا بعد</translation>
+    </message>
+    <message>
+        <source>Codes you scan or create will appear here.</source>
+        <translation>ستظهر هنا الرموز التي تمسحها أو تنشئها.</translation>
+    </message>
+    <message>
+        <source>Stored only on this device, never synced</source>
+        <translation>مخزن على هذا الجهاز فقط، ولا تتم مزامنته أبدًا</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/HistoryPage.qml" line="8"/>
         <source>History</source>
         <translation>السجل</translation>
@@ -771,6 +899,10 @@
 </context>
 <context>
     <name>PasteField</name>
+    <message>
+        <source>Clear</source>
+        <translation>مسح</translation>
+    </message>
     <message>
         <location filename="../../qml/common/PasteField.qml" line="33"/>
         <source>Paste from clipboard</source>
@@ -1190,6 +1322,30 @@
 <context>
     <name>ScannerPage</name>
     <message>
+        <source>Align the QR code inside the frame</source>
+        <translation>ضع رمز QR داخل الإطار</translation>
+    </message>
+    <message>
+        <source>Hold steady — scanning…</source>
+        <translation>ثبّت الجهاز — جارٍ المسح…</translation>
+    </message>
+    <message>
+        <source>Camera is off</source>
+        <translation>الكاميرا متوقفة</translation>
+    </message>
+    <message>
+        <source>Turn on camera</source>
+        <translation>تشغيل الكاميرا</translation>
+    </message>
+    <message>
+        <source>Turn off camera</source>
+        <translation>إيقاف الكاميرا</translation>
+    </message>
+    <message>
+        <source>Decoded on this device · no tracking</source>
+        <translation>يُفك الترميز على هذا الجهاز · بلا تتبع</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/ScannerPage.qml" line="11"/>
         <source>Scanner</source>
         <translation>الماسح الضوئي</translation>
@@ -1342,6 +1498,34 @@
 <context>
     <name>SettingsPage</name>
     <message>
+        <source>Fingerprint or face to open</source>
+        <translation>البصمة أو الوجه لفتح التطبيق</translation>
+    </message>
+    <message>
+        <source>Last %1 codes, on this device</source>
+        <translation>آخر %1 رمز، على هذا الجهاز</translation>
+    </message>
+    <message>
+        <source>Never store them in history</source>
+        <translation>لا تحفظها في السجل أبدًا</translation>
+    </message>
+    <message>
+        <source>No ads, no tracking, no cloud. Everything happens on this device.</source>
+        <translation>بلا إعلانات ولا تتبع ولا سحابة. كل شيء يحدث على هذا الجهاز.</translation>
+    </message>
+    <message>
+        <source>Save history</source>
+        <translation>حفظ السجل</translation>
+    </message>
+    <message>
+        <source>Saved codes</source>
+        <translation>الرموز المحفوظة</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>الحالة</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/SettingsPage.qml" line="10"/>
         <source>Settings</source>
         <translation>الإعدادات</translation>
@@ -1362,7 +1546,7 @@
     </message>
     <message>
         <source>Appearance</source>
-        <translation type="vanished">المظهر</translation>
+        <translation>المظهر</translation>
     </message>
     <message>
         <location filename="../../qml/views/SettingsPage.qml" line="354"/>
@@ -1412,7 +1596,7 @@
     </message>
     <message>
         <source>Language</source>
-        <translation type="vanished">اللغة</translation>
+        <translation>اللغة</translation>
     </message>
     <message>
         <location filename="../../qml/views/SettingsPage.qml" line="387"/>
@@ -1723,7 +1907,7 @@
     </message>
     <message>
         <location filename="../../qml/main.qml" line="268"/>
-        <source>LOCAL ONLY</source>
+        <source>Local only</source>
         <translation>محلي فقط</translation>
     </message>
     <message>

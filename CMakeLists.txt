@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(CloakQR VERSION 2.0.0 LANGUAGES CXX)
+project(CloakQR VERSION 2.1.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -124,6 +124,8 @@ if(BUILD_CLOAKQR_APP)
         BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources/images"
         FILES
             resources/images/Logo_QR_icon.png
+            resources/images/logo.svg
+            resources/images/logo_on_dark.svg
     )
 
     qt_add_resources(CloakQR cloakqr_icons
@@ -133,6 +135,10 @@ if(BUILD_CLOAKQR_APP)
             resources/icons/nav_scan.svg
             resources/icons/nav_create.svg
             resources/icons/nav_history.svg
+            resources/icons/info.svg
+            resources/icons/check.svg
+            resources/icons/code.svg
+            resources/icons/external.svg
             resources/icons/flash.svg
             resources/icons/image.svg
             resources/icons/create.svg
@@ -177,6 +183,7 @@ if(BUILD_CLOAKQR_APP)
             qml/common/ConfirmDialog.qml
             qml/common/SvgIcon.qml
             qml/common/PasteField.qml
+            qml/common/SegmentedControl.qml
             qml/views/SafePreviewDialog.qml
             qml/views/ScannerPage.qml
             qml/views/HistoryPage.qml
@@ -250,7 +257,7 @@ if(BUILD_CLOAKQR_APP)
             QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/deploy/android"
             QT_ANDROID_PACKAGE_NAME "${CLOAKQR_ANDROID_PACKAGE_NAME}"
             QT_ANDROID_APP_NAME "${CLOAKQR_PRODUCT_NAME}"
-            QT_ANDROID_VERSION_CODE 20000
+            QT_ANDROID_VERSION_CODE 20100
             QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}"
             QT_ANDROID_COMPILE_SDK_VERSION 36
         )

@@ -10,32 +10,28 @@ Page {
     id: page
     title: qsTr("Scanner")
     property bool wideLayout: false
-    property color canvasColor: "#F3F7F5"
+    property color canvasColor: "#F1F5F3"
     property color surfaceColor: "#FFFFFF"
-    property color primaryColor: "#086C5C"
+    property color primaryColor: "#0B6B5E"
     property color primaryTextColor: "#FFFFFF"
-    property color mutedColor: "#5D6F69"
+    property color mutedColor: "#4B5754"
     property color accentColor: "#C84F2D"
-    property string statusMessage: qsTr("Ready to scan")
+    // Tonal colours for the camera-off badge and the privacy pill.
+    property color containerColor: "#D5EBE4"
+    property color containerTextColor: "#053B33"
+    property color errorColor: "#B3261E"
     property bool cameraRequested: false
     property bool imageDecoding: false
     property bool torchOn: false
     readonly property bool useNativePicker: Qt.platform.os === "android"
                                             || Qt.platform.os === "ios"
 
-    // Idle-landing hint: the camera starts on an explicit gesture, never on tab
-    // open. Wording differs between touch and pointer platforms.
-    readonly property string activateHint:
-        (Qt.platform.os === "android" || Qt.platform.os === "ios")
-            ? qsTr("Double-tap to activate camera")
-            : qsTr("Double-click to activate camera")
-    property bool idleError: false
-    property string idleErrorMessage: ""
-    readonly property string idleHint: page.idleError ? page.idleErrorMessage : page.activateHint
-    readonly property string closeHint:
-        (Qt.platform.os === "android" || Qt.platform.os === "ios")
-            ? qsTr("Double-tap to close camera")
-            : qsTr("Double-click to close camera")
+    // Last camera/permission/image error, shown in place of the hint line.
+    property string errorMessage: ""
+    readonly property string hint: page.errorMessage.length > 0 ? page.errorMessage
+                                   : page.imageDecoding ? qsTr("Scanning image\u2026")
+                                   : page.cameraRequested ? qsTr("Hold steady \u2014 scanning\u2026")
+                                   : qsTr("Align the QR code inside the frame")
 
     // Classifies a scanned payload into the same categories the scan result
     // dialog recognises, so history entries show a meaningful icon. The order
@@ -70,34 +66,23 @@ Page {
         return "text"
     }
 
-    // Largest square camera preview that still leaves room for the header,
-    // buttons and privacy note, so the page fits without scrolling on tablets
-    // (portrait and landscape) and phones alike.
-    readonly property real previewSize: {
-        var widthCap = Math.min(page.width - (page.wideLayout ? 64 : 40),
-                                page.wideLayout ? 520 : 360)
-        var heightCap = page.height - (page.wideLayout ? 320 : 380)
-        return Math.max(200, Math.min(widthCap, heightCap))
-    }
-
-    // Reticle size on the idle landing. It reserves room for the hint, the
-    // "Choose image" button and the privacy badge below it so those elements
-    // can never overlap when the window is short (landscape tablet / resized
-    // desktop window).
-    readonly property real idleFrameSize: {
-        var widthCap = Math.min(page.width - 32, page.wideLayout ? 520 : 420)
-        var heightCap = page.height - 210
-        return Math.max(140, Math.min(widthCap, heightCap))
+    // Scan frame size: 300px on phones as in the design, larger on tablets,
+    // shrinking on short windows so the hint, both buttons and the privacy
+    // pill below it always fit without scrolling.
+    readonly property real frameSize: {
+        var widthCap = Math.min(page.width - 48, page.wideLayout ? 420 : 300)
+        var heightCap = page.height - 300
+        return Math.max(160, Math.min(widthCap, heightCap))
     }
 
     function startCamera() {
         if (mediaDevices.videoInputs.length === 0) {
             page.cameraRequested = false
-            page.statusMessage = qsTr("No camera was found")
+            page.errorMessage = qsTr("No camera was found")
             return
         }
         page.cameraRequested = true
-        page.statusMessage = qsTr("Align QR code in frame")
+        page.errorMessage = ""
         camera.active = true
     }
 
@@ -108,12 +93,11 @@ Page {
             camera.torchMode = Camera.TorchOff
         }
         camera.active = false
-        page.idleError = false
     }
 
     function decodeImageAt(url) {
         page.imageDecoding = true
-        page.statusMessage = qsTr("Scanning image\u2026")
+        page.errorMessage = ""
         qrDecoder.decodeImageFile(url)
     }
 
@@ -126,19 +110,17 @@ Page {
                                    StandardPaths.PicturesLocation))
     }
 
-    // Activates the camera after an explicit gesture (double-tap/double-click,
-    // or a single tap on the reticle). Permission is requested on first use.
+    // Activates the camera after an explicit tap on "Turn on camera" (or on
+    // the frame). Permission is requested on first use.
     function activate() {
         if (mediaDevices.videoInputs.length === 0) {
-            page.idleError = true
-            page.idleErrorMessage = qsTr("No camera was found")
+            page.errorMessage = qsTr("No camera was found")
             return
         }
         if (cameraPermission.status === Qt.PermissionStatus.Granted)
             page.startCamera()
         else if (cameraPermission.status === Qt.PermissionStatus.Denied) {
-            page.idleError = true
-            page.idleErrorMessage = qsTr("Camera permission was denied")
+            page.errorMessage = qsTr("Camera permission was denied")
         } else {
             cameraPermission.request()
         }
@@ -150,8 +132,7 @@ Page {
             if (status === Qt.PermissionStatus.Granted) {
                 page.startCamera()
             } else if (status === Qt.PermissionStatus.Denied) {
-                page.idleError = true
-                page.idleErrorMessage = qsTr("Camera permission was denied")
+                page.errorMessage = qsTr("Camera permission was denied")
             }
         }
     }
@@ -165,7 +146,7 @@ Page {
         cameraDevice: mediaDevices.defaultVideoInput
         onErrorOccurred: function(error, errorString) {
             page.stopCamera()
-            page.statusMessage = errorString
+            page.errorMessage = errorString
         }
         onTorchModeChanged: {
             // Some devices (legacy camera HAL) can't sustain the torch while
@@ -207,7 +188,6 @@ Page {
         function onDecodeSucceeded(text) {
             page.imageDecoding = false
             page.stopCamera()
-            page.statusMessage = qsTr("QR code detected")
             const excludedWifi = appSettings.historyExcludeWifiPassword
                                  && text.startsWith("WIFI:")
             if (appSettings.historyEnabled && !excludedWifi)
@@ -216,7 +196,7 @@ Page {
 
         function onDecodeFailed(reason) {
             page.imageDecoding = false
-            page.statusMessage = reason
+            page.errorMessage = reason
         }
     }
 
@@ -236,289 +216,272 @@ Page {
         color: page.canvasColor
     }
 
-    // Idle landing: no camera runs until the user explicitly activates it.
-    Rectangle {
-        id: idleSurface
+
+    ColumnLayout {
         anchors.fill: parent
-        visible: !page.cameraRequested
-        color: "transparent"
+        anchors.leftMargin: 24
+        anchors.rightMargin: 24
+        anchors.topMargin: page.wideLayout ? 24 : 32
+        anchors.bottomMargin: 20
+        spacing: 20
 
-        // Double-tap / double-click anywhere on the surface activates.
-        TapHandler {
-            onDoubleTapped: page.activate()
-        }
+        // Centres the content vertically on tablets/desktop; phones keep the
+        // design's top-aligned flow.
+        Item { Layout.fillHeight: true; visible: page.wideLayout }
 
-        // The idle landing is a single ColumnLayout so the reticle, hint,
-        // button and privacy badge flow from top to bottom and can never
-        // overlap each other, whatever the window size.
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
-            anchors.topMargin: 16
-            anchors.bottomMargin: 12
-            spacing: 0
-
-            Item { Layout.fillHeight: true }
-
-            // Reticle (static; no live feed yet).
-            Rectangle {
-                id: idleFrame
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: page.idleFrameSize
-                Layout.preferredHeight: page.idleFrameSize
-                color: "transparent"
-                border.color: page.primaryColor
-                border.width: 3
-                radius: 12
-
-                // Single tap on the reticle is a fallback activation path.
-                TapHandler {
-                    onSingleTapped: page.activate()
-                }
-            }
-
-            ColumnLayout {
-                id: idleHintColumn
-                Layout.fillWidth: true
-                Layout.topMargin: 20
-                Layout.alignment: Qt.AlignHCenter
-                Layout.maximumWidth: 480
-                spacing: 8
-
-                Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("Align QR code in frame")
-                    color: Material.foreground
-                    font.pixelSize: 13
-                }
-                Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: page.idleHint
-                    color: page.primaryColor
-                    font.pixelSize: 14
-                    font.bold: true
-                    wrapMode: Text.WordWrap
-                }
-            }
-
-            // Choose an image directly, without activating the camera.
-            Button {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 18
-                enabled: !page.imageDecoding
-                Material.background: page.primaryColor
-                Accessible.name: qsTr("Choose image")
-                onClicked: page.chooseImage()
-
-                contentItem: Row {
-                    anchors.centerIn: parent
-                    spacing: 8
-                    SvgIcon {
-                        source: "qrc:/icons/image.svg"
-                        color: page.primaryTextColor
-                        size: 18
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                    Label {
-                        text: qsTr("Choose image")
-                        color: page.primaryTextColor
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-            }
-
-            Item { Layout.fillHeight: true }
-
-            // Local-only badge.
-            Rectangle {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.bottomMargin: 4
-                width: idlePrivacyLabel.implicitWidth + 28
-                height: idlePrivacyLabel.implicitHeight + 12
-                radius: height / 2
-                color: Qt.rgba(page.primaryColor.r, page.primaryColor.g, page.primaryColor.b, 0.10)
-                border.width: 1
-                border.color: Qt.rgba(page.primaryColor.r, page.primaryColor.g, page.primaryColor.b, 0.30)
-
-                Label {
-                    id: idlePrivacyLabel
-                    anchors.centerIn: parent
-                    text: qsTr("No data tracking · 100% local")
-                    color: page.primaryColor
-                    font.pixelSize: 12
-                    font.bold: true
-                }
-            }
-        }
-
-        BusyIndicator {
-            anchors.centerIn: parent
-            running: page.imageDecoding
-            visible: running
-            z: 2
-        }
-    }
-
-    // Full-bleed live camera (the normal state of the Scan tab).
-    Rectangle {
-        anchors.fill: parent
-        visible: page.cameraRequested
-        color: "#000000"
-
-        VideoOutput {
-            id: cameraOutput
-            anchors.fill: parent
-            fillMode: VideoOutput.PreserveAspectCrop
-        }
-
-        // Double-tap / double-click anywhere on the live view deactivates.
-        TapHandler {
-            onDoubleTapped: page.stopCamera()
-        }
-
-        // "Secure scan active" pill.
-        Rectangle {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 14
-            width: secureLabel.implicitWidth + 26
-            height: secureLabel.implicitHeight + 12
-            radius: height / 2
-            color: Qt.rgba(page.primaryColor.r, page.primaryColor.g, page.primaryColor.b, 0.16)
-            border.width: 1
-            border.color: page.primaryColor
-
-            Label {
-                id: secureLabel
-                anchors.centerIn: parent
-                text: qsTr("Secure scan active")
-                color: page.primaryColor
-                font.pixelSize: 12
-                font.bold: true
-            }
-        }
-
-        // Scan frame with an animated sweep line.
-        Rectangle {
-            id: scanFrame
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: -30
-            width: Math.min(parent.width, parent.height) * 0.72
-            height: width
-            color: "transparent"
-            border.color: page.primaryColor
-            border.width: 3
-            radius: 12
-            clip: true
+        // Scan frame. The live camera runs inside it; when off it shows a
+        // "Camera is off" placeholder.
+        Item {
+            id: frame
+            readonly property real cornerRadius: 28
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: page.frameSize
+            Layout.preferredHeight: page.frameSize
 
             Rectangle {
-                id: scanLine
+                anchors.fill: parent
+                radius: frame.cornerRadius
+                color: page.cameraRequested ? "#1E2731"
+                                            : (page.Material.theme === Material.Dark ? page.surfaceColor : "#E6EEEB")
+            }
+
+            VideoOutput {
+                id: cameraOutput
+                anchors.fill: parent
+                visible: page.cameraRequested
+                fillMode: VideoOutput.PreserveAspectCrop
+            }
+
+            // Sweep line while scanning.
+            Rectangle {
                 width: parent.width
                 height: 2
-                color: page.accentColor
+                visible: page.cameraRequested && camera.active
+                color: "#3CCFB4"
                 SequentialAnimation on y {
                     loops: Animation.Infinite
                     running: page.cameraRequested && camera.active
-                    NumberAnimation { from: 4; to: scanFrame.height - 6; duration: 1700; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: scanFrame.height - 6; to: 4; duration: 1700; easing.type: Easing.InOutSine }
+                    NumberAnimation { from: 6; to: frame.height - 8; duration: 1700; easing.type: Easing.InOutSine }
+                    NumberAnimation { from: frame.height - 8; to: 6; duration: 1700; easing.type: Easing.InOutSine }
                 }
             }
-        }
 
-        // Scan hint / status line.
-        Label {
-            id: activeStatusLabel
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: scanFrame.bottom
-            anchors.topMargin: 16
-            text: page.statusMessage.length > 0 ? page.statusMessage : qsTr("Align QR code in frame")
-            color: "#FFFFFF"
-            font.pixelSize: 13
-            opacity: 0.92
-        }
-
-        // How to exit the live view.
-        Label {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: activeStatusLabel.bottom
-            anchors.topMargin: 6
-            text: page.closeHint
-            color: page.mutedColor
-            font.pixelSize: 12
-            opacity: 0.9
-        }
-
-        // Privacy badge.
-        Rectangle {
-            id: privacyBadge
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 16
-            width: privacyLabel.implicitWidth + 28
-            height: privacyLabel.implicitHeight + 12
-            radius: height / 2
-            color: Qt.rgba(0, 0, 0, 0.45)
-
-            Label {
-                id: privacyLabel
+            // Rounds the video's square corners: a canvas-coloured ring whose
+            // inner edge has the frame's corner radius (no shader needed).
+            Rectangle {
+                readonly property real ring: 24
                 anchors.centerIn: parent
-                text: qsTr("No data tracking · 100% local")
-                color: page.primaryColor
-                font.pixelSize: 12
-                font.bold: true
+                width: parent.width + 2 * ring
+                height: parent.height + 2 * ring
+                radius: frame.cornerRadius + ring
+                color: "transparent"
+                border.width: ring
+                border.color: page.canvasColor
+            }
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                visible: !page.cameraRequested
+                spacing: 12
+
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    implicitWidth: 64
+                    implicitHeight: 64
+                    radius: 32
+                    color: page.containerColor
+                    SvgIcon {
+                        anchors.centerIn: parent
+                        source: "qrc:/icons/video.svg"
+                        color: page.primaryColor
+                        size: 26
+                    }
+                }
+                Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("Camera is off")
+                    color: page.mutedColor
+                    font.pixelSize: 14
+                }
+            }
+
+            // Corner brackets: each is a 48px window onto the corner of a
+            // full-size rounded outline.
+            Repeater {
+                model: 4
+                delegate: Item {
+                    required property int index
+                    readonly property bool atRight: index % 2 === 1
+                    readonly property bool atBottom: index >= 2
+                    x: atRight ? frame.width - width : 0
+                    y: atBottom ? frame.height - height : 0
+                    width: 48
+                    height: 48
+                    clip: true
+                    Rectangle {
+                        x: parent.atRight ? parent.width - frame.width : 0
+                        y: parent.atBottom ? parent.height - frame.height : 0
+                        width: frame.width
+                        height: frame.height
+                        radius: frame.cornerRadius
+                        color: "transparent"
+                        border.width: 5
+                        border.color: page.primaryColor
+                    }
+                }
+            }
+
+            TapHandler {
+                enabled: !page.cameraRequested && !page.imageDecoding
+                onTapped: page.activate()
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: page.imageDecoding
+                visible: running
+            }
+
+            // Flashlight toggle; only offered when the camera reports torch support.
+            RoundButton {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 14
+                width: 48
+                height: 48
+                padding: 0
+                flat: true
+                visible: camera.active && camera.isTorchModeSupported(Camera.TorchOn)
+                Accessible.name: page.torchOn ? qsTr("Turn off flashlight") : qsTr("Turn on flashlight")
+                onClicked: {
+                    page.torchOn = !page.torchOn
+                    camera.torchMode = page.torchOn ? Camera.TorchOn : Camera.TorchOff
+                }
+                background: Rectangle {
+                    radius: width / 2
+                    color: page.torchOn ? Qt.rgba(1, 1, 1, 0.85) : Qt.rgba(0, 0, 0, 0.45)
+                }
+                contentItem: Item {
+                    SvgIcon {
+                        anchors.centerIn: parent
+                        source: "qrc:/icons/flash.svg"
+                        color: page.torchOn ? "#161616" : "#FFFFFF"
+                        size: 22
+                    }
+                }
             }
         }
 
-        // Flashlight toggle; only offered when the camera reports torch support.
-        Button {
-            id: torchButton
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: privacyBadge.top
-            anchors.bottomMargin: 18
-            width: 68
-            height: 68
-            padding: 0
-            visible: camera.active && camera.isTorchModeSupported(Camera.TorchOn)
-            Accessible.name: page.torchOn
-                ? qsTr("Turn off flashlight")
-                : qsTr("Turn on flashlight")
-            onClicked: {
-                page.torchOn = !page.torchOn
-                camera.torchMode = page.torchOn ? Camera.TorchOn : Camera.TorchOff
+        Label {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: page.hint
+            color: page.errorMessage.length > 0 ? page.errorColor : Material.foreground
+            font.pixelSize: 16
+            wrapMode: Text.WordWrap
+        }
+
+        ColumnLayout {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: page.frameSize
+            Layout.maximumWidth: page.frameSize
+            spacing: 10
+
+            Button {
+                id: cameraButton
+                Layout.fillWidth: true
+                Layout.preferredHeight: 52
+                topInset: 0
+                bottomInset: 0
+                enabled: !page.imageDecoding
+                Accessible.name: text
+                text: page.cameraRequested ? qsTr("Turn off camera") : qsTr("Turn on camera")
+                onClicked: page.cameraRequested ? page.stopCamera() : page.activate()
+                background: Rectangle {
+                    radius: height / 2
+                    color: page.primaryColor
+                    opacity: cameraButton.enabled ? (cameraButton.down ? 0.85 : 1) : 0.5
+                }
+                contentItem: RowLayout {
+                    spacing: 10
+                    Item { Layout.fillWidth: true }
+                    SvgIcon {
+                        source: "qrc:/icons/video.svg"
+                        color: page.primaryTextColor
+                        size: 20
+                    }
+                    Label {
+                        text: cameraButton.text
+                        color: page.primaryTextColor
+                        font.pixelSize: 16
+                        font.weight: Font.DemiBold
+                    }
+                    Item { Layout.fillWidth: true }
+                }
             }
 
-            contentItem: Item {
-                anchors.fill: parent // Forces this container to take up the full 68x68 area
-
-                // A white halo behind the bolt keeps the dark icon legible even
-                // on dark camera scenes, while the dark bolt reads on bright ones.
-                SvgIcon {
-                    anchors.centerIn: parent // Now properly centers in the 68x68 area
-                    source: "qrc:/icons/flash.svg"
-                    color: "#FFFFFF"
-                    size: 28
+            Button {
+                id: imageButton
+                Layout.fillWidth: true
+                Layout.preferredHeight: 52
+                topInset: 0
+                bottomInset: 0
+                enabled: !page.imageDecoding
+                Accessible.name: text
+                text: qsTr("Choose image")
+                onClicked: page.chooseImage()
+                background: Rectangle {
+                    radius: height / 2
+                    color: imageButton.down ? page.containerColor : page.surfaceColor
+                    border.width: 1
+                    border.color: "#8A9693"
+                    opacity: imageButton.enabled ? 1 : 0.5
                 }
-                SvgIcon {
-                    anchors.centerIn: parent
-                    source: "qrc:/icons/flash.svg"
-                    color: "#161616"
-                    size: 28
+                contentItem: RowLayout {
+                    spacing: 10
+                    Item { Layout.fillWidth: true }
+                    SvgIcon {
+                        source: "qrc:/icons/image.svg"
+                        color: page.primaryColor
+                        size: 20
+                    }
+                    Label {
+                        text: imageButton.text
+                        color: page.primaryColor
+                        font.pixelSize: 16
+                        font.weight: Font.DemiBold
+                    }
+                    Item { Layout.fillWidth: true }
                 }
             }
-            background: Rectangle {
-                anchors.fill: parent
-                radius: width / 2 // Since width == height, this creates a perfect circle
+        }
 
-                // Translucent white (35% off / 70% on) so the camera feed shows
-                // through the circle; the fill brightens when the torch is on.
-                color: page.torchOn
-                    ? Qt.rgba(1, 1, 1, 0.70)
-                    : Qt.rgba(1, 1, 1, 0.35)
-                border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.50)
+        Item { Layout.fillHeight: true }
+
+        // Privacy pill.
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.maximumWidth: parent.width
+            implicitWidth: privacyRow.implicitWidth + 32
+            implicitHeight: 36
+            radius: 18
+            color: page.containerColor
+
+            RowLayout {
+                id: privacyRow
+                anchors.centerIn: parent
+                spacing: 8
+                SvgIcon {
+                    source: "qrc:/icons/shield.svg"
+                    color: page.containerTextColor
+                    size: 16
+                }
+                Label {
+                    text: qsTr("Decoded on this device · no tracking")
+                    color: page.containerTextColor
+                    font.pixelSize: 13
+                    font.weight: Font.DemiBold
+                }
             }
         }
     }

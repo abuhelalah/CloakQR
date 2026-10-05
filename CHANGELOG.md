@@ -9,6 +9,42 @@ All notable changes to CloakQR are documented here. The project follows
 
 - Store publication after signing, device accessibility review, and maintainer approval.
 
+## [2.1.0] - 2026-10-05
+
+### Added
+
+- **WhatsApp QR codes**: a number and optional message become a `wa.me`
+  click-to-chat link that any phone camera opens straight in WhatsApp.
+- **Contact QR codes**: name, organization, phone, email and website as a
+  standard vCard that phones offer to save as a new contact.
+- **Live preview** on Create QR: the code updates as you type, so the separate
+  Generate step is gone. Empty forms show a placeholder instead of a code.
+- **Created codes in History**: codes are saved when you Save or Share them,
+  following the same "Save history" and "Exclude Wi-Fi passwords" settings as
+  scans. History gains an All / Scanned / Created filter and an entry count.
+
+### Changed
+
+- **New design and logo** across every screen: new brand colors, rounded cards,
+  pill buttons, segmented controls, a redesigned tablet/desktop sidebar and
+  bottom navigation, and new app, store and launcher icons. On dark
+  backgrounds the logo switches to its light-tile variant.
+- **Scanner**: the live camera now runs inside the scan frame, started and
+  stopped with explicit "Turn on camera" / "Turn off camera" buttons instead
+  of a double-tap.
+- **Phone** codes now always dial; adding a name is done with the new
+  **Contact** type.
+
+### Fixed
+
+- Scanner errors (no QR found in a chosen image, camera errors, denied camera
+  permission) are now shown instead of being silently dropped.
+- The Biometric lock switch no longer stays on when the device has no enrolled
+  biometrics.
+- The GitHub link on the About page opens again.
+- Restored Spanish, French and Arabic translations for Settings labels that
+  were showing in English.
+
 ## [2.0.0] - 2026-09-20
 
 ### Added

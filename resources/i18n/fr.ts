@@ -4,6 +4,26 @@
 <context>
     <name>AboutPage</name>
     <message>
+        <source>No accounts, no tracking, no network access</source>
+        <translation>Aucun compte, aucun pistage, aucun accès réseau</translation>
+    </message>
+    <message>
+        <source>Scanning and creating happen locally</source>
+        <translation>L&apos;analyse et la création se font localement</translation>
+    </message>
+    <message>
+        <source>History stays on this device and is never uploaded</source>
+        <translation>L&apos;historique reste sur cet appareil et n&apos;est jamais envoyé</translation>
+    </message>
+    <message>
+        <source>Source code &amp; issues</source>
+        <translation>Code source et signalements</translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation>Licence</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/AboutPage.qml" line="8"/>
         <location filename="../../qml/views/AboutPage.qml" line="33"/>
         <source>About</source>
@@ -173,6 +193,90 @@
 </context>
 <context>
     <name>GeneratorPage</name>
+    <message>
+        <source>WhatsApp</source>
+        <translation>WhatsApp</translation>
+    </message>
+    <message>
+        <source>Contact</source>
+        <translation>Contact</translation>
+    </message>
+    <message>
+        <source>Organization</source>
+        <translation>Organisation</translation>
+    </message>
+    <message>
+        <source>Website</source>
+        <translation>Site web</translation>
+    </message>
+    <message>
+        <source>Optional</source>
+        <translation>Facultatif</translation>
+    </message>
+    <message>
+        <source>%1 / %2 bytes</source>
+        <translation>%1 / %2 octets</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation>Apparence</translation>
+    </message>
+    <message>
+        <source>Content</source>
+        <translation>Contenu</translation>
+    </message>
+    <message>
+        <source>Create QR</source>
+        <translation>Créer un QR</translation>
+    </message>
+    <message>
+        <source>Custom colour</source>
+        <translation>Couleur personnalisée</translation>
+    </message>
+    <message>
+        <source>Email address</source>
+        <translation>Adresse e-mail</translation>
+    </message>
+    <message>
+        <source>Fewer types</source>
+        <translation>Moins de types</translation>
+    </message>
+    <message>
+        <source>L 7%</source>
+        <translation>L 7 %</translation>
+    </message>
+    <message>
+        <source>M 15%</source>
+        <translation>M 15 %</translation>
+    </message>
+    <message>
+        <source>Q 25%</source>
+        <translation>Q 25 %</translation>
+    </message>
+    <message>
+        <source>H 30%</source>
+        <translation>H 30 %</translation>
+    </message>
+    <message>
+        <source>More types</source>
+        <translation>Plus de types</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Version %1 · ECC %2</source>
+        <translation>Version %1 · ECC %2</translation>
+    </message>
+    <message>
+        <source>Website address</source>
+        <translation>Adresse du site</translation>
+    </message>
+    <message>
+        <source>Your QR code will appear here</source>
+        <translation>Votre code QR apparaîtra ici</translation>
+    </message>
     <message>
         <location filename="../../qml/views/GeneratorPage.qml" line="10"/>
         <source>Generator</source>
@@ -616,6 +720,30 @@
 <context>
     <name>HistoryPage</name>
     <message>
+        <source>All</source>
+        <translation>Tout</translation>
+    </message>
+    <message>
+        <source>Created</source>
+        <translation>Créés</translation>
+    </message>
+    <message>
+        <source>No history yet</source>
+        <translation>Pas encore d'historique</translation>
+    </message>
+    <message>
+        <source>Nothing here yet</source>
+        <translation>Rien ici pour l'instant</translation>
+    </message>
+    <message>
+        <source>Codes you scan or create will appear here.</source>
+        <translation>Les codes que vous scannez ou créez apparaîtront ici.</translation>
+    </message>
+    <message>
+        <source>Stored only on this device, never synced</source>
+        <translation>Stocké uniquement sur cet appareil, jamais synchronisé</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/HistoryPage.qml" line="8"/>
         <source>History</source>
         <translation>Historique</translation>
@@ -771,6 +899,10 @@
 </context>
 <context>
     <name>PasteField</name>
+    <message>
+        <source>Clear</source>
+        <translation>Effacer</translation>
+    </message>
     <message>
         <location filename="../../qml/common/PasteField.qml" line="33"/>
         <source>Paste from clipboard</source>
@@ -1190,6 +1322,30 @@
 <context>
     <name>ScannerPage</name>
     <message>
+        <source>Align the QR code inside the frame</source>
+        <translation>Alignez le code QR dans le cadre</translation>
+    </message>
+    <message>
+        <source>Hold steady — scanning…</source>
+        <translation>Ne bougez pas — analyse…</translation>
+    </message>
+    <message>
+        <source>Camera is off</source>
+        <translation>La caméra est éteinte</translation>
+    </message>
+    <message>
+        <source>Turn on camera</source>
+        <translation>Activer la caméra</translation>
+    </message>
+    <message>
+        <source>Turn off camera</source>
+        <translation>Désactiver la caméra</translation>
+    </message>
+    <message>
+        <source>Decoded on this device · no tracking</source>
+        <translation>Décodé sur cet appareil · aucun suivi</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/ScannerPage.qml" line="11"/>
         <source>Scanner</source>
         <translation>Scanner</translation>
@@ -1342,6 +1498,34 @@
 <context>
     <name>SettingsPage</name>
     <message>
+        <source>Fingerprint or face to open</source>
+        <translation>Empreinte ou visage pour ouvrir</translation>
+    </message>
+    <message>
+        <source>Last %1 codes, on this device</source>
+        <translation>%1 derniers codes, sur cet appareil</translation>
+    </message>
+    <message>
+        <source>Never store them in history</source>
+        <translation>Ne jamais les enregistrer dans l&apos;historique</translation>
+    </message>
+    <message>
+        <source>No ads, no tracking, no cloud. Everything happens on this device.</source>
+        <translation>Pas de pub, pas de pistage, pas de cloud. Tout se passe sur cet appareil.</translation>
+    </message>
+    <message>
+        <source>Save history</source>
+        <translation>Enregistrer l&apos;historique</translation>
+    </message>
+    <message>
+        <source>Saved codes</source>
+        <translation>Codes enregistrés</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>État</translation>
+    </message>
+    <message>
         <location filename="../../qml/views/SettingsPage.qml" line="10"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
@@ -1362,7 +1546,7 @@
     </message>
     <message>
         <source>Appearance</source>
-        <translation type="vanished">Apparence</translation>
+        <translation>Apparence</translation>
     </message>
     <message>
         <location filename="../../qml/views/SettingsPage.qml" line="354"/>
@@ -1412,7 +1596,7 @@
     </message>
     <message>
         <source>Language</source>
-        <translation type="vanished">Langue</translation>
+        <translation>Langue</translation>
     </message>
     <message>
         <location filename="../../qml/views/SettingsPage.qml" line="387"/>
@@ -1723,8 +1907,8 @@
     </message>
     <message>
         <location filename="../../qml/main.qml" line="268"/>
-        <source>LOCAL ONLY</source>
-        <translation>LOCAL UNIQUEMENT</translation>
+        <source>Local only</source>
+        <translation>Local uniquement</translation>
     </message>
     <message>
         <location filename="../../qml/main.qml" line="274"/>

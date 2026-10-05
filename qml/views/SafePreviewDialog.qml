@@ -12,10 +12,12 @@ Popup {
 
     property string content: ""
     property color surfaceColor: "#FFFFFF"
-    property color primaryColor: "#086C5C"
+    property color primaryColor: "#0B6B5E"
     property color primaryTextColor: "#FFFFFF"
-    property color mutedColor: "#5D6F69"
+    property color mutedColor: "#4B5754"
     property color accentColor: "#C84F2D"
+    property color containerColor: "#D5EBE4"
+    property color containerTextColor: "#053B33"
     property bool passwordRevealed: false
 
     // Holds the contact being saved to a .vcf while the desktop file dialog is
@@ -512,9 +514,38 @@ Popup {
         }
     }
 
+    // Flat pill action button: filled primary, or tonal for secondary actions.
+    component ActionButton: Button {
+        id: actionButton
+        property bool tonal: false
+        Layout.fillWidth: true
+        Layout.preferredWidth: 1
+        Layout.preferredHeight: 48
+        topInset: 0
+        bottomInset: 0
+        leftPadding: 10
+        rightPadding: 10
+        background: Rectangle {
+            radius: height / 2
+            color: actionButton.tonal ? dialog.containerColor : dialog.primaryColor
+            opacity: actionButton.down ? 0.85 : 1
+        }
+        contentItem: Label {
+            text: actionButton.text
+            color: actionButton.tonal ? dialog.containerTextColor : dialog.primaryTextColor
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            fontSizeMode: Text.HorizontalFit // shrink, don't truncate, when three share a row
+            minimumPixelSize: 11
+            elide: Text.ElideRight
+        }
+    }
+
     background: Rectangle {
         color: dialog.surfaceColor
-        radius: dialog.isMobile ? 22 : 16
+        radius: 24
         border.width: 1
         border.color: Qt.rgba(dialog.mutedColor.r, dialog.mutedColor.g, dialog.mutedColor.b, 0.16)
     }
@@ -568,8 +599,8 @@ Popup {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
             color: dialog.primaryColor
-            topLeftRadius: dialog.isMobile ? 22 : 16
-            topRightRadius: dialog.isMobile ? 22 : 16
+            topLeftRadius: 24
+            topRightRadius: 24
 
             RowLayout {
                 anchors.fill: parent
@@ -589,12 +620,14 @@ Popup {
                     Layout.fillWidth: true
                     spacing: 0
                     Label {
+                        Layout.fillWidth: true
                         text: qsTr("Scan result")
                         color: dialog.primaryTextColor
                         font.pixelSize: 16
                         font.bold: true
                     }
                     Label {
+                        Layout.fillWidth: true
                         text: dialog.kindLabel
                         color: Qt.rgba(dialog.primaryTextColor.r, dialog.primaryTextColor.g, dialog.primaryTextColor.b, 0.82)
                         font.pixelSize: 11
@@ -833,8 +866,8 @@ Popup {
             Rectangle {
                 visible: !dialog.isWifi && !dialog.isEmail && !dialog.isOtp
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.min(contentText.implicitHeight + 20, 240)
-                radius: 10
+                Layout.preferredHeight: Math.min(contentText.implicitHeight + 24, 240)
+                radius: 12
                 color: Qt.rgba(dialog.mutedColor.r, dialog.mutedColor.g, dialog.mutedColor.b, 0.10)
 
                 ScrollView {
@@ -890,15 +923,12 @@ Popup {
                 // per content type, so nothing wraps on phone widths.
                 RowLayout {
                     id: actionRow
-                    Layout.fillWidth: true
                     spacing: 8
 
-                    Button {
+                    ActionButton {
                         id: emailBtn
                         visible: dialog.isEmail
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Send email")
                         Accessible.name: text
                         onClicked: {
@@ -907,43 +937,35 @@ Popup {
                                 Qt.openUrlExternally(dialog.buildMailto(d))
                         }
                     }
-                    Button {
+                    ActionButton {
                         id: smsBtn
                         visible: dialog.isSms
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Send message")
                         Accessible.name: text
                         onClicked: dialog.openSms()
                     }
-                    Button {
+                    ActionButton {
                         id: mapBtn
                         visible: dialog.isGeo
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Open in Maps")
                         Accessible.name: text
                         onClicked: dialog.openMap()
                     }
-                    Button {
+                    ActionButton {
                         id: dialBtn
                         visible: dialog.isTel || (dialog.isVCard && dialog.vcard.phone.length > 0)
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Dial")
                         Accessible.name: text
                         onClicked: Qt.openUrlExternally(
                             "tel:" + (dialog.isTel ? dialog.telNumber : dialog.vcard.phone))
                     }
-                    Button {
+                    ActionButton {
                         id: contactBtn
                         visible: dialog.isTel || dialog.isVCard
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Add contact")
                         Accessible.name: text
                         onClicked: dialog.addContact(
@@ -951,12 +973,10 @@ Popup {
                             dialog.isVCard ? dialog.vcard.phone : dialog.telNumber,
                             dialog.isVCard ? dialog.vcard.email : "")
                     }
-                    Button {
+                    ActionButton {
                         id: openBtn
                         visible: dialog.isOpenable
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: dialog.openLabel
                         Accessible.name: text
                         onClicked: {
@@ -964,12 +984,10 @@ Popup {
                                 hint.flash(qsTr("No app found to open this"))
                         }
                     }
-                    Button {
+                    ActionButton {
                         id: wifiBtn
                         visible: dialog.isWifi && platformBridge.wifiConnectSupported
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Connect")
                         Accessible.name: text
                         onClicked: {
@@ -980,12 +998,10 @@ Popup {
                                 hint.flash(qsTr("Couldn't start Wi-Fi connection"))
                         }
                     }
-                    Button {
+                    ActionButton {
                         id: otpBtn
                         visible: dialog.isOtp
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Add to authenticator")
                         Accessible.name: text
                         onClicked: {
@@ -993,12 +1009,10 @@ Popup {
                                 hint.flash(qsTr("No authenticator app found"))
                         }
                     }
-                    Button {
+                    ActionButton {
                         id: calendarBtn
                         visible: dialog.isCalendar
-                        Layout.fillWidth: true
-                        Material.background: dialog.primaryColor
-                        Material.foreground: dialog.primaryTextColor
+
                         text: qsTr("Add to calendar")
                         Accessible.name: text
                         onClicked: {
@@ -1015,8 +1029,8 @@ Popup {
                         }
                     }
 
-                    Button {
-                        Layout.fillWidth: true
+                    ActionButton {
+                        tonal: true
                         text: qsTr("Copy")
                         Accessible.name: qsTr("Copy scanned content")
                         onClicked: {

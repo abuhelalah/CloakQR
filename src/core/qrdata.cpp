@@ -74,6 +74,18 @@ QString QrData::sms(const QString& number, const QString& message)
     return result;
 }
 
+QString QrData::whatsapp(const QString& number, const QString& message)
+{
+    QString digits;
+    for (const QChar c : number)
+        if (c.isDigit())
+            digits += c;
+    QString result = QStringLiteral("https://wa.me/") + digits;
+    if (!message.isEmpty())
+        result += QStringLiteral("?text=") + QString::fromLatin1(QUrl::toPercentEncoding(message));
+    return result;
+}
+
 QString QrData::wifi(const QString& ssid, const QString& password, WifiAuth auth, bool hidden)
 {
     QString type;

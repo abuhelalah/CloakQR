@@ -53,6 +53,7 @@ public:
                                      const QString& body = QString()) const;
     Q_INVOKABLE QString phonePayload(const QString& number) const;
     Q_INVOKABLE QString smsPayload(const QString& number, const QString& message = QString()) const;
+    Q_INVOKABLE QString whatsappPayload(const QString& number, const QString& message = QString()) const;
     Q_INVOKABLE QString wifiPayload(const QString& ssid, const QString& password,
                                     const QString& auth, bool hidden = false) const;
     Q_INVOKABLE QString geoPayload(double latitude, double longitude) const;

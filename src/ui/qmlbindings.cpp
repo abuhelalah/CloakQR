@@ -2,6 +2,7 @@
 
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QSortFilterProxyModel>
 
 #include "appengine.h"
 #include "cryptohelper.h"
@@ -30,6 +31,12 @@ void bindObjects(
     ctx->setContextProperty("fileExporter", &exporter);
     ctx->setContextProperty("cryptoHelper", &crypto);
     ctx->setContextProperty("scanHistory", &history);
+    // History page view of the same rows, filterable by origin
+    // ("scanned" / "generated") via setFilterFixedString().
+    auto* historyFilter = new QSortFilterProxyModel(&history);
+    historyFilter->setSourceModel(&history);
+    historyFilter->setFilterRole(ScanHistoryModel::OriginRole);
+    ctx->setContextProperty("scanHistoryFilter", historyFilter);
     ctx->setContextProperty("appSettings", &settings);
 }
 

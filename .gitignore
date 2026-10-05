@@ -17,10 +17,6 @@ Testing/
 .qtc_clangd/
 .lupdate/
 .rcc/
-/scripts/
-/docs/
-/releases/
-/template/
 
 # Downloaded dependencies and package-manager state
 _deps/
@@ -29,7 +25,6 @@ packages/
 .cache/
 .venv/
 venv/
-.qtcreator/
 .github/
 .github/**/*.md
 .github/*.md
@@ -90,7 +85,6 @@ google-services.json
 /third_party/paid/
 /licenses/private/
 /*-paid/
-/style_new/
 
 # Coverage, profiling, and test output
 coverage/
@@ -101,26 +95,15 @@ coverage-*/
 *.profraw
 *.profdata
 lcov.info
-/docs/release_assets_test.svg
 
 # IDE, editor, and OS state
-.vscode/
 .idea/
 .vs/
 *.user
 *.pro.user
 *.swp
 *.swo
-*.xcf
 *~
 .DS_Store
 Thumbs.db
 *.log
-
-# Local planning/progress notes
-PLAN.md
-what_we_done.md
-forme.md
-window_dump.xml
-test_auth.png
-test_*.png

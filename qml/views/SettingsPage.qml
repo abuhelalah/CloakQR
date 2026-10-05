@@ -9,11 +9,13 @@ Page {
     id: page
     title: qsTr("Settings")
     property bool wideLayout: false
-    property color canvasColor: "#F3F7F5"
+    property color canvasColor: "#F1F5F3"
     property color surfaceColor: "#FFFFFF"
-    property color primaryColor: "#086C5C"
+    property color primaryColor: "#0B6B5E"
     property color primaryTextColor: "#FFFFFF"
-    property color mutedColor: "#5D6F69"
+    property color mutedColor: "#4B5754"
+    property color containerColor: "#D5EBE4"
+    property color containerTextColor: "#053B33"
 
     // Emitted when the user taps "About CloakQR"; the host navigates to About.
     signal openAbout()
@@ -23,9 +25,19 @@ Page {
     Component.onCompleted: if (visible) scanHistory.ensureLoaded()
     onVisibleChanged: if (visible) scanHistory.ensureLoaded()
 
-    // Destructive-action colour and card divider tint.
-    readonly property color dangerColor: "#D32F2F"
-    readonly property color dividerColor: Qt.rgba(page.mutedColor.r, page.mutedColor.g, page.mutedColor.b, 0.16)
+    // Destructive-action colour (theme-aware, from main.qml) and card divider tint.
+    property color errorColor: "#B3261E"
+    readonly property color dangerColor: errorColor
+    readonly property color dividerColor: Material.theme === Material.Dark ? Qt.rgba(1, 1, 1, 0.12) : "#E3E8E6"
+    readonly property real sideMargin: page.wideLayout ? 28 : 16
+    // The rail layout has no top bar, so the page shows its own title there.
+    readonly property bool showTitle: ApplicationWindow.window !== null
+                                      && ApplicationWindow.window.railLayout === true
+    // The promise card is solid primary in light mode; in dark mode a tonal
+    // fill keeps the large block from glaring.
+    readonly property bool dark: Material.theme === Material.Dark
+    readonly property color promiseColor: dark ? containerColor : primaryColor
+    readonly property color promiseTextColor: dark ? containerTextColor : primaryTextColor
 
     // Summaries for the system-status card.
     function cameraStatusText() {
@@ -38,18 +50,120 @@ Page {
         }
     }
 
-    function storageStatusText() {
-        const n = scanHistory !== null ? scanHistory.count : 0
-        if (n <= 0) return qsTr("Nothing stored")
-        return n === 1 ? qsTr("1 code") : qsTr("%1 codes").arg(n)
-    }
-
     background: Rectangle {
         color: page.canvasColor
     }
 
     MediaDevices { id: mediaDevices }
     CameraPermission { id: cameraPermission }
+
+    // --- Building blocks -----------------------------------------------------
+    component SectionHeader: Label {
+        Layout.fillWidth: true
+        Layout.leftMargin: page.sideMargin + 4
+        Layout.rightMargin: page.sideMargin + 4
+        Layout.topMargin: 16
+        Layout.bottomMargin: 4
+        font.pixelSize: 12
+        font.bold: true
+        font.capitalization: Font.AllUppercase
+        font.letterSpacing: 1.2
+        color: page.mutedColor
+    }
+
+    component Card: Rectangle {
+        default property alias content: cardColumn.data
+        Layout.fillWidth: true
+        Layout.leftMargin: page.sideMargin
+        Layout.rightMargin: page.sideMargin
+        radius: 20
+        color: page.surfaceColor
+        implicitHeight: cardColumn.implicitHeight
+        ColumnLayout {
+            id: cardColumn
+            anchors.fill: parent
+            spacing: 0
+        }
+    }
+
+    component Divider: Rectangle {
+        Layout.fillWidth: true
+        Layout.leftMargin: 16
+        Layout.rightMargin: 16
+        Layout.preferredHeight: 1
+        color: page.dividerColor
+    }
+
+    // Title + optional subtitle on the left, a Switch on the right.
+    component SwitchRow: RowLayout {
+        id: switchRow
+        property string title
+        property string subtitle
+        property bool checked
+        signal toggled(bool checked)
+        Layout.fillWidth: true
+        Layout.leftMargin: 16
+        Layout.rightMargin: 8
+        Layout.topMargin: 10
+        Layout.bottomMargin: 10
+        spacing: 12
+        opacity: enabled ? 1 : 0.5
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 2
+            Label {
+                Layout.fillWidth: true
+                text: switchRow.title
+                font.pixelSize: 16
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                Layout.fillWidth: true
+                visible: text.length > 0
+                text: switchRow.subtitle
+                font.pixelSize: 13
+                color: page.mutedColor
+                wrapMode: Text.WordWrap
+            }
+        }
+        Switch {
+            Accessible.name: switchRow.title
+            checked: switchRow.checked
+            onToggled: {
+                switchRow.toggled(checked)
+                // Snap back to the stored value if the handler refused it.
+                checked = Qt.binding(() => switchRow.checked)
+            }
+        }
+    }
+
+    // Icon, label and a trailing value, as in the Status card.
+    component StatusRow: RowLayout {
+        property alias icon: statusIcon.source
+        property alias label: statusLabel.text
+        property alias value: statusValue.text
+        Layout.fillWidth: true
+        Layout.leftMargin: 16
+        Layout.rightMargin: 16
+        Layout.topMargin: 14
+        Layout.bottomMargin: 14
+        spacing: 14
+        SvgIcon {
+            id: statusIcon
+            color: page.primaryColor
+            size: 22
+        }
+        Label {
+            id: statusLabel
+            Layout.fillWidth: true
+            font.pixelSize: 16
+        }
+        Label {
+            id: statusValue
+            font.pixelSize: 14
+            color: page.mutedColor
+        }
+    }
 
     ScrollView {
         anchors.fill: parent
@@ -61,16 +175,25 @@ Page {
             x: Math.max(0, (page.width - width) / 2)
             spacing: 8
 
+            // Tablet/desktop has no top bar, so the page carries its own title.
+            Label {
+                visible: page.showTitle
+                Layout.leftMargin: page.sideMargin
+                Layout.topMargin: 28
+                text: qsTr("Settings")
+                font.pixelSize: Math.round(28 * appSettings.fontScale)
+                font.bold: true
+            }
+
             // Privacy promise.
             Rectangle {
                 Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                Layout.topMargin: page.wideLayout ? 28 : 20
-                Layout.bottomMargin: 4
-                radius: 14
-                color: page.primaryColor
-                implicitHeight: promiseRow.implicitHeight + 28
+                Layout.leftMargin: page.sideMargin
+                Layout.rightMargin: page.sideMargin
+                Layout.topMargin: page.wideLayout ? 6 : 16
+                radius: 20
+                color: page.promiseColor
+                implicitHeight: promiseRow.implicitHeight + 36
 
                 RowLayout {
                     id: promiseRow
@@ -79,515 +202,256 @@ Page {
                     spacing: 14
 
                     SvgIcon {
+                        Layout.alignment: Qt.AlignTop
                         source: "qrc:/icons/shield.svg"
-                        color: page.primaryTextColor
-                        size: 28
-                        Layout.alignment: Qt.AlignVCenter
+                        color: page.promiseTextColor
+                        size: 26
                     }
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 2
+                        spacing: 4
                         Label {
                             Layout.fillWidth: true
                             text: qsTr("Private by design")
                             font.bold: true
-                            font.pixelSize: 16
-                            color: page.primaryTextColor
+                            font.pixelSize: 17
+                            color: page.promiseTextColor
                         }
                         Label {
                             Layout.fillWidth: true
-                            text: qsTr("No ads, no tracking, no cloud. Scanning happens entirely on this device.")
-                            color: Qt.rgba(page.primaryTextColor.r, page.primaryTextColor.g,
-                                           page.primaryTextColor.b, 0.88)
+                            text: qsTr("No ads, no tracking, no cloud. Everything happens on this device.")
+                            color: Qt.rgba(page.promiseTextColor.r, page.promiseTextColor.g,
+                                           page.promiseTextColor.b, 0.88)
                             wrapMode: Text.WordWrap
-                            font.pixelSize: 13
+                            font.pixelSize: 14
+                            lineHeight: 1.2
                         }
                     }
                 }
             }
 
-            // ===== SYSTEM STATUS =====
-            Label {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                Layout.topMargin: 10
-                text: qsTr("System status")
-                font.pixelSize: 11
-                font.bold: true
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 1.2
-                color: page.mutedColor
+            SectionHeader { text: qsTr("Privacy & security") }
+            Card {
+                SwitchRow {
+                    title: qsTr("Save history")
+                    subtitle: qsTr("Last %1 codes, on this device").arg(scanHistory.maxEntries)
+                    checked: appSettings.historyEnabled
+                    onToggled: (on) => appSettings.historyEnabled = on
+                }
+                Divider {}
+                SwitchRow {
+                    // Only meaningful while history is being saved.
+                    enabled: appSettings.historyEnabled
+                    title: qsTr("Exclude Wi-Fi passwords")
+                    subtitle: qsTr("Never store them in history")
+                    checked: appSettings.historyExcludeWifiPassword
+                    onToggled: (on) => appSettings.historyExcludeWifiPassword = on
+                }
+                Divider {}
+                SwitchRow {
+                    title: qsTr("Biometric lock")
+                    subtitle: qsTr("Fingerprint or face to open")
+                    checked: appSettings.biometricLockEnabled
+                    onToggled: (on) => {
+                        if (on && Qt.platform.os === "android"
+                                && !platformBridge.isBiometricAvailable()) {
+                            appSettings.biometricLockEnabled = false
+                            biometricUnavailable.open()
+                            return
+                        }
+                        appSettings.biometricLockEnabled = on
+                    }
+                }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                radius: 12
-                color: page.surfaceColor
-                implicitHeight: systemColumn.implicitHeight
-
+            SectionHeader { text: qsTr("Appearance") }
+            Card {
                 ColumnLayout {
-                    id: systemColumn
-                    anchors.fill: parent
+                    Layout.fillWidth: true
+                    Layout.margins: 16
+                    Layout.topMargin: 14
+                    spacing: 10
+                    Label {
+                        text: qsTr("Theme")
+                        font.pixelSize: 16
+                    }
+                    SegmentedControl {
+                        Layout.fillWidth: true
+                        model: [
+                            { key: "system", label: qsTr("System") },
+                            { key: "light",  label: qsTr("Light") },
+                            { key: "dark",   label: qsTr("Dark") }
+                        ]
+                        currentKey: appSettings.theme
+                        fillColor: page.surfaceColor
+                        selectedColor: page.containerColor
+                        selectedTextColor: page.containerTextColor
+                        textColor: page.mutedColor
+                        Accessible.name: qsTr("Theme selector")
+                        onActivated: (key) => appSettings.theme = key
+                    }
+                }
+                Divider {}
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 16
+                    Layout.rightMargin: 16
+                    Layout.topMargin: 6
+                    Layout.bottomMargin: 6
+                    spacing: 12
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Language")
+                        font.pixelSize: 16
+                    }
+                    ComboBox {
+                        id: languageBox
+                        Layout.preferredWidth: 160
+                        Accessible.name: qsTr("Language selector")
+                        textRole: "label"
+                        valueRole: "value"
+                        model: [
+                            { label: qsTr("System"),   value: "system" },
+                            { label: qsTr("English"),  value: "en" },
+                            { label: qsTr("العربية"),   value: "ar" },
+                            { label: qsTr("Español"),  value: "es" },
+                            { label: qsTr("Français"), value: "fr" }
+                        ]
+                        Component.onCompleted: currentIndex = indexOfValue(appSettings.language)
+                        onModelChanged: currentIndex = indexOfValue(appSettings.language)
+                        onActivated: appSettings.language = currentValue
+                    }
+                }
+                Divider {}
+                SwitchRow {
+                    title: qsTr("High contrast")
+                    checked: appSettings.highContrast
+                    onToggled: (on) => appSettings.highContrast = on
+                }
+                Divider {}
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 16
+                    Layout.rightMargin: 16
+                    Layout.topMargin: 12
+                    Layout.bottomMargin: 8
                     spacing: 0
-
                     RowLayout {
                         Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        SvgIcon {
-                            source: "qrc:/icons/video.svg"
+                        Label {
+                            Layout.fillWidth: true
+                            text: qsTr("Text size")
+                            font.pixelSize: 16
+                        }
+                        Label {
+                            text: Math.round(appSettings.fontScale * 100) + "%"
                             color: page.primaryColor
-                            size: 18
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            text: qsTr("Camera")
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        Label {
-                            text: page.cameraStatusText()
-                            color: page.mutedColor
-                            font.pixelSize: 13
-                            verticalAlignment: Text.AlignVCenter
+                            font.pixelSize: 16
+                            font.weight: Font.DemiBold
                         }
                     }
-
-                    Rectangle {
+                    Slider {
                         Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
+                        from: 0.8
+                        to: 2.0
+                        stepSize: 0.1
+                        value: appSettings.fontScale
+                        Accessible.name: qsTr("Text size slider")
+                        onMoved: appSettings.fontScale = value
                     }
+                }
+            }
 
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
+            SectionHeader { text: qsTr("Status") }
+            Card {
+                StatusRow {
+                    icon: "qrc:/icons/video.svg"
+                    label: qsTr("Camera")
+                    value: page.cameraStatusText()
+                }
+                Divider {}
+                StatusRow {
+                    icon: "qrc:/icons/nav_history.svg"
+                    label: qsTr("Saved codes")
+                    value: scanHistory.count
+                }
+                Divider {}
+                ItemDelegate {
+                    Layout.fillWidth: true
+                    leftPadding: 16
+                    rightPadding: 16
+                    topPadding: 14
+                    bottomPadding: 14
+                    Accessible.name: qsTr("About CloakQR")
+                    onClicked: page.openAbout()
+                    background: Item {}
+                    contentItem: RowLayout {
+                        spacing: 14
                         SvgIcon {
-                            source: "qrc:/icons/folder.svg"
+                            source: "qrc:/icons/info.svg"
                             color: page.primaryColor
-                            size: 18
-                            Layout.alignment: Qt.AlignVCenter
+                            size: 22
                         }
                         Label {
                             Layout.fillWidth: true
-                            text: qsTr("Storage")
-                            verticalAlignment: Text.AlignVCenter
+                            text: qsTr("About CloakQR")
+                            font.pixelSize: 16
                         }
-                        Label {
-                            text: page.storageStatusText()
+                        SvgIcon {
+                            source: Qt.application.layoutDirection === Qt.RightToLeft ? "qrc:/icons/chevron_left.svg"
+                                                            : "qrc:/icons/chevron_right.svg"
                             color: page.mutedColor
-                            font.pixelSize: 13
-                            verticalAlignment: Text.AlignVCenter
+                            size: 20
                         }
                     }
                 }
             }
 
-            // ===== PRIVACY & SECURITY =====
-            Label {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                Layout.topMargin: 10
-                text: qsTr("Privacy & security")
-                font.pixelSize: 11
-                font.bold: true
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 1.2
-                color: page.mutedColor
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                radius: 12
-                color: page.surfaceColor
-                implicitHeight: privacyColumn.implicitHeight
-
-                ColumnLayout {
-                    id: privacyColumn
-                    anchors.fill: parent
-                    spacing: 0
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 2
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Save scan history")
-                                wrapMode: Text.WordWrap
-                            }
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Store scanned codes on this device")
-                                font.pixelSize: 11
-                                color: page.mutedColor
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-                        Switch {
-                            Accessible.name: qsTr("Save scan history toggle")
-                            checked: appSettings.historyEnabled
-                            onToggled: appSettings.historyEnabled = checked
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 2
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Exclude Wi-Fi passwords")
-                                wrapMode: Text.WordWrap
-                            }
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Never store Wi-Fi passwords in history")
-                                font.pixelSize: 11
-                                color: page.mutedColor
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-                        Switch {
-                            Accessible.name: qsTr("Exclude Wi-Fi passwords toggle")
-                            checked: appSettings.historyExcludeWifiPassword
-                            onToggled: appSettings.historyExcludeWifiPassword = checked
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 2
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Biometric lock")
-                                wrapMode: Text.WordWrap
-                            }
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Require fingerprint or face to open the app")
-                                font.pixelSize: 11
-                                color: page.mutedColor
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-                        Switch {
-                            Accessible.name: qsTr("Biometric lock toggle")
-                            checked: appSettings.biometricLockEnabled
-                            onToggled: {
-                                if (checked && Qt.platform.os === "android"
-                                        && !platformBridge.isBiometricAvailable()) {
-                                    appSettings.biometricLockEnabled = false
-                                    biometricUnavailable.open()
-                                    return
-                                }
-                                appSettings.biometricLockEnabled = checked
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ===== APP SETTINGS =====
-            Label {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                Layout.topMargin: 10
-                text: qsTr("App settings")
-                font.pixelSize: 11
-                font.bold: true
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 1.2
-                color: page.mutedColor
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                radius: 12
-                color: page.surfaceColor
-                implicitHeight: appColumn.implicitHeight
-
-                ColumnLayout {
-                    id: appColumn
-                    anchors.fill: parent
-                    spacing: 0
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        Label {
-                            Layout.fillWidth: true
-                            text: qsTr("Theme")
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        ComboBox {
-                            id: themeBox
-                            Accessible.name: qsTr("Theme selector")
-                            textRole: "label"
-                            valueRole: "value"
-                            model: [
-                                { label: qsTr("System"), value: "system" },
-                                { label: qsTr("Light"),  value: "light" },
-                                { label: qsTr("Dark"),   value: "dark" }
-                            ]
-                            Component.onCompleted: currentIndex = indexOfValue(appSettings.theme)
-                            onModelChanged: currentIndex = indexOfValue(appSettings.theme)
-                            onActivated: appSettings.theme = currentValue
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        Label {
-                            Layout.fillWidth: true
-                            text: qsTr("App language")
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        ComboBox {
-                            id: languageBox
-                            Accessible.name: qsTr("Language selector")
-                            textRole: "label"
-                            valueRole: "value"
-                            model: [
-                                { label: qsTr("System"),   value: "system" },
-                                { label: qsTr("English"),  value: "en" },
-                                { label: qsTr("العربية"),   value: "ar" },
-                                { label: qsTr("Español"),  value: "es" },
-                                { label: qsTr("Français"), value: "fr" }
-                            ]
-                            Component.onCompleted: currentIndex = indexOfValue(appSettings.language)
-                            onModelChanged: currentIndex = indexOfValue(appSettings.language)
-                            onActivated: appSettings.language = currentValue
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 12
-                        Label {
-                            Layout.fillWidth: true
-                            text: qsTr("High contrast")
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        Switch {
-                            Accessible.name: qsTr("High contrast toggle")
-                            checked: appSettings.highContrast
-                            onToggled: appSettings.highContrast = checked
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.margins: 12
-                        spacing: 6
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Text size")
-                            }
-                            Label {
-                                text: Math.round(appSettings.fontScale * 100) + "%"
-                                color: page.mutedColor
-                            }
-                        }
-
-                        Slider {
-                            Layout.fillWidth: true
-                            from: 0.8
-                            to: 2.0
-                            stepSize: 0.1
-                            value: appSettings.fontScale
-                            Accessible.name: qsTr("Text size slider")
-                            onMoved: appSettings.fontScale = value
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
-                    }
-
-                    Button {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 4
-                        Layout.rightMargin: 4
-                        flat: true
-                        Accessible.name: qsTr("About CloakQR")
-                        onClicked: page.openAbout()
-
-                        contentItem: RowLayout {
-                            spacing: 10
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("About CloakQR")
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            SvgIcon {
-                                source: "qrc:/icons/chevron_right.svg"
-                                color: page.mutedColor
-                                size: 16
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ===== DANGER ZONE =====
-            Label {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                Layout.topMargin: 10
+            SectionHeader {
                 text: qsTr("Danger zone")
-                font.pixelSize: 11
-                font.bold: true
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 1.2
                 color: page.dangerColor
             }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.wideLayout ? 28 : 20
-                Layout.rightMargin: page.wideLayout ? 28 : 20
-                radius: 12
-                color: page.surfaceColor
-                border.width: 1
-                border.color: Qt.rgba(page.dangerColor.r, page.dangerColor.g, page.dangerColor.b, 0.35)
-                implicitHeight: dangerColumn.implicitHeight
-
-                ColumnLayout {
-                    id: dangerColumn
-                    anchors.fill: parent
-                    spacing: 0
-
-                    Button {
-                        id: clearHistoryBtn
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 4
-                        Layout.rightMargin: 4
-                        flat: true
-                        enabled: scanHistory !== null && scanHistory.count > 0
-                        Accessible.name: qsTr("Clear scan history")
-                        onClicked: clearConfirm.open()
-
-                        contentItem: Label {
-                            text: qsTr("Clear scan history")
-                            color: clearHistoryBtn.enabled ? page.dangerColor : page.mutedColor
-                            horizontalAlignment: Text.AlignLeft
-                            verticalAlignment: Text.AlignVCenter
-                        }
+            Card {
+                Button {
+                    id: clearHistoryBtn
+                    Layout.fillWidth: true
+                    flat: true
+                    leftPadding: 16
+                    enabled: scanHistory !== null && scanHistory.count > 0
+                    Accessible.name: qsTr("Clear scan history")
+                    onClicked: clearConfirm.open()
+                    contentItem: Label {
+                        text: qsTr("Clear scan history")
+                        font.pixelSize: 16
+                        color: clearHistoryBtn.enabled ? page.dangerColor : page.mutedColor
+                        verticalAlignment: Text.AlignVCenter
                     }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 12
-                        Layout.rightMargin: 12
-                        Layout.preferredHeight: 1
-                        color: page.dividerColor
+                }
+                Divider {}
+                Button {
+                    Layout.fillWidth: true
+                    flat: true
+                    leftPadding: 16
+                    Accessible.name: qsTr("Reset all settings")
+                    onClicked: {
+                        appSettings.resetToDefaults()
+                        languageBox.currentIndex = languageBox.indexOfValue(appSettings.language)
                     }
-
-                    Button {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 4
-                        Layout.rightMargin: 4
-                        flat: true
-                        Accessible.name: qsTr("Reset all settings")
-                        onClicked: {
-                            appSettings.resetToDefaults()
-                            themeBox.currentIndex = themeBox.indexOfValue(appSettings.theme)
-                            languageBox.currentIndex = languageBox.indexOfValue(appSettings.language)
-                        }
-
-                        contentItem: Label {
-                            text: qsTr("Reset all settings")
-                            color: page.dangerColor
-                            horizontalAlignment: Text.AlignLeft
-                            verticalAlignment: Text.AlignVCenter
-                        }
+                    contentItem: Label {
+                        text: qsTr("Reset all settings")
+                        font.pixelSize: 16
+                        color: page.dangerColor
+                        verticalAlignment: Text.AlignVCenter
                     }
                 }
             }
 
-            // ===== Version footer =====
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 Layout.topMargin: 8
-                Layout.bottomMargin: 24
-                text: (appEngine.paidEdition ? qsTr("CloakQR Pro") : qsTr("CloakQR")) + " \u00B7 " + qsTr("v%1").arg(appEngine.version)
+                Layout.bottomMargin: 28
+                text: (appEngine.paidEdition ? qsTr("CloakQR Pro") : qsTr("CloakQR")) + " · " + qsTr("v%1").arg(appEngine.version)
                 color: page.mutedColor
                 font.pixelSize: 12
             }
@@ -609,7 +473,7 @@ Page {
         padding: 20
         background: Rectangle {
             color: page.surfaceColor
-            radius: 14
+            radius: 20
         }
 
         ColumnLayout {
